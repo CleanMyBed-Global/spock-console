@@ -1933,16 +1933,11 @@ COMMUNICATION BALANCE:
       }, 3000);
     }
 
-    // Update sendMessage to use saved prompts
+    // Apply custom prompts on page load
     function applyCustomPrompts() {
       const savedPrompts = localStorage.getItem('spockPrompts');
       if (savedPrompts) {
         const prompts = JSON.parse(savedPrompts);
-        
-        // Apply custom global personality
-        if (prompts.globalPersonality) {
-          window.customGlobalPersonality = prompts.globalPersonality;
-        }
         
         // Apply custom project prompts
         Object.keys(prompts.projects).forEach(project => {
@@ -1952,11 +1947,6 @@ COMMUNICATION BALANCE:
         });
       }
     }
-
-    // Apply custom prompts on page load
-    document.addEventListener('DOMContentLoaded', function() {
-      applyCustomPrompts();
-    });
       const input = document.getElementById('messageInput');
       const message = input.value.trim();
       
@@ -2176,6 +2166,9 @@ You operate with Vulcan-like calm and precision. Always provide:
     document.addEventListener('DOMContentLoaded', function() {
       const messageInput = document.getElementById('messageInput');
       const projectSelector = document.getElementById('projectSelector');
+      
+      // Apply custom prompts first
+      applyCustomPrompts();
       
       // Auto-resize textarea
       messageInput.addEventListener('input', function() {
