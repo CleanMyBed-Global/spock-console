@@ -44,7 +44,7 @@
     }
     
     .sidebar {
-      width: var(--sidebar-width, 320px);
+      width: 320px;
       min-width: 280px;
       max-width: 40%;
       background: linear-gradient(180deg, var(--card-bg) 0%, rgba(15, 15, 15, 0.98) 100%);
@@ -56,28 +56,6 @@
       flex-shrink: 0;
       display: flex;
       flex-direction: column;
-    }
-    
-    .resizer {
-      position: absolute;
-      top: 0;
-      right: -4px;
-      width: 8px;
-      height: 100%;
-      cursor: col-resize;
-      z-index: 1000;
-      opacity: 0;
-      transition: opacity 0.2s ease;
-    }
-    
-    .resizer:hover {
-      opacity: 1;
-      background: linear-gradient(180deg, transparent, var(--primary-gold), transparent);
-    }
-    
-    .resizer.resizing {
-      opacity: 1;
-      background: var(--primary-gold);
     }
     
     .logo {
@@ -202,7 +180,7 @@
     
     .chat-header {
       display: flex;
-      justify-content: between;
+      justify-content: space-between;
       align-items: center;
       padding: 1rem 1.5rem;
       border-bottom: 1px solid var(--border-subtle);
@@ -490,10 +468,6 @@
         padding: 1rem;
       }
       
-      .resizer {
-        display: none;
-      }
-      
       .main {
         min-width: auto;
         flex: 1;
@@ -508,8 +482,6 @@
 <body>
   <div class="container">
     <div class="sidebar">
-      <div class="resizer" id="resizer"></div>
-      
       <div class="logo">
         <div class="logo-icon">🖖</div>
         <div>SPOCK CONSOLE</div>
@@ -533,7 +505,6 @@
       
       <div class="chat-controls">
         <button class="control-btn" onclick="clearChat()">Clear Chat</button>
-        <button class="control-btn" onclick="saveCanvas()">Save Canvas</button>
         <button class="control-btn" onclick="exportChat()">Export</button>
       </div>
       
@@ -577,105 +548,64 @@
   </div>
 
   <script>
-    // Chat state management
+    // Project contexts that match the backend function
+    const projectContexts = {
+      telegram: "You are Spock, the system intelligence for CleanMyBed's Telegram Lead Flow project. Focus on bot development, lead capture, franchisee assignment, and CRM integration.",
+      email: "You are Spock, the system intelligence for CleanMyBed's Email Portal Logging project. Focus on SMTP monitoring, response tracking, and portal analytics.",
+      response: "You are Spock, the system intelligence for CleanMyBed's AI Response Layer. Focus on response optimization, model selection, and performance analytics.",
+      club: "You are Spock, the system intelligence for CleanMyBed Club. Focus on membership logic, benefits tracking, and customer engagement features.",
+      b2b: "You are Spock, the system intelligence for CleanMyBed's B2B Certificate Flow. Focus on certificate generation, compliance tracking, and hospitality integration.",
+      booking: "You are Spock, the system intelligence for CleanMyBed's Booking Engine. Focus on scheduling logic, payment processing, and booking optimization.",
+      spock: "You are Spock, helping to build and improve the Spock Console itself. Focus on chat interfaces, conversation management, Canvas systems, and developer productivity features."
+    };
+
     let currentProject = 'spock';
     let conversationHistory = [];
-    let isStreaming = false;
-
-    // Project contexts
-    const projectContexts = {
-      telegram: {
-        name: "Telegram Lead Flow",
-        description: "Advanced lead capture with AI-powered qualification and predictive scoring",
-        systemPrompt: "You are Spock, the system intelligence for CleanMyBed's Telegram Lead Flow project. Focus on bot development, lead capture, franchisee assignment, and CRM integration."
-      },
-      email: {
-        name: "Email Portal Logging", 
-        description: "Real-time monitoring with optimization and predictive failure detection",
-        systemPrompt: "You are Spock, the system intelligence for CleanMyBed's Email Portal Logging project. Focus on SMTP monitoring, response tracking, and portal analytics."
-      },
-      response: {
-        name: "AI Response Layer",
-        description: "Multi-model synthesis with logic processing and efficiency optimization", 
-        systemPrompt: "You are Spock, the system intelligence for CleanMyBed's AI Response Layer. Focus on response optimization, model selection, and performance analytics."
-      },
-      club: {
-        name: "CleanMyBed Club",
-        description: "Membership system with benefits tracking and engagement features",
-        systemPrompt: "You are Spock, the system intelligence for CleanMyBed Club. Focus on membership logic, benefits tracking, and customer engagement features."
-      },
-      b2b: {
-        name: "B2B Certificate Flow", 
-        description: "Automated certificate generation for hospitality compliance",
-        systemPrompt: "You are Spock, the system intelligence for CleanMyBed's B2B Certificate Flow. Focus on certificate generation, compliance tracking, and hospitality integration."
-      },
-      booking: {
-        name: "Booking Engine",
-        description: "Advanced booking system with scheduling and payment integration",
-        systemPrompt: "You are Spock, the system intelligence for CleanMyBed's Booking Engine. Focus on scheduling logic, payment processing, and booking optimization."
-      },
-      spock: {
-        name: "Spock Console Development",
-        description: "Building the AI development console with conversation threads and Canvas management",
-        systemPrompt: "You are Spock, helping to build and improve the Spock Console itself. Focus on chat interfaces, conversation management, Canvas systems, and developer productivity features."
-      }
-    };
+    let isLoading = false;
 
     async function sendMessage() {
       const input = document.getElementById('messageInput');
       const message = input.value.trim();
       
-      if (!message || isStreaming) return;
+      if (!message || isLoading) return;
       
       // Add user message to chat
       addMessage('user', message);
       input.value = '';
-      adjustTextareaHeight(input);
       
       // Add to conversation history
       conversationHistory.push({
         role: 'user',
-        content: message,
-        timestamp: new Date().toISOString()
+        content: message
       });
       
-      // Show streaming response
-      const assistantMessageId = addMessage('assistant', '', true);
-      setStreaming(true);
+      // Show loading message
+      const loadingId = addMessage('assistant', '', true);
+      setLoading(true);
       
       try {
-        // Get project context
-        const project = projectContexts[currentProject];
-        
-        // Build conversation context
-        const messages = [
-          {
-            role: 'system',
-            content: `${project.systemPrompt}
+        // Build messages array for API
+        const systemPrompt = projectContexts[currentProject] + `
 
 You operate with Vulcan-like calm and precision. Always provide:
 - Clear, actionable solutions
 - Clean code examples when relevant  
 - Logical next steps
-- Professional technical guidance
+- Professional technical guidance`;
 
-Current conversation context: This is an ongoing conversation thread. Previous messages provide context for this query.`
-          },
-          ...conversationHistory.slice(-10).map(msg => ({
-            role: msg.role,
-            content: msg.content
-          }))
+        const messages = [
+          { role: 'system', content: systemPrompt },
+          ...conversationHistory
         ];
 
-        // Call our Netlify function
+        // Call the function using the exact format it expects
         const response = await fetch('/.netlify/functions/askSpock', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            messages: messages,
-            stream: false // We'll add streaming later
+            messages: messages
           })
         });
 
@@ -686,39 +616,33 @@ Current conversation context: This is an ongoing conversation thread. Previous m
         const data = await response.json();
         
         if (data.error) {
-          throw new Error(data.message || data.error);
+          throw new Error(data.error);
         }
 
-        // Update the assistant message
-        updateMessage(assistantMessageId, data.response);
+        // Update the loading message with response
+        updateMessage(loadingId, data.response);
         
         // Add to conversation history
         conversationHistory.push({
           role: 'assistant',
-          content: data.response,
-          timestamp: new Date().toISOString()
+          content: data.response
         });
-        
-        // Save conversation to localStorage
-        saveConversation();
         
       } catch (error) {
         console.error('Error:', error);
-        updateMessage(assistantMessageId, `❌ Error: ${error.message}`);
+        updateMessage(loadingId, `❌ Error: ${error.message}`);
       } finally {
-        setStreaming(false);
+        setLoading(false);
       }
     }
 
-    function addMessage(role, content, isStreaming = false) {
+    function addMessage(role, content, isLoading = false) {
       const messagesContainer = document.getElementById('chatMessages');
-      const messageId = 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      const messageId = 'msg_' + Date.now();
       
-      // Remove welcome message if it exists
-      const welcomeMessage = messagesContainer.querySelector('.welcome-message');
-      if (welcomeMessage) {
-        welcomeMessage.remove();
-      }
+      // Remove welcome message if exists
+      const welcome = messagesContainer.querySelector('.welcome-message');
+      if (welcome) welcome.remove();
       
       const messageDiv = document.createElement('div');
       messageDiv.className = `message ${role}`;
@@ -735,13 +659,11 @@ Current conversation context: This is an ongoing conversation thread. Previous m
           <span style="margin-left: auto; font-size: 0.7rem;">${timestamp}</span>
         </div>
         <div class="message-content">
-          ${isStreaming ? '<div class="typing-indicator">Spock is thinking...</div>' : formatContent(content)}
+          ${isLoading ? '<div class="typing-indicator">Spock is thinking...</div>' : formatContent(content)}
         </div>
-        ${role === 'assistant' ? `
+        ${role === 'assistant' && !isLoading ? `
           <div class="message-actions">
             <button class="action-btn" onclick="copyMessage('${messageId}')">Copy</button>
-            <button class="action-btn" onclick="saveAsCanvas('${messageId}')">Save Canvas</button>
-            <button class="action-btn" onclick="regenerateMessage('${messageId}')">Regenerate</button>
           </div>
         ` : ''}
       `;
@@ -757,6 +679,15 @@ Current conversation context: This is an ongoing conversation thread. Previous m
       if (messageDiv) {
         const contentDiv = messageDiv.querySelector('.message-content');
         contentDiv.innerHTML = formatContent(content);
+        
+        // Add action buttons
+        if (!messageDiv.querySelector('.message-actions')) {
+          const actionsDiv = document.createElement('div');
+          actionsDiv.className = 'message-actions';
+          actionsDiv.innerHTML = `<button class="action-btn" onclick="copyMessage('${messageId}')">Copy</button>`;
+          messageDiv.appendChild(actionsDiv);
+        }
+        
         scrollToBottom();
       }
     }
@@ -775,83 +706,41 @@ Current conversation context: This is an ongoing conversation thread. Previous m
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
-    function setStreaming(streaming) {
-      isStreaming = streaming;
+    function setLoading(loading) {
+      isLoading = loading;
       const sendButton = document.getElementById('sendButton');
-      sendButton.disabled = streaming;
-      sendButton.textContent = streaming ? 'Thinking...' : 'Send';
+      sendButton.disabled = loading;
+      sendButton.textContent = loading ? 'Thinking...' : 'Send';
     }
 
-    function adjustTextareaHeight(textarea) {
-      textarea.style.height = 'auto';
-      textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px';
-    }
-
-    function saveConversation() {
-      const key = `spock_conversation_${currentProject}`;
-      localStorage.setItem(key, JSON.stringify({
-        project: currentProject,
-        history: conversationHistory,
-        lastUpdated: new Date().toISOString()
-      }));
-    }
-
-    function loadConversation() {
-      const key = `spock_conversation_${currentProject}`;
-      const saved = localStorage.getItem(key);
-      
-      if (saved) {
-        const data = JSON.parse(saved);
-        conversationHistory = data.history || [];
-        
-        // Rebuild chat UI
-        const messagesContainer = document.getElementById('chatMessages');
-        messagesContainer.innerHTML = '';
-        
-        if (conversationHistory.length === 0) {
-          showWelcomeMessage();
-        } else {
-          conversationHistory.forEach(msg => {
-            addMessage(msg.role, msg.content);
-          });
-        }
-      } else {
-        conversationHistory = [];
-        showWelcomeMessage();
-      }
-    }
-
-    function showWelcomeMessage() {
-      const messagesContainer = document.getElementById('chatMessages');
-      messagesContainer.innerHTML = `
-        <div class="welcome-message">
-          <div class="welcome-icon">🖖</div>
-          <div class="welcome-title">SPOCK NEURAL INTERFACE</div>
-          <div class="welcome-subtitle">
-            Project: ${projectContexts[currentProject].name}<br>
-            Ready for technical discussion and code generation.<br><br>
-            <em style="color: var(--primary-gold);">"Logic is the beginning of wisdom, not the end."</em>
-          </div>
-        </div>
-      `;
+    function copyMessage(messageId) {
+      const messageDiv = document.getElementById(messageId);
+      const content = messageDiv.querySelector('.message-content').innerText;
+      navigator.clipboard.writeText(content).then(() => {
+        showNotification('Message copied!');
+      });
     }
 
     function clearChat() {
-      if (confirm('Clear this conversation? This cannot be undone.')) {
+      if (confirm('Clear this conversation?')) {
         conversationHistory = [];
-        saveConversation();
-        loadConversation();
+        const messagesContainer = document.getElementById('chatMessages');
+        messagesContainer.innerHTML = `
+          <div class="welcome-message">
+            <div class="welcome-icon">🖖</div>
+            <div class="welcome-title">SPOCK NEURAL INTERFACE</div>
+            <div class="welcome-subtitle">
+              Ready for new conversation.<br><br>
+              <em style="color: var(--primary-gold);">"Logic is the beginning of wisdom, not the end."</em>
+            </div>
+          </div>
+        `;
       }
-    }
-
-    function saveCanvas() {
-      // TODO: Implement Canvas saving
-      alert('Canvas saving feature coming soon!');
     }
 
     function exportChat() {
       const data = {
-        project: projectContexts[currentProject].name,
+        project: currentProject,
         exported: new Date().toISOString(),
         conversation: conversationHistory
       };
@@ -865,46 +754,24 @@ Current conversation context: This is an ongoing conversation thread. Previous m
       URL.revokeObjectURL(url);
     }
 
-    function copyMessage(messageId) {
-      const messageDiv = document.getElementById(messageId);
-      const content = messageDiv.querySelector('.message-content').innerText;
-      navigator.clipboard.writeText(content).then(() => {
-        showNotification('Message copied to clipboard');
-      });
-    }
-
-    function saveAsCanvas(messageId) {
-      // TODO: Implement Canvas saving
-      alert('Canvas saving feature coming soon!');
-    }
-
-    function regenerateMessage(messageId) {
-      // TODO: Implement message regeneration
-      alert('Message regeneration feature coming soon!');
-    }
-
     function showNotification(message) {
       const notification = document.createElement('div');
       notification.style.cssText = `
         position: fixed;
         top: 1rem;
         right: 1rem;
-        background: linear-gradient(135deg, var(--primary-gold), var(--secondary-gold));
+        background: var(--primary-gold);
         color: var(--dark-bg);
         padding: 0.75rem 1.25rem;
         border-radius: 6px;
         font-family: 'JetBrains Mono', monospace;
         font-size: 0.8rem;
-        font-weight: 500;
         z-index: 1000;
-        animation: slideIn 0.3s ease-out;
       `;
       notification.textContent = message;
       document.body.appendChild(notification);
       
-      setTimeout(() => {
-        notification.remove();
-      }, 3000);
+      setTimeout(() => notification.remove(), 3000);
     }
 
     // Event listeners
@@ -914,7 +781,8 @@ Current conversation context: This is an ongoing conversation thread. Previous m
       
       // Auto-resize textarea
       messageInput.addEventListener('input', function() {
-        adjustTextareaHeight(this);
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 150) + 'px';
       });
       
       // Send on Ctrl+Enter
@@ -927,79 +795,25 @@ Current conversation context: This is an ongoing conversation thread. Previous m
       
       // Project switching
       projectSelector.addEventListener('change', function() {
-        const oldProject = currentProject;
         currentProject = this.value;
         
-        // Update project info
-        const projectInfo = document.getElementById('projectInfo');
-        projectInfo.textContent = projectContexts[currentProject].description;
+        const descriptions = {
+          telegram: "Advanced lead capture with AI-powered qualification and predictive scoring",
+          email: "Real-time monitoring with optimization and predictive failure detection",
+          response: "Multi-model synthesis with logic processing and efficiency optimization",
+          club: "Membership system with benefits tracking and engagement features",
+          b2b: "Automated certificate generation for hospitality compliance",
+          booking: "Advanced booking system with scheduling and payment integration",
+          spock: "Building the AI development console with conversation threads and Canvas management"
+        };
         
-        // Update chat title
-        const chatTitle = document.getElementById('chatTitle');
-        chatTitle.textContent = `🖖 ${projectContexts[currentProject].name.toUpperCase()}`;
-        
-        // Load conversation for new project
-        loadConversation();
+        document.getElementById('projectInfo').textContent = descriptions[this.value];
+        document.getElementById('chatTitle').textContent = `🖖 ${this.options[this.selectedIndex].text.toUpperCase()}`;
       });
       
       // Initialize
-      projectSelector.value = currentProject;
       projectSelector.dispatchEvent(new Event('change'));
-      
-      // Resizer functionality
-      setupResizer();
     });
-
-    // Resizer setup
-    function setupResizer() {
-      let isResizing = false;
-      const resizer = document.getElementById('resizer');
-      const sidebar = document.querySelector('.sidebar');
-      const container = document.querySelector('.container');
-
-      resizer.addEventListener('mousedown', (e) => {
-        isResizing = true;
-        resizer.classList.add('resizing');
-        document.body.style.cursor = 'col-resize';
-        document.body.style.userSelect = 'none';
-      });
-
-      document.addEventListener('mousemove', (e) => {
-        if (!isResizing) return;
-
-        const containerRect = container.getBoundingClientRect();
-        const newWidth = e.clientX - containerRect.left;
-        const minWidth = 280;
-        const maxWidth = containerRect.width * 0.4;
-
-        if (newWidth >= minWidth && newWidth <= maxWidth) {
-          sidebar.style.width = newWidth + 'px';
-          document.documentElement.style.setProperty('--sidebar-width', newWidth + 'px');
-        }
-      });
-
-      document.addEventListener('mouseup', () => {
-        if (isResizing) {
-          isResizing = false;
-          resizer.classList.remove('resizing');
-          document.body.style.cursor = '';
-          document.body.style.userSelect = '';
-          
-          const currentWidth = sidebar.offsetWidth;
-          localStorage.setItem('spock-sidebar-width', currentWidth);
-        }
-      });
-
-      // Load saved width
-      const savedWidth = localStorage.getItem('spock-sidebar-width');
-      if (savedWidth) {
-        const width = parseInt(savedWidth);
-        if (width >= 280 && width <= window.innerWidth * 0.4) {
-          sidebar.style.width = width + 'px';
-          document.documentElement.style.setProperty('--sidebar-width', width + 'px');
-        }
-      }
-    }
   </script>
 </body>
 </html>
