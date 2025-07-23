@@ -19,6 +19,8 @@
       --text-tertiary: #666;
       --success: #00ff88;
       --warning: #ff6b35;
+      --user-bg: rgba(212, 175, 55, 0.1);
+      --assistant-bg: rgba(255, 255, 255, 0.02);
     }
     
     * {
@@ -42,9 +44,9 @@
     }
     
     .sidebar {
-      width: var(--sidebar-width, 340px);
+      width: var(--sidebar-width, 320px);
       min-width: 280px;
-      max-width: 45%;
+      max-width: 40%;
       background: linear-gradient(180deg, var(--card-bg) 0%, rgba(15, 15, 15, 0.98) 100%);
       backdrop-filter: blur(10px);
       border-right: 1px solid var(--border-subtle);
@@ -82,7 +84,7 @@
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1rem;
       padding: 0.75rem 1rem;
       background: var(--glass-bg);
       border: 1px solid var(--border-subtle);
@@ -98,8 +100,8 @@
       font-size: 1.2rem;
     }
     
-    .section {
-      margin-bottom: 1.5rem;
+    .project-section {
+      margin-bottom: 1rem;
       flex-shrink: 0;
     }
     
@@ -110,17 +112,12 @@
       color: var(--text-tertiary);
       text-transform: uppercase;
       letter-spacing: 1px;
-      margin-bottom: 0.75rem;
-    }
-    
-    .project-selector {
-      position: relative;
-      margin-bottom: 1rem;
+      margin-bottom: 0.5rem;
     }
     
     select {
       width: 100%;
-      padding: 0.75rem 1rem;
+      padding: 0.75rem;
       background: var(--glass-bg);
       border: 1px solid var(--border-subtle);
       border-radius: 6px;
@@ -145,27 +142,249 @@
       font-size: 0.8rem;
       line-height: 1.4;
       color: var(--text-secondary);
-      margin-bottom: 1rem;
+      margin-top: 0.5rem;
     }
     
-    .input-section {
+    .chat-controls {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      flex-shrink: 0;
+    }
+    
+    .control-btn {
       flex: 1;
+      padding: 0.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      color: var(--text-tertiary);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .control-btn:hover {
+      background: rgba(212, 175, 55, 0.1);
+      border-color: var(--primary-gold);
+      color: var(--primary-gold);
+    }
+    
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      background: rgba(0, 255, 136, 0.08);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--success);
+      margin-top: 1rem;
+    }
+    
+    .status-indicator {
+      width: 6px;
+      height: 6px;
+      background: var(--success);
+      border-radius: 50%;
+    }
+    
+    .main {
+      flex: 1;
+      min-width: 0;
       display: flex;
       flex-direction: column;
-      min-height: 0;
+      background: linear-gradient(135deg, rgba(10, 10, 11, 0.95) 0%, rgba(15, 15, 16, 0.95) 100%);
+    }
+    
+    .chat-header {
+      display: flex;
+      justify-content: between;
+      align-items: center;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border-subtle);
+      flex-shrink: 0;
+    }
+    
+    .chat-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      font-weight: 400;
+      color: var(--primary-gold);
+      letter-spacing: 1px;
+    }
+    
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .message {
+      display: flex;
+      flex-direction: column;
+      max-width: 85%;
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .message.user {
+      align-self: flex-end;
+    }
+    
+    .message.assistant {
+      align-self: flex-start;
+    }
+    
+    .message-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+    }
+    
+    .message-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+    }
+    
+    .message.user .message-avatar {
+      background: var(--primary-gold);
+      color: var(--dark-bg);
+    }
+    
+    .message.assistant .message-avatar {
+      background: linear-gradient(135deg, #333, #555);
+      color: var(--primary-gold);
+    }
+    
+    .message-content {
+      padding: 1rem 1.25rem;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      position: relative;
+    }
+    
+    .message.user .message-content {
+      background: var(--user-bg);
+      border: 1px solid rgba(212, 175, 55, 0.2);
+      color: var(--text-primary);
+    }
+    
+    .message.assistant .message-content {
+      background: var(--assistant-bg);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+    }
+    
+    .message-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    
+    .message:hover .message-actions {
+      opacity: 1;
+    }
+    
+    .action-btn {
+      padding: 0.25rem 0.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      color: var(--text-tertiary);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .action-btn:hover {
+      background: rgba(212, 175, 55, 0.1);
+      border-color: var(--primary-gold);
+      color: var(--primary-gold);
+    }
+    
+    .code-block {
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(212, 175, 55, 0.2);
+      border-left: 3px solid var(--primary-gold);
+      border-radius: 6px;
+      padding: 1rem;
+      margin: 0.5rem 0;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+    }
+    
+    .inline-code {
+      background: rgba(212, 175, 55, 0.15);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      padding: 0.2rem 0.4rem;
+      border-radius: 3px;
+      color: var(--secondary-gold);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+    }
+    
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-tertiary);
+      font-style: italic;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
     }
     
     .input-container {
-      flex: 1;
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--border-subtle);
+      background: rgba(0, 0, 0, 0.2);
+      flex-shrink: 0;
+    }
+    
+    .input-wrapper {
       display: flex;
-      flex-direction: column;
-      margin-bottom: 1rem;
+      gap: 0.75rem;
+      align-items: flex-end;
+    }
+    
+    .input-area {
+      flex: 1;
+      position: relative;
     }
     
     textarea {
-      flex: 1;
-      min-height: 120px;
-      padding: 1rem;
+      width: 100%;
+      min-height: 60px;
+      max-height: 150px;
+      padding: 0.75rem 1rem;
       background: var(--glass-bg);
       border: 1px solid var(--border-subtle);
       border-radius: 8px;
@@ -188,27 +407,21 @@
       background: rgba(255, 255, 255, 0.05);
     }
     
-    .controls {
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-    }
-    
     .send-button {
-      flex: 1;
       padding: 0.75rem 1.5rem;
       background: linear-gradient(135deg, var(--primary-gold), var(--secondary-gold));
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       color: var(--dark-bg);
       font-family: 'JetBrains Mono', monospace;
       font-weight: 500;
       font-size: 0.85rem;
       cursor: pointer;
       transition: all 0.2s ease;
+      white-space: nowrap;
     }
     
-    .send-button:hover {
+    .send-button:hover:not(:disabled) {
       transform: translateY(-1px);
       box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
     }
@@ -221,214 +434,27 @@
       box-shadow: none;
     }
     
-    .status {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem 0.75rem;
-      background: rgba(0, 255, 136, 0.08);
-      border: 1px solid rgba(0, 255, 136, 0.2);
-      border-radius: 4px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.7rem;
-      color: var(--success);
-    }
-    
-    .status-indicator {
-      width: 6px;
-      height: 6px;
-      background: var(--success);
-      border-radius: 50%;
-    }
-    
-    .main {
-      flex: 1;
-      min-width: 0;
-      background: linear-gradient(135deg, rgba(10, 10, 11, 0.95) 0%, rgba(15, 15, 16, 0.95) 100%);
-      backdrop-filter: blur(10px);
-      display: flex;
-      flex-direction: column;
-      position: relative;
-    }
-    
-    .main-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem 1.5rem;
-      border-bottom: 1px solid var(--border-subtle);
-      flex-shrink: 0;
-    }
-    
-    .main-title {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.9rem;
-      font-weight: 400;
+    .welcome-message {
+      text-align: center;
+      padding: 4rem 2rem;
       color: var(--text-secondary);
-      letter-spacing: 1px;
     }
     
-    .neural-indicator {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.75rem;
-      color: var(--text-tertiary);
-    }
-    
-    .response-container {
-      flex: 1;
-      min-height: 0;
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px solid var(--border-subtle);
-      border-radius: 8px;
-      margin: 1rem 1.5rem;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .response-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.75rem 1.25rem;
-      background: rgba(212, 175, 55, 0.05);
-      border-bottom: 1px solid var(--border-subtle);
-      flex-shrink: 0;
-    }
-    
-    .spock-status {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      font-family: 'JetBrains Mono', monospace;
-      font-weight: 500;
-      font-size: 0.85rem;
+    .welcome-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
       color: var(--primary-gold);
     }
     
-    .spock-avatar {
-      font-size: 1rem;
-    }
-    
-    .response-actions {
-      display: flex;
-      gap: 0.5rem;
-    }
-    
-    .action-btn {
-      padding: 0.4rem 0.8rem;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(212, 175, 55, 0.2);
-      border-radius: 4px;
-      color: var(--text-tertiary);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.7rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    
-    .action-btn:hover {
-      background: rgba(212, 175, 55, 0.1);
-      border-color: var(--primary-gold);
+    .welcome-title {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
       color: var(--primary-gold);
     }
     
-    .response-content {
-      flex: 1;
-      min-height: 0;
-      padding: 1.5rem;
-      overflow-y: auto;
-      font-family: 'JetBrains Mono', monospace;
+    .welcome-subtitle {
       font-size: 0.9rem;
       line-height: 1.6;
-      white-space: pre-wrap;
-      color: var(--text-primary);
-    }
-    
-    .code-block {
-      background: rgba(0, 0, 0, 0.6);
-      border: 1px solid rgba(212, 175, 55, 0.2);
-      border-left: 3px solid var(--primary-gold);
-      border-radius: 6px;
-      padding: 1rem;
-      margin: 1rem 0;
-      overflow-x: auto;
-      font-size: 0.85rem;
-    }
-    
-    .inline-code {
-      background: rgba(212, 175, 55, 0.15);
-      border: 1px solid rgba(212, 175, 55, 0.3);
-      padding: 0.2rem 0.4rem;
-      border-radius: 3px;
-      color: var(--secondary-gold);
-      font-size: 0.85rem;
-    }
-    
-    .loading {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      gap: 1rem;
-      color: var(--primary-gold);
-      text-align: center;
-    }
-    
-    .loading-spinner {
-      width: 32px;
-      height: 32px;
-      border: 2px solid rgba(212, 175, 55, 0.2);
-      border-top: 2px solid var(--primary-gold);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-    
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-    
-    .loading-text {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.9rem;
-      color: var(--text-secondary);
-    }
-    
-    .error {
-      background: rgba(255, 107, 107, 0.1);
-      border: 1px solid rgba(255, 107, 107, 0.3);
-      border-left: 3px solid var(--warning);
-      border-radius: 6px;
-      padding: 1.5rem;
-      color: var(--warning);
-      text-align: center;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.9rem;
-    }
-    
-    .notification {
-      position: fixed;
-      top: 1rem;
-      right: 1rem;
-      background: linear-gradient(135deg, var(--primary-gold), var(--secondary-gold));
-      color: var(--dark-bg);
-      padding: 0.75rem 1.25rem;
-      border-radius: 6px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.8rem;
-      font-weight: 500;
-      z-index: 1000;
-      animation: slide-in 0.3s ease-out;
-    }
-    
-    @keyframes slide-in {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
     }
     
     /* Scrollbar styling */
@@ -450,12 +476,6 @@
     }
     
     /* Responsive design */
-    @media (max-width: 1200px) {
-      :root {
-        --sidebar-width: 320px;
-      }
-    }
-    
     @media (max-width: 768px) {
       .container {
         flex-direction: column;
@@ -470,10 +490,6 @@
         padding: 1rem;
       }
       
-      .input-container {
-        min-height: 80px;
-      }
-      
       .resizer {
         display: none;
       }
@@ -483,12 +499,8 @@
         flex: 1;
       }
       
-      .main-header {
-        padding: 0.75rem 1rem;
-      }
-      
-      .response-container {
-        margin: 0.75rem 1rem;
+      .message {
+        max-width: 95%;
       }
     }
   </style>
@@ -503,115 +515,172 @@
         <div>SPOCK CONSOLE</div>
       </div>
       
-      <div class="section">
+      <div class="project-section">
         <div class="section-title">Project Context</div>
-        <div class="project-selector">
-          <select id="projectSelector">
-            <option value="telegram">Telegram Lead Flow</option>
-            <option value="email">Email Portal Logging</option>
-            <option value="response">AI Response Layer</option>
-          </select>
-        </div>
+        <select id="projectSelector">
+          <option value="telegram">Telegram Lead Flow</option>
+          <option value="email">Email Portal Logging</option>
+          <option value="response">AI Response Layer</option>
+          <option value="club">CleanMyBed Club</option>
+          <option value="b2b">B2B Certificate Flow</option>
+          <option value="booking">Booking Engine</option>
+          <option value="spock">Spock Console Development</option>
+        </select>
         <div class="project-info" id="projectInfo">
           Select a project to see details...
         </div>
       </div>
       
-      <div class="input-section">
-        <div class="section-title">Neural Input</div>
-        <div class="input-container">
-          <textarea 
-            id="userInput" 
-            placeholder="Enter your query for system analysis..."></textarea>
-        </div>
-        <div class="controls">
-          <button class="send-button" onclick="submitToSpock()">
-            Execute Query
-          </button>
-        </div>
+      <div class="chat-controls">
+        <button class="control-btn" onclick="clearChat()">Clear Chat</button>
+        <button class="control-btn" onclick="saveCanvas()">Save Canvas</button>
+        <button class="control-btn" onclick="exportChat()">Export</button>
       </div>
       
       <div class="status">
         <div class="status-indicator"></div>
-        <span>Ready</span>
+        <span>Neural networks online</span>
       </div>
     </div>
     
     <div class="main">
-      <div class="main-header">
-        <div class="main-title">Neural Analysis Interface</div>
-        <div class="neural-indicator">
-          <span>Spock AI Online</span>
+      <div class="chat-header">
+        <div class="chat-title" id="chatTitle">🖖 SPOCK NEURAL INTERFACE</div>
+      </div>
+      
+      <div class="chat-messages" id="chatMessages">
+        <div class="welcome-message">
+          <div class="welcome-icon">🖖</div>
+          <div class="welcome-title">SPOCK NEURAL INTERFACE INITIALIZED</div>
+          <div class="welcome-subtitle">
+            Advanced AI systems online. Neural networks calibrated.<br>
+            Ready for complex analysis and code generation.<br><br>
+            <em style="color: var(--primary-gold);">"Logic is the beginning of wisdom, not the end."</em>
+          </div>
         </div>
       </div>
       
-      <div class="response-container">
-        <div class="response-header">
-          <div class="spock-status">
-            <div class="spock-avatar">🖖</div>
-            <span>SPOCK ANALYSIS</span>
+      <div class="input-container">
+        <div class="input-wrapper">
+          <div class="input-area">
+            <textarea 
+              id="messageInput" 
+              placeholder="Enter your message... (Ctrl+Enter to send)"
+              rows="1"></textarea>
           </div>
-          <div class="response-actions">
-            <button class="action-btn" onclick="copyToClipboard()">Copy</button>
-            <button class="action-btn" onclick="regenerateResponse()">Regenerate</button>
-            <button class="action-btn" onclick="clearResponse()">Clear</button>
-          </div>
-        </div>
-        
-        <div class="response-content" id="responseBox">
-          <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
-            <div style="font-size: 2rem; margin-bottom: 1rem; color: var(--primary-gold);">🖖</div>
-            <div style="margin-bottom: 1rem;">SPOCK NEURAL INTERFACE INITIALIZED</div>
-            <div style="font-size: 0.85rem; line-height: 1.5;">
-              Advanced AI systems online. Neural networks calibrated.<br>
-              Ready for complex analysis and code generation.<br><br>
-              <em style="color: var(--primary-gold);">"Logic is the beginning of wisdom, not the end."</em>
-            </div>
-          </div>
+          <button class="send-button" id="sendButton" onclick="sendMessage()">
+            Send
+          </button>
         </div>
       </div>
     </div>
   </div>
 
   <script>
-    // No API key handling needed - using serverless functions!
-    const assistantId = "asst_z1ejGukZ2eUJCJeTkpNX3MnD";
+    // Chat state management
+    let currentProject = 'spock';
+    let conversationHistory = [];
+    let isStreaming = false;
 
-    async function submitToSpock() {
-      const userInput = document.getElementById('userInput').value.trim();
-      const project = document.getElementById('projectSelector').value;
-      const responseBox = document.getElementById('responseBox');
-      const button = document.querySelector('.send-button');
-      
-      if (!userInput) {
-        showError("Please enter a query for neural analysis.");
-        return;
+    // Project contexts
+    const projectContexts = {
+      telegram: {
+        name: "Telegram Lead Flow",
+        description: "Advanced lead capture with AI-powered qualification and predictive scoring",
+        systemPrompt: "You are Spock, the system intelligence for CleanMyBed's Telegram Lead Flow project. Focus on bot development, lead capture, franchisee assignment, and CRM integration."
+      },
+      email: {
+        name: "Email Portal Logging", 
+        description: "Real-time monitoring with optimization and predictive failure detection",
+        systemPrompt: "You are Spock, the system intelligence for CleanMyBed's Email Portal Logging project. Focus on SMTP monitoring, response tracking, and portal analytics."
+      },
+      response: {
+        name: "AI Response Layer",
+        description: "Multi-model synthesis with logic processing and efficiency optimization", 
+        systemPrompt: "You are Spock, the system intelligence for CleanMyBed's AI Response Layer. Focus on response optimization, model selection, and performance analytics."
+      },
+      club: {
+        name: "CleanMyBed Club",
+        description: "Membership system with benefits tracking and engagement features",
+        systemPrompt: "You are Spock, the system intelligence for CleanMyBed Club. Focus on membership logic, benefits tracking, and customer engagement features."
+      },
+      b2b: {
+        name: "B2B Certificate Flow", 
+        description: "Automated certificate generation for hospitality compliance",
+        systemPrompt: "You are Spock, the system intelligence for CleanMyBed's B2B Certificate Flow. Focus on certificate generation, compliance tracking, and hospitality integration."
+      },
+      booking: {
+        name: "Booking Engine",
+        description: "Advanced booking system with scheduling and payment integration",
+        systemPrompt: "You are Spock, the system intelligence for CleanMyBed's Booking Engine. Focus on scheduling logic, payment processing, and booking optimization."
+      },
+      spock: {
+        name: "Spock Console Development",
+        description: "Building the AI development console with conversation threads and Canvas management",
+        systemPrompt: "You are Spock, helping to build and improve the Spock Console itself. Focus on chat interfaces, conversation management, Canvas systems, and developer productivity features."
       }
+    };
 
-      // Disable button and show loading
-      setLoadingState(true);
-      responseBox.innerHTML = `
-        <div class="loading">
-          <div class="loading-spinner"></div>
-          <div class="loading-text">Processing neural query...</div>
-        </div>
-      `;
-
+    async function sendMessage() {
+      const input = document.getElementById('messageInput');
+      const message = input.value.trim();
+      
+      if (!message || isStreaming) return;
+      
+      // Add user message to chat
+      addMessage('user', message);
+      input.value = '';
+      adjustTextareaHeight(input);
+      
+      // Add to conversation history
+      conversationHistory.push({
+        role: 'user',
+        content: message,
+        timestamp: new Date().toISOString()
+      });
+      
+      // Show streaming response
+      const assistantMessageId = addMessage('assistant', '', true);
+      setStreaming(true);
+      
       try {
-        // Call our secure Netlify function
+        // Get project context
+        const project = projectContexts[currentProject];
+        
+        // Build conversation context
+        const messages = [
+          {
+            role: 'system',
+            content: `${project.systemPrompt}
+
+You operate with Vulcan-like calm and precision. Always provide:
+- Clear, actionable solutions
+- Clean code examples when relevant  
+- Logical next steps
+- Professional technical guidance
+
+Current conversation context: This is an ongoing conversation thread. Previous messages provide context for this query.`
+          },
+          ...conversationHistory.slice(-10).map(msg => ({
+            role: msg.role,
+            content: msg.content
+          }))
+        ];
+
+        // Call our Netlify function
         const response = await fetch('/.netlify/functions/askSpock', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            userInput,
-            project
+            messages: messages,
+            stream: false // We'll add streaming later
           })
         });
 
         if (!response.ok) {
-          throw new Error(`Server error: ${response.status} ${response.statusText}`);
+          throw new Error(`Server error: ${response.status}`);
         }
 
         const data = await response.json();
@@ -620,29 +689,79 @@
           throw new Error(data.message || data.error);
         }
 
-        displayResponse(data.response);
+        // Update the assistant message
+        updateMessage(assistantMessageId, data.response);
+        
+        // Add to conversation history
+        conversationHistory.push({
+          role: 'assistant',
+          content: data.response,
+          timestamp: new Date().toISOString()
+        });
+        
+        // Save conversation to localStorage
+        saveConversation();
         
       } catch (error) {
-        console.error('Spock Console Error:', error);
-        showError(`Neural Interface Error: ${error.message}`);
+        console.error('Error:', error);
+        updateMessage(assistantMessageId, `❌ Error: ${error.message}`);
       } finally {
-        setLoadingState(false);
-        document.getElementById('userInput').value = '';
+        setStreaming(false);
       }
     }
 
-    function displayResponse(response) {
-      const responseBox = document.getElementById('responseBox');
-      const formattedResponse = formatResponse(response);
+    function addMessage(role, content, isStreaming = false) {
+      const messagesContainer = document.getElementById('chatMessages');
+      const messageId = 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
       
-      responseBox.innerHTML = `
-        <div style="padding: 0;">
-          ${formattedResponse}
+      // Remove welcome message if it exists
+      const welcomeMessage = messagesContainer.querySelector('.welcome-message');
+      if (welcomeMessage) {
+        welcomeMessage.remove();
+      }
+      
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${role}`;
+      messageDiv.id = messageId;
+      
+      const avatar = role === 'user' ? '👤' : '🖖';
+      const name = role === 'user' ? 'You' : 'Spock';
+      const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      
+      messageDiv.innerHTML = `
+        <div class="message-header">
+          <div class="message-avatar">${avatar}</div>
+          <span>${name}</span>
+          <span style="margin-left: auto; font-size: 0.7rem;">${timestamp}</span>
         </div>
+        <div class="message-content">
+          ${isStreaming ? '<div class="typing-indicator">Spock is thinking...</div>' : formatContent(content)}
+        </div>
+        ${role === 'assistant' ? `
+          <div class="message-actions">
+            <button class="action-btn" onclick="copyMessage('${messageId}')">Copy</button>
+            <button class="action-btn" onclick="saveAsCanvas('${messageId}')">Save Canvas</button>
+            <button class="action-btn" onclick="regenerateMessage('${messageId}')">Regenerate</button>
+          </div>
+        ` : ''}
       `;
+      
+      messagesContainer.appendChild(messageDiv);
+      scrollToBottom();
+      
+      return messageId;
     }
 
-    function formatResponse(text) {
+    function updateMessage(messageId, content) {
+      const messageDiv = document.getElementById(messageId);
+      if (messageDiv) {
+        const contentDiv = messageDiv.querySelector('.message-content');
+        contentDiv.innerHTML = formatContent(content);
+        scrollToBottom();
+      }
+    }
+
+    function formatContent(text) {
       return text
         .replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre class="code-block"><code>$2</code></pre>')
         .replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
@@ -651,56 +770,135 @@
         .replace(/\n/g, '<br>');
     }
 
-    function copyToClipboard() {
-      const responseContent = document.querySelector('.response-content');
-      const textContent = responseContent.innerText;
-      
-      navigator.clipboard.writeText(textContent).then(() => {
-        showNotification('Response copied to clipboard');
-      }).catch(() => {
-        showNotification('Copy failed - please select manually');
-      });
+    function scrollToBottom() {
+      const messagesContainer = document.getElementById('chatMessages');
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
-    function regenerateResponse() {
-      const lastInput = document.getElementById('userInput').getAttribute('data-last-input');
-      if (lastInput) {
-        document.getElementById('userInput').value = lastInput;
-        submitToSpock();
+    function setStreaming(streaming) {
+      isStreaming = streaming;
+      const sendButton = document.getElementById('sendButton');
+      sendButton.disabled = streaming;
+      sendButton.textContent = streaming ? 'Thinking...' : 'Send';
+    }
+
+    function adjustTextareaHeight(textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px';
+    }
+
+    function saveConversation() {
+      const key = `spock_conversation_${currentProject}`;
+      localStorage.setItem(key, JSON.stringify({
+        project: currentProject,
+        history: conversationHistory,
+        lastUpdated: new Date().toISOString()
+      }));
+    }
+
+    function loadConversation() {
+      const key = `spock_conversation_${currentProject}`;
+      const saved = localStorage.getItem(key);
+      
+      if (saved) {
+        const data = JSON.parse(saved);
+        conversationHistory = data.history || [];
+        
+        // Rebuild chat UI
+        const messagesContainer = document.getElementById('chatMessages');
+        messagesContainer.innerHTML = '';
+        
+        if (conversationHistory.length === 0) {
+          showWelcomeMessage();
+        } else {
+          conversationHistory.forEach(msg => {
+            addMessage(msg.role, msg.content);
+          });
+        }
+      } else {
+        conversationHistory = [];
+        showWelcomeMessage();
       }
     }
 
-    function clearResponse() {
-      const responseBox = document.getElementById('responseBox');
-      responseBox.innerHTML = `
-        <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
-          <div style="font-size: 2rem; margin-bottom: 1rem; color: var(--primary-gold);">🖖</div>
-          <div style="margin-bottom: 1rem;">Ready for new neural input</div>
-          <div style="font-size: 0.85rem;">Enter a query to begin analysis</div>
+    function showWelcomeMessage() {
+      const messagesContainer = document.getElementById('chatMessages');
+      messagesContainer.innerHTML = `
+        <div class="welcome-message">
+          <div class="welcome-icon">🖖</div>
+          <div class="welcome-title">SPOCK NEURAL INTERFACE</div>
+          <div class="welcome-subtitle">
+            Project: ${projectContexts[currentProject].name}<br>
+            Ready for technical discussion and code generation.<br><br>
+            <em style="color: var(--primary-gold);">"Logic is the beginning of wisdom, not the end."</em>
+          </div>
         </div>
       `;
     }
 
-    function setLoadingState(isLoading) {
-      const button = document.querySelector('.send-button');
-      button.disabled = isLoading;
-      button.textContent = isLoading ? "Processing..." : "Execute Query";
+    function clearChat() {
+      if (confirm('Clear this conversation? This cannot be undone.')) {
+        conversationHistory = [];
+        saveConversation();
+        loadConversation();
+      }
     }
 
-    function showError(message) {
-      const responseBox = document.getElementById('responseBox');
-      responseBox.innerHTML = `
-        <div class="error">
-          <div style="font-size: 1.5rem; margin-bottom: 1rem;">⚠️</div>
-          <div style="margin-bottom: 0.5rem;">Neural Interface Error</div>
-          <div style="font-size: 0.85rem;">${message}</div>
-        </div>
-      `;
+    function saveCanvas() {
+      // TODO: Implement Canvas saving
+      alert('Canvas saving feature coming soon!');
+    }
+
+    function exportChat() {
+      const data = {
+        project: projectContexts[currentProject].name,
+        exported: new Date().toISOString(),
+        conversation: conversationHistory
+      };
+      
+      const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `spock_chat_${currentProject}_${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function copyMessage(messageId) {
+      const messageDiv = document.getElementById(messageId);
+      const content = messageDiv.querySelector('.message-content').innerText;
+      navigator.clipboard.writeText(content).then(() => {
+        showNotification('Message copied to clipboard');
+      });
+    }
+
+    function saveAsCanvas(messageId) {
+      // TODO: Implement Canvas saving
+      alert('Canvas saving feature coming soon!');
+    }
+
+    function regenerateMessage(messageId) {
+      // TODO: Implement message regeneration
+      alert('Message regeneration feature coming soon!');
     }
 
     function showNotification(message) {
       const notification = document.createElement('div');
-      notification.className = 'notification';
+      notification.style.cssText = `
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: linear-gradient(135deg, var(--primary-gold), var(--secondary-gold));
+        color: var(--dark-bg);
+        padding: 0.75rem 1.25rem;
+        border-radius: 6px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.8rem;
+        font-weight: 500;
+        z-index: 1000;
+        animation: slideIn 0.3s ease-out;
+      `;
       notification.textContent = message;
       document.body.appendChild(notification);
       
@@ -709,82 +907,99 @@
       }, 3000);
     }
 
-    // Resizable pane functionality
-    let isResizing = false;
-    const resizer = document.getElementById('resizer');
-    const sidebar = document.querySelector('.sidebar');
-    const container = document.querySelector('.container');
-
-    resizer.addEventListener('mousedown', (e) => {
-      isResizing = true;
-      resizer.classList.add('resizing');
-      document.body.style.cursor = 'col-resize';
-      document.body.style.userSelect = 'none';
-    });
-
-    document.addEventListener('mousemove', (e) => {
-      if (!isResizing) return;
-
-      const containerRect = container.getBoundingClientRect();
-      const newWidth = e.clientX - containerRect.left;
-      const minWidth = 280;
-      const maxWidth = containerRect.width * 0.45;
-
-      if (newWidth >= minWidth && newWidth <= maxWidth) {
-        sidebar.style.width = newWidth + 'px';
-        document.documentElement.style.setProperty('--sidebar-width', newWidth + 'px');
-      }
-    });
-
-    document.addEventListener('mouseup', () => {
-      if (isResizing) {
-        isResizing = false;
-        resizer.classList.remove('resizing');
-        document.body.style.cursor = '';
-        document.body.style.userSelect = '';
-        
-        const currentWidth = sidebar.offsetWidth;
-        localStorage.setItem('spock-sidebar-width', currentWidth);
-      }
-    });
-
-    // Load saved width preference
-    const savedWidth = localStorage.getItem('spock-sidebar-width');
-    if (savedWidth) {
-      const width = parseInt(savedWidth);
-      if (width >= 280 && width <= window.innerWidth * 0.45) {
-        sidebar.style.width = width + 'px';
-        document.documentElement.style.setProperty('--sidebar-width', width + 'px');
-      }
-    }
-
     // Event listeners
     document.addEventListener('DOMContentLoaded', function() {
-      const textarea = document.getElementById('userInput');
+      const messageInput = document.getElementById('messageInput');
+      const projectSelector = document.getElementById('projectSelector');
       
-      textarea.addEventListener('input', function() {
-        this.setAttribute('data-last-input', this.value);
+      // Auto-resize textarea
+      messageInput.addEventListener('input', function() {
+        adjustTextareaHeight(this);
       });
       
-      textarea.addEventListener('keydown', function(e) {
+      // Send on Ctrl+Enter
+      messageInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
           e.preventDefault();
-          submitToSpock();
+          sendMessage();
         }
       });
       
-      document.getElementById('projectSelector').addEventListener('change', function() {
+      // Project switching
+      projectSelector.addEventListener('change', function() {
+        const oldProject = currentProject;
+        currentProject = this.value;
+        
+        // Update project info
         const projectInfo = document.getElementById('projectInfo');
-        const descriptions = {
-          telegram: "Advanced lead capture with AI-powered qualification and predictive scoring",
-          email: "Real-time monitoring with optimization and predictive failure detection", 
-          response: "Multi-model synthesis with logic processing and efficiency optimization"
-        };
-        projectInfo.textContent = descriptions[this.value];
+        projectInfo.textContent = projectContexts[currentProject].description;
+        
+        // Update chat title
+        const chatTitle = document.getElementById('chatTitle');
+        chatTitle.textContent = `🖖 ${projectContexts[currentProject].name.toUpperCase()}`;
+        
+        // Load conversation for new project
+        loadConversation();
       });
       
-      document.getElementById('projectSelector').dispatchEvent(new Event('change'));
+      // Initialize
+      projectSelector.value = currentProject;
+      projectSelector.dispatchEvent(new Event('change'));
+      
+      // Resizer functionality
+      setupResizer();
     });
+
+    // Resizer setup
+    function setupResizer() {
+      let isResizing = false;
+      const resizer = document.getElementById('resizer');
+      const sidebar = document.querySelector('.sidebar');
+      const container = document.querySelector('.container');
+
+      resizer.addEventListener('mousedown', (e) => {
+        isResizing = true;
+        resizer.classList.add('resizing');
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (!isResizing) return;
+
+        const containerRect = container.getBoundingClientRect();
+        const newWidth = e.clientX - containerRect.left;
+        const minWidth = 280;
+        const maxWidth = containerRect.width * 0.4;
+
+        if (newWidth >= minWidth && newWidth <= maxWidth) {
+          sidebar.style.width = newWidth + 'px';
+          document.documentElement.style.setProperty('--sidebar-width', newWidth + 'px');
+        }
+      });
+
+      document.addEventListener('mouseup', () => {
+        if (isResizing) {
+          isResizing = false;
+          resizer.classList.remove('resizing');
+          document.body.style.cursor = '';
+          document.body.style.userSelect = '';
+          
+          const currentWidth = sidebar.offsetWidth;
+          localStorage.setItem('spock-sidebar-width', currentWidth);
+        }
+      });
+
+      // Load saved width
+      const savedWidth = localStorage.getItem('spock-sidebar-width');
+      if (savedWidth) {
+        const width = parseInt(savedWidth);
+        if (width >= 280 && width <= window.innerWidth * 0.4) {
+          sidebar.style.width = width + 'px';
+          document.documentElement.style.setProperty('--sidebar-width', width + 'px');
+        }
+      }
+    }
   </script>
 </body>
 </html>
