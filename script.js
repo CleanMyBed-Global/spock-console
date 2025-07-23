@@ -27,7 +27,38 @@ export async function handler(event, context) {
   }
 
   try {
-    const { messages, stream = false } = JSON.parse(event.body);
+    // Parse the request body
+    const requestBody = JSON.parse(event.body);
+    
+    // Handle both old and new formats for backward compatibility
+    let messages, stream = false;
+    
+    if (requestBody.messages) {
+      // New chat format
+      messages = requestBody.messages;
+      stream = requestBody.stream || false;
+    } else if (requestBody.userInput && requestBody.project) {
+      // Old single-query format - convert to new format
+      const projectContexts = {
+        telegram: "You are Spock, the system intelligence for CleanMyBed's Telegram Lead Flow project. Focus on bot development, lead capture, franchisee assignment, and CRM integration.",
+        email: "You are Spock, the system intelligence for CleanMyBed's Email Portal Logging project. Focus on SMTP monitoring, response tracking, and portal analytics.",
+        response: "You are Spock, the system intelligence for CleanMyBed's AI Response Layer. Focus on response optimization, model selection, and performance analytics.",
+        club: "You are Spock, the system intelligence for CleanMyBed Club. Focus on membership logic, benefits tracking, and customer engagement features.",
+        b2b: "You are Spock, the system intelligence for CleanMyBed's B2B Certificate Flow. Focus on certificate generation, compliance tracking, and hospitality integration.",
+        booking: "You are Spock, the system intelligence for CleanMyBed's Booking Engine. Focus on scheduling logic, payment processing, and booking optimization.",
+        spock: "You are Spock, helping to build and improve the Spock Console itself. Focus on chat interfaces, conversation management, Canvas systems, and developer productivity features."
+      };
+      
+      const systemPrompt = projectContexts[requestBody.project] || "You are Spock, the CleanMyBed system intelligence.";
+      
+      messages = [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: requestBody.userInput }
+      ];
+    } else {
+      throw new Error('Invalid request format. Expected either { messages: [...] } or { userInput: "...", project: "..." }');
+    }
+
     const openAiApiKey = process.env.OPENAI_API_KEY;
 
     if (!openAiApiKey) {
@@ -38,11 +69,11 @@ export async function handler(event, context) {
       };
     }
 
-    if (!messages || !Array.isArray(messages)) {
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ error: 'Messages array is required' })
+        body: JSON.stringify({ error: 'Valid messages array is required' })
       };
     }
 
