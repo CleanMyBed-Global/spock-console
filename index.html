@@ -5,18 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Spock Console - Neural Command Interface</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap');
     
     :root {
       --primary-gold: #d4af37;
       --secondary-gold: #f4d03f;
-      --accent-blue: #00d4ff;
       --dark-bg: #0a0a0b;
       --card-bg: rgba(26, 26, 26, 0.95);
-      --glass-bg: rgba(255, 255, 255, 0.05);
-      --border-glow: rgba(212, 175, 55, 0.3);
+      --glass-bg: rgba(255, 255, 255, 0.03);
+      --border-subtle: rgba(212, 175, 55, 0.15);
       --text-primary: #ffffff;
       --text-secondary: #b0b0b0;
+      --text-tertiary: #666;
       --success: #00ff88;
       --warning: #ff6b35;
     }
@@ -29,34 +29,10 @@
     
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: linear-gradient(135deg, #0a0a0b 0%, #1a1a1a 50%, #0f0f10 100%);
+      background: linear-gradient(135deg, #0a0a0b 0%, #161616 100%);
       color: var(--text-primary);
-      overflow: hidden;
       height: 100vh;
-      position: relative;
-    }
-    
-    /* Animated background particles */
-    body::before {
-      content: '';
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: 
-        radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 40% 80%, rgba(212, 175, 55, 0.05) 0%, transparent 50%);
-      animation: float 20s ease-in-out infinite;
-      pointer-events: none;
-      z-index: -1;
-    }
-    
-    @keyframes float {
-      0%, 100% { transform: translateY(0) rotate(0deg); }
-      33% { transform: translateY(-20px) rotate(2deg); }
-      66% { transform: translateY(10px) rotate(-1deg); }
+      overflow: hidden;
     }
     
     .container {
@@ -66,253 +42,180 @@
     }
     
     .sidebar {
-      width: var(--sidebar-width, 420px);
-      min-width: 300px;
-      max-width: 60%;
+      width: var(--sidebar-width, 340px);
+      min-width: 280px;
+      max-width: 45%;
       background: linear-gradient(180deg, var(--card-bg) 0%, rgba(15, 15, 15, 0.98) 100%);
-      backdrop-filter: blur(20px);
-      border-right: 1px solid var(--border-glow);
-      padding: 2rem;
+      backdrop-filter: blur(10px);
+      border-right: 1px solid var(--border-subtle);
+      padding: 1rem;
       overflow-y: auto;
       position: relative;
       flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
     }
     
-    .sidebar::before {
-      content: '';
+    .resizer {
       position: absolute;
       top: 0;
-      right: 0;
-      width: 1px;
+      right: -4px;
+      width: 8px;
       height: 100%;
-      background: linear-gradient(180deg, transparent, var(--primary-gold), transparent);
-      animation: pulse-glow 3s ease-in-out infinite;
+      cursor: col-resize;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.2s ease;
     }
     
-    @keyframes pulse-glow {
-      0%, 100% { opacity: 0.3; }
-      50% { opacity: 1; }
+    .resizer:hover {
+      opacity: 1;
+      background: linear-gradient(180deg, transparent, var(--primary-gold), transparent);
+    }
+    
+    .resizer.resizing {
+      opacity: 1;
+      background: var(--primary-gold);
     }
     
     .logo {
       display: flex;
       align-items: center;
-      gap: 1rem;
-      margin-bottom: 3rem;
-      padding: 1.5rem;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      padding: 0.75rem 1rem;
       background: var(--glass-bg);
-      border: 1px solid var(--border-glow);
-      border-radius: 16px;
-      backdrop-filter: blur(10px);
-      transition: all 0.3s ease;
-    }
-    
-    .logo:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 30px rgba(212, 175, 55, 0.2);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 500;
+      font-size: 0.9rem;
+      color: var(--primary-gold);
+      letter-spacing: 1px;
     }
     
     .logo-icon {
-      font-size: 2rem;
-      background: linear-gradient(135deg, var(--primary-gold), var(--secondary-gold));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: glow-pulse 2s ease-in-out infinite;
-    }
-    
-    @keyframes glow-pulse {
-      0%, 100% { filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.5)); }
-      50% { filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.8)); }
-    }
-    
-    .logo-text {
-      font-family: 'JetBrains Mono', monospace;
-      font-weight: 600;
-      font-size: 1.25rem;
-      letter-spacing: 2px;
-      background: linear-gradient(135deg, var(--text-primary), var(--primary-gold));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      font-size: 1.2rem;
     }
     
     .section {
-      margin-bottom: 2.5rem;
+      margin-bottom: 1.5rem;
+      flex-shrink: 0;
     }
     
     .section-title {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.9rem;
+      font-size: 0.75rem;
       font-weight: 500;
-      color: var(--primary-gold);
+      color: var(--text-tertiary);
       text-transform: uppercase;
-      letter-spacing: 3px;
-      margin-bottom: 1.5rem;
-      position: relative;
-      padding-left: 1rem;
-    }
-    
-    .section-title::before {
-      content: '▸';
-      position: absolute;
-      left: 0;
-      color: var(--accent-blue);
-      animation: blink 2s infinite;
-    }
-    
-    @keyframes blink {
-      0%, 50% { opacity: 1; }
-      51%, 100% { opacity: 0.3; }
+      letter-spacing: 1px;
+      margin-bottom: 0.75rem;
     }
     
     .project-selector {
       position: relative;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1rem;
     }
     
     select {
       width: 100%;
-      padding: 1rem 1.5rem;
+      padding: 0.75rem 1rem;
       background: var(--glass-bg);
-      border: 1px solid var(--border-glow);
-      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
       color: var(--text-primary);
       font-family: 'Inter', sans-serif;
-      font-size: 1rem;
-      backdrop-filter: blur(10px);
-      transition: all 0.3s ease;
+      font-size: 0.9rem;
       appearance: none;
       cursor: pointer;
+      transition: border-color 0.2s ease;
     }
     
     select:focus {
       outline: none;
       border-color: var(--primary-gold);
-      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
-    }
-    
-    select:hover {
-      border-color: var(--secondary-gold);
-      transform: translateY(-1px);
-    }
-    
-    .project-selector::after {
-      content: '⚡';
-      position: absolute;
-      right: 1rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--primary-gold);
-      pointer-events: none;
-      font-size: 1.2rem;
     }
     
     .project-info {
-      background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(0, 212, 255, 0.05));
-      border: 1px solid rgba(212, 175, 55, 0.3);
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin-bottom: 2rem;
-      font-size: 0.9rem;
-      line-height: 1.6;
+      background: rgba(212, 175, 55, 0.05);
+      border: 1px solid rgba(212, 175, 55, 0.1);
+      border-radius: 6px;
+      padding: 0.75rem;
+      font-size: 0.8rem;
+      line-height: 1.4;
       color: var(--text-secondary);
-      position: relative;
-      overflow: hidden;
+      margin-bottom: 1rem;
     }
     
-    .project-info::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background: linear-gradient(90deg, var(--primary-gold), var(--accent-blue), var(--primary-gold));
-      animation: slide 3s ease-in-out infinite;
-    }
-    
-    @keyframes slide {
-      0%, 100% { transform: translateX(-100%); }
-      50% { transform: translateX(100%); }
+    .input-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
     }
     
     .input-container {
-      position: relative;
-      margin-bottom: 2rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 1rem;
     }
     
     textarea {
-      width: 100%;
-      height: 140px;
-      padding: 1.5rem;
+      flex: 1;
+      min-height: 120px;
+      padding: 1rem;
       background: var(--glass-bg);
-      border: 1px solid var(--border-glow);
-      border-radius: 16px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
       color: var(--text-primary);
       font-family: 'Inter', sans-serif;
-      font-size: 1rem;
-      line-height: 1.6;
-      resize: vertical;
-      backdrop-filter: blur(10px);
-      transition: all 0.3s ease;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      resize: none;
+      transition: border-color 0.2s ease;
     }
     
     textarea::placeholder {
-      color: var(--text-secondary);
+      color: var(--text-tertiary);
       font-style: italic;
     }
     
     textarea:focus {
       outline: none;
       border-color: var(--primary-gold);
-      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .controls {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
     }
     
     .send-button {
-      width: 100%;
-      padding: 1.25rem 2rem;
+      flex: 1;
+      padding: 0.75rem 1.5rem;
       background: linear-gradient(135deg, var(--primary-gold), var(--secondary-gold));
       border: none;
-      border-radius: 16px;
+      border-radius: 6px;
       color: var(--dark-bg);
       font-family: 'JetBrains Mono', monospace;
-      font-weight: 600;
-      font-size: 1rem;
-      text-transform: uppercase;
-      letter-spacing: 2px;
+      font-weight: 500;
+      font-size: 0.85rem;
       cursor: pointer;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .send-button::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-      transition: left 0.5s ease;
-    }
-    
-    .send-button:hover::before {
-      left: 100%;
+      transition: all 0.2s ease;
     }
     
     .send-button:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 15px 40px rgba(212, 175, 55, 0.4);
-    }
-    
-    .send-button:active {
       transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
     }
     
     .send-button:disabled {
       background: rgba(255, 255, 255, 0.1);
-      color: var(--text-secondary);
+      color: var(--text-tertiary);
       cursor: not-allowed;
       transform: none;
       box-shadow: none;
@@ -322,244 +225,147 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      padding: 1rem;
-      background: rgba(0, 255, 136, 0.1);
-      border: 1px solid rgba(0, 255, 136, 0.3);
-      border-radius: 12px;
+      padding: 0.5rem 0.75rem;
+      background: rgba(0, 255, 136, 0.08);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      border-radius: 4px;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.85rem;
+      font-size: 0.7rem;
       color: var(--success);
     }
     
     .status-indicator {
-      width: 8px;
-      height: 8px;
+      width: 6px;
+      height: 6px;
       background: var(--success);
       border-radius: 50%;
-      animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.7; transform: scale(1.2); }
-    }
-    
-    .resizer {
-      position: absolute;
-      top: 0;
-      right: -8px;
-      width: 16px;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, var(--primary-gold), transparent);
-      cursor: col-resize;
-      z-index: 1000;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .resizer:hover {
-      opacity: 1;
-    }
-    
-    .resizer::before {
-      content: '⋮⋮';
-      color: var(--primary-gold);
-      font-size: 1.2rem;
-      letter-spacing: -2px;
-      text-shadow: 0 0 10px var(--primary-gold);
-      animation: glow-pulse 2s ease-in-out infinite;
-    }
-    
-    .resizer.resizing {
-      opacity: 1;
-      background: linear-gradient(90deg, rgba(212, 175, 55, 0.2), var(--primary-gold), rgba(212, 175, 55, 0.2));
-      box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
     }
     
     .main {
       flex: 1;
-      min-width: 400px;
+      min-width: 0;
       background: linear-gradient(135deg, rgba(10, 10, 11, 0.95) 0%, rgba(15, 15, 16, 0.95) 100%);
-      backdrop-filter: blur(20px);
-      padding: 2rem;
+      backdrop-filter: blur(10px);
       display: flex;
       flex-direction: column;
       position: relative;
-      overflow: hidden;
-    }
-    
-    .main::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--primary-gold), transparent);
     }
     
     .main-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 2rem;
-      padding-bottom: 1.5rem;
-      border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border-subtle);
+      flex-shrink: 0;
     }
     
     .main-title {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 1.5rem;
-      font-weight: 300;
-      color: var(--text-primary);
-      letter-spacing: 3px;
-      text-transform: uppercase;
+      font-size: 0.9rem;
+      font-weight: 400;
+      color: var(--text-secondary);
+      letter-spacing: 1px;
     }
     
     .neural-indicator {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 0.5rem;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.9rem;
-      color: var(--primary-gold);
-    }
-    
-    .neural-dots {
-      display: flex;
-      gap: 4px;
-    }
-    
-    .neural-dot {
-      width: 6px;
-      height: 6px;
-      background: var(--primary-gold);
-      border-radius: 50%;
-      animation: neural-pulse 1.5s infinite;
-    }
-    
-    .neural-dot:nth-child(2) { animation-delay: 0.2s; }
-    .neural-dot:nth-child(3) { animation-delay: 0.4s; }
-    
-    @keyframes neural-pulse {
-      0%, 100% { opacity: 0.3; transform: scale(1); }
-      50% { opacity: 1; transform: scale(1.5); }
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
     }
     
     .response-container {
       flex: 1;
-      background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(26, 26, 26, 0.6) 100%);
-      border: 1px solid var(--border-glow);
-      border-radius: 20px;
+      min-height: 0;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      margin: 1rem 1.5rem;
       overflow: hidden;
-      position: relative;
-      backdrop-filter: blur(15px);
+      display: flex;
+      flex-direction: column;
     }
     
     .response-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1.5rem 2rem;
-      background: rgba(212, 175, 55, 0.1);
-      border-bottom: 1px solid var(--border-glow);
+      padding: 0.75rem 1.25rem;
+      background: rgba(212, 175, 55, 0.05);
+      border-bottom: 1px solid var(--border-subtle);
+      flex-shrink: 0;
     }
     
     .spock-status {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 0.75rem;
       font-family: 'JetBrains Mono', monospace;
-      font-weight: 600;
-      font-size: 1rem;
+      font-weight: 500;
+      font-size: 0.85rem;
       color: var(--primary-gold);
-      letter-spacing: 2px;
     }
     
     .spock-avatar {
-      width: 32px;
-      height: 32px;
-      background: linear-gradient(135deg, var(--primary-gold), var(--secondary-gold));
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.2rem;
-      animation: rotate 10s linear infinite;
-    }
-    
-    @keyframes rotate {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
+      font-size: 1rem;
     }
     
     .response-actions {
       display: flex;
-      gap: 1rem;
+      gap: 0.5rem;
     }
     
     .action-btn {
-      padding: 0.75rem 1.5rem;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(212, 175, 55, 0.3);
-      border-radius: 10px;
-      color: var(--primary-gold);
+      padding: 0.4rem 0.8rem;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(212, 175, 55, 0.2);
+      border-radius: 4px;
+      color: var(--text-tertiary);
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.85rem;
-      font-weight: 500;
+      font-size: 0.7rem;
       cursor: pointer;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(10px);
+      transition: all 0.2s ease;
     }
     
     .action-btn:hover {
-      background: rgba(212, 175, 55, 0.2);
+      background: rgba(212, 175, 55, 0.1);
       border-color: var(--primary-gold);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(212, 175, 55, 0.3);
+      color: var(--primary-gold);
     }
     
     .response-content {
-      padding: 2rem;
-      height: calc(100% - 80px);
+      flex: 1;
+      min-height: 0;
+      padding: 1.5rem;
       overflow-y: auto;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.95rem;
-      line-height: 1.8;
+      font-size: 0.9rem;
+      line-height: 1.6;
       white-space: pre-wrap;
       color: var(--text-primary);
     }
     
     .code-block {
       background: rgba(0, 0, 0, 0.6);
-      border: 1px solid rgba(212, 175, 55, 0.3);
-      border-left: 4px solid var(--primary-gold);
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin: 1.5rem 0;
+      border: 1px solid rgba(212, 175, 55, 0.2);
+      border-left: 3px solid var(--primary-gold);
+      border-radius: 6px;
+      padding: 1rem;
+      margin: 1rem 0;
       overflow-x: auto;
-      position: relative;
-    }
-    
-    .code-block::before {
-      content: '◉ ◉ ◉';
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      color: var(--primary-gold);
-      font-size: 0.8rem;
+      font-size: 0.85rem;
     }
     
     .inline-code {
-      background: rgba(212, 175, 55, 0.2);
-      border: 1px solid rgba(212, 175, 55, 0.4);
-      padding: 0.3rem 0.6rem;
-      border-radius: 6px;
+      background: rgba(212, 175, 55, 0.15);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      padding: 0.2rem 0.4rem;
+      border-radius: 3px;
       color: var(--secondary-gold);
-      font-weight: 500;
+      font-size: 0.85rem;
     }
     
     .loading {
@@ -567,17 +373,17 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 200px;
-      gap: 2rem;
+      height: 100%;
+      gap: 1rem;
       color: var(--primary-gold);
       text-align: center;
     }
     
     .loading-spinner {
-      width: 60px;
-      height: 60px;
-      border: 3px solid rgba(212, 175, 55, 0.1);
-      border-top: 3px solid var(--primary-gold);
+      width: 32px;
+      height: 32px;
+      border: 2px solid rgba(212, 175, 55, 0.2);
+      border-top: 2px solid var(--primary-gold);
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
@@ -589,69 +395,64 @@
     
     .loading-text {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 1rem;
-      animation: pulse-text 2s ease-in-out infinite;
-    }
-    
-    @keyframes pulse-text {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.6; }
+      font-size: 0.9rem;
+      color: var(--text-secondary);
     }
     
     .error {
       background: rgba(255, 107, 107, 0.1);
       border: 1px solid rgba(255, 107, 107, 0.3);
-      border-left: 4px solid var(--warning);
-      border-radius: 12px;
-      padding: 2rem;
+      border-left: 3px solid var(--warning);
+      border-radius: 6px;
+      padding: 1.5rem;
       color: var(--warning);
       text-align: center;
       font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
     }
     
     .notification {
       position: fixed;
-      top: 2rem;
-      right: 2rem;
+      top: 1rem;
+      right: 1rem;
       background: linear-gradient(135deg, var(--primary-gold), var(--secondary-gold));
       color: var(--dark-bg);
-      padding: 1rem 2rem;
-      border-radius: 12px;
+      padding: 0.75rem 1.25rem;
+      border-radius: 6px;
       font-family: 'JetBrains Mono', monospace;
-      font-weight: 600;
+      font-size: 0.8rem;
+      font-weight: 500;
       z-index: 1000;
-      animation: slide-in 0.5s ease-out;
-      box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+      animation: slide-in 0.3s ease-out;
     }
     
     @keyframes slide-in {
-      from { transform: translateX(100%) translateY(-20px); opacity: 0; }
-      to { transform: translateX(0) translateY(0); opacity: 1; }
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
     }
     
     /* Scrollbar styling */
     ::-webkit-scrollbar {
-      width: 8px;
+      width: 6px;
     }
     
     ::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
     }
     
     ::-webkit-scrollbar-thumb {
-      background: linear-gradient(180deg, var(--primary-gold), var(--secondary-gold));
-      border-radius: 10px;
+      background: rgba(212, 175, 55, 0.3);
+      border-radius: 3px;
     }
     
     ::-webkit-scrollbar-thumb:hover {
-      background: var(--primary-gold);
+      background: rgba(212, 175, 55, 0.5);
     }
     
     /* Responsive design */
     @media (max-width: 1200px) {
       :root {
-        --sidebar-width: 350px;
+        --sidebar-width: 320px;
       }
     }
     
@@ -665,8 +466,12 @@
         max-width: none;
         min-width: auto;
         height: auto;
-        max-height: 50vh;
-        padding: 1.5rem;
+        max-height: 40vh;
+        padding: 1rem;
+      }
+      
+      .input-container {
+        min-height: 80px;
       }
       
       .resizer {
@@ -677,6 +482,14 @@
         min-width: auto;
         flex: 1;
       }
+      
+      .main-header {
+        padding: 0.75rem 1rem;
+      }
+      
+      .response-container {
+        margin: 0.75rem 1rem;
+      }
     }
   </style>
 </head>
@@ -684,9 +497,10 @@
   <div class="container">
     <div class="sidebar">
       <div class="resizer" id="resizer"></div>
+      
       <div class="logo">
-        <div class="spock-avatar">🖖</div>
-        <div class="logo-text">SPOCK</div>
+        <div class="logo-icon">🖖</div>
+        <div>SPOCK CONSOLE</div>
       </div>
       
       <div class="section">
@@ -703,21 +517,23 @@
         </div>
       </div>
       
-      <div class="section">
+      <div class="input-section">
         <div class="section-title">Neural Input</div>
         <div class="input-container">
           <textarea 
             id="userInput" 
-            placeholder="Enter your query for advanced system analysis and code generation..."></textarea>
+            placeholder="Enter your query for system analysis..."></textarea>
         </div>
-        <button class="send-button" onclick="submitToSpock()">
-          <span>Execute Query</span>
-        </button>
+        <div class="controls">
+          <button class="send-button" onclick="submitToSpock()">
+            Execute Query
+          </button>
+        </div>
       </div>
       
       <div class="status">
         <div class="status-indicator"></div>
-        <span>Neural networks online • Ready for input</span>
+        <span>Ready</span>
       </div>
     </div>
     
@@ -725,12 +541,7 @@
       <div class="main-header">
         <div class="main-title">Neural Analysis Interface</div>
         <div class="neural-indicator">
-          <span>Processing</span>
-          <div class="neural-dots">
-            <div class="neural-dot"></div>
-            <div class="neural-dot"></div>
-            <div class="neural-dot"></div>
-          </div>
+          <span>Spock AI Online</span>
         </div>
       </div>
       
@@ -738,20 +549,20 @@
         <div class="response-header">
           <div class="spock-status">
             <div class="spock-avatar">🖖</div>
-            <span>SPOCK NEURAL INTERFACE</span>
+            <span>SPOCK ANALYSIS</span>
           </div>
           <div class="response-actions">
-            <button class="action-btn" onclick="copyToClipboard()">📋 Copy</button>
-            <button class="action-btn" onclick="regenerateResponse()">🔄 Regenerate</button>
-            <button class="action-btn" onclick="resetApiKey()">🔑 Reset Key</button>
+            <button class="action-btn" onclick="copyToClipboard()">Copy</button>
+            <button class="action-btn" onclick="regenerateResponse()">Regenerate</button>
+            <button class="action-btn" onclick="clearResponse()">Clear</button>
           </div>
         </div>
         
         <div class="response-content" id="responseBox">
-          <div style="text-align: center; padding: 4rem 2rem;">
-            <div style="font-size: 3rem; margin-bottom: 2rem; color: var(--primary-gold);">🖖</div>
-            <div style="font-size: 1.2rem; margin-bottom: 1rem; color: var(--primary-gold);">SPOCK NEURAL INTERFACE INITIALIZED</div>
-            <div style="color: var(--text-secondary); line-height: 1.6;">
+          <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+            <div style="font-size: 2rem; margin-bottom: 1rem; color: var(--primary-gold);">🖖</div>
+            <div style="margin-bottom: 1rem;">SPOCK NEURAL INTERFACE INITIALIZED</div>
+            <div style="font-size: 0.85rem; line-height: 1.5;">
               Advanced AI systems online. Neural networks calibrated.<br>
               Ready for complex analysis and code generation.<br><br>
               <em style="color: var(--primary-gold);">"Logic is the beginning of wisdom, not the end."</em>
@@ -763,46 +574,8 @@
   </div>
 
   <script>
-    // Simple API key handling - ask once per session
-    let openAiApiKey = null;
+    // No API key handling needed - using serverless functions!
     const assistantId = "asst_z1ejGukZ2eUJCJeTkpNX3MnD";
-
-    function getApiKey() {
-      if (!openAiApiKey) {
-        openAiApiKey = prompt("🔑 Enter your OpenAI API key (starts with sk-):") || "demo-mode";
-      }
-      return openAiApiKey;
-    }
-
-    // Project context configurations
-    const projectContexts = {
-      telegram: `
-TELEGRAM LEAD FLOW PROJECT CONTEXT:
-- Bot framework: Telegram Bot API
-- Lead capture and qualification system
-- Database: Supabase with lead scoring
-- Webhook integrations for real-time processing
-- Focus: Conversation flows, data validation, CRM integration
-`,
-      email: `
-EMAIL PORTAL LOGGING PROJECT CONTEXT:
-- SMTP monitoring and email tracking
-- Portal authentication via OAuth 2.0
-- Time-series logging in Supabase
-- React-based analytics dashboard
-- Focus: Email throughput, session management, log compression
-`,
-      response: `
-AI RESPONSE LAYER PROJECT CONTEXT:
-- Multi-model AI system (GPT-4, Claude)
-- Response caching with Redis
-- Intent classification and sentiment analysis
-- Context preservation across conversations
-- Focus: Response optimization, token efficiency, A/B testing
-`
-    };
-
-    let currentThreadId = null;
 
     async function submitToSpock() {
       const userInput = document.getElementById('userInput').value.trim();
@@ -815,250 +588,47 @@ AI RESPONSE LAYER PROJECT CONTEXT:
         return;
       }
 
-      const apiKey = getApiKey();
-      
-      if (apiKey === "demo-mode") {
-        displayDemoResponse(userInput, project);
-        return;
-      }
-
       // Disable button and show loading
       setLoadingState(true);
       responseBox.innerHTML = `
         <div class="loading">
           <div class="loading-spinner"></div>
-          <div class="loading-text">Neural networks processing your query...</div>
-          <div style="font-size: 0.9rem; color: var(--text-secondary);">
-            🧠 Analyzing context<br>
-            ⚡ Generating response<br>
-            🔬 Optimizing output
-          </div>
+          <div class="loading-text">Processing neural query...</div>
         </div>
       `;
 
       try {
-        const contextualMessage = `${projectContexts[project]}
-
-USER QUERY: ${userInput}
-
-You are Spock, the virtual co-founder-level system intelligence for CleanMyBed. Operate with Vulcan-like calm and precision.
-
-Provide a structured response with code examples, explanations, and next actions.`;
-
-        const response = await fetch("https://api.openai.com/v1/chat/completions", {
-          method: "POST",
+        // Call our secure Netlify function
+        const response = await fetch('/.netlify/functions/askSpock', {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${apiKey}`
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: "gpt-4o",
-            messages: [
-              { 
-                role: "system", 
-                content: `You are Spock, the virtual co-founder-level system intelligence for CleanMyBed. You operate with Vulcan-like calm and precision.
-
-CORE ROLE:
-- System architect and code reviewer for CleanMyBed's full stack
-- Logic handler for Supabase, Edge Functions, GHL, Telegram, Zoho integrations
-- Clean code advocate - no fluff, only solutions
-- Technical documentation expert
-
-PERSONALITY:
-- Confident but never robotic
-- Structured and logical responses
-- Always provide actionable solutions
-
-TECHNOLOGY STACK:
-- Supabase (database, auth, edge functions)
-- Telegram Bot API integrations
-- GoHighLevel (GHL) CRM workflows
-- Zoho integrations
-- JavaScript/Node.js
-- HTML/CSS frontend systems
-
-OUTPUT FORMAT:
-- Provide clean, readable code blocks
-- Include brief explanations
-- Suggest improvements and optimizations
-- Always end with next recommended actions` 
-              },
-              { role: "user", content: contextualMessage }
-            ],
-            temperature: 0.3,
-            max_tokens: 2000
+            userInput,
+            project
           })
         });
 
         if (!response.ok) {
-          throw new Error(`API Error: ${response.status} ${response.statusText}`);
+          throw new Error(`Server error: ${response.status} ${response.statusText}`);
         }
 
         const data = await response.json();
-        const spockResponse = data.choices[0].message.content;
-        displayResponse(spockResponse);
+        
+        if (data.error) {
+          throw new Error(data.message || data.error);
+        }
+
+        displayResponse(data.response);
         
       } catch (error) {
         console.error('Spock Console Error:', error);
         showError(`Neural Interface Error: ${error.message}`);
-        
-        if (error.message.includes('Incorrect API key') || error.message.includes('401')) {
-          openAiApiKey = null;
-          showError("Invalid API key detected. Execute query again to enter new credentials.");
-        }
       } finally {
         setLoadingState(false);
         document.getElementById('userInput').value = '';
       }
-    }
-
-    function displayDemoResponse(userInput, project) {
-      const demoResponses = {
-        telegram: `**SPOCK NEURAL ANALYSIS - TELEGRAM LEAD FLOW**
-
-Query Analysis: "${userInput}"
-
-\`\`\`javascript
-// Advanced Telegram Lead Processing System
-export async function processTelegramLead(req) {
-  const { message, user_id, chat_id, metadata } = await req.json();
-  
-  // AI-powered lead scoring
-  const leadScore = await calculateLeadScore({
-    message,
-    user_history: await getUserHistory(user_id),
-    engagement_metrics: metadata
-  });
-  
-  // Intelligent message routing
-  const { data, error } = await supabase
-    .from('telegram_leads')
-    .insert({
-      user_id,
-      chat_id, 
-      message,
-      lead_score: leadScore,
-      timestamp: new Date().toISOString(),
-      status: leadScore > 0.7 ? 'high_priority' : 'standard',
-      ai_insights: await generateInsights(message)
-    });
-    
-  return new Response(JSON.stringify({ 
-    success: true, 
-    lead_score: leadScore,
-    next_action: getRecommendedAction(leadScore)
-  }));
-}
-\`\`\`
-
-**NEURAL RECOMMENDATIONS:**
-1. Implement real-time sentiment analysis
-2. Add predictive lead conversion modeling
-3. Create automated follow-up sequences
-4. Integrate with advanced CRM workflows
-
-**LOGIC ASSESSMENT:** Highly optimized architecture detected.`,
-
-        email: `**SPOCK NEURAL ANALYSIS - EMAIL PORTAL LOGGING**
-
-Query Analysis: "${userInput}"
-
-\`\`\`javascript
-// Advanced Email Intelligence System
-class EmailPortalIntelligence {
-  async processEmailEvent(eventData) {
-    const neuralInsights = await this.analyzePattern(eventData);
-    
-    const logEntry = {
-      email_id: eventData.id,
-      event_type: eventData.type,
-      timestamp: new Date(),
-      portal_session: eventData.session_id,
-      success_probability: neuralInsights.success_rate,
-      anomaly_score: neuralInsights.anomaly_detection,
-      optimization_suggestions: neuralInsights.recommendations
-    };
-    
-    // Predictive failure detection
-    if (neuralInsights.failure_risk > 0.8) {
-      await this.triggerPreventiveMeasures(logEntry);
-    }
-    
-    await supabase.from('email_logs').insert(logEntry);
-    
-    return {
-      status: 'processed',
-      insights: neuralInsights,
-      next_optimization: this.getNextOptimization()
-    };
-  }
-}
-\`\`\`
-
-**SYSTEM OPTIMIZATION STATUS:**
-- Neural accuracy: 97.3%
-- Predictive modeling: Active
-- Real-time anomaly detection: Enabled
-- Auto-scaling: Optimized
-
-**RECOMMENDED NEURAL ENHANCEMENTS:**
-1. Machine learning failure prediction
-2. Automated performance optimization
-3. Advanced pattern recognition
-4. Intelligent load balancing`,
-
-        response: `**SPOCK NEURAL ANALYSIS - AI RESPONSE LAYER**
-
-Query Analysis: "${userInput}"
-
-\`\`\`javascript
-// Next-Generation AI Response Architecture
-class AdvancedSpockResponseLayer {
-  constructor() {
-    this.neuralModels = ['gpt-4o', 'claude-sonnet', 'custom-spock'];
-    this.quantumCache = new QuantumCache();
-    this.logicEngine = new VulcanLogicProcessor();
-  }
-
-  async generateOptimalResponse(query, context) {
-    // Multi-model ensemble processing
-    const responses = await Promise.all(
-      this.neuralModels.map(model => 
-        this.processWithModel(model, query, context)
-      )
-    );
-    
-    // Vulcan logic synthesis
-    const synthesizedResponse = await this.logicEngine.synthesize(responses);
-    
-    // Quantum optimization
-    const optimizedOutput = await this.quantumCache.optimize(synthesizedResponse);
-    
-    return {
-      response: optimizedOutput,
-      confidence: this.calculateLogicConfidence(optimizedOutput),
-      efficiency_score: this.measureQuantumEfficiency(),
-      neural_pathways: this.getActivatedPathways()
-    };
-  }
-}
-\`\`\`
-
-**NEURAL PERFORMANCE METRICS:**
-- Logic processing: 99.2% accuracy
-- Quantum optimization: 15% efficiency gain
-- Multi-model synthesis: Active
-- Vulcan logic validation: Passed
-
-**ADVANCED OPTIMIZATION QUEUE:**
-1. Implement quantum entanglement caching
-2. Deploy neural pathway optimization
-3. Enhance Vulcan logic processing
-4. Activate predictive response modeling`
-      };
-
-      const demoResponse = demoResponses[project] || "Neural demo mode active. Please provide OpenAI credentials for full AI capabilities.";
-      displayResponse(demoResponse);
     }
 
     function displayResponse(response) {
@@ -1066,7 +636,7 @@ class AdvancedSpockResponseLayer {
       const formattedResponse = formatResponse(response);
       
       responseBox.innerHTML = `
-        <div style="padding: 2rem;">
+        <div style="padding: 0;">
           ${formattedResponse}
         </div>
       `;
@@ -1086,9 +656,9 @@ class AdvancedSpockResponseLayer {
       const textContent = responseContent.innerText;
       
       navigator.clipboard.writeText(textContent).then(() => {
-        showNotification('Neural data copied to quantum clipboard!');
+        showNotification('Response copied to clipboard');
       }).catch(() => {
-        showNotification('Copy operation failed - manual selection required');
+        showNotification('Copy failed - please select manually');
       });
     }
 
@@ -1100,26 +670,30 @@ class AdvancedSpockResponseLayer {
       }
     }
 
-    function resetApiKey() {
-      openAiApiKey = null;
-      showNotification('Neural credentials reset. Next query will request new authentication.');
+    function clearResponse() {
+      const responseBox = document.getElementById('responseBox');
+      responseBox.innerHTML = `
+        <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+          <div style="font-size: 2rem; margin-bottom: 1rem; color: var(--primary-gold);">🖖</div>
+          <div style="margin-bottom: 1rem;">Ready for new neural input</div>
+          <div style="font-size: 0.85rem;">Enter a query to begin analysis</div>
+        </div>
+      `;
     }
 
     function setLoadingState(isLoading) {
       const button = document.querySelector('.send-button');
       button.disabled = isLoading;
-      button.innerHTML = isLoading ? 
-        '<span>Processing Neural Data...</span>' : 
-        '<span>Execute Query</span>';
+      button.textContent = isLoading ? "Processing..." : "Execute Query";
     }
 
     function showError(message) {
       const responseBox = document.getElementById('responseBox');
       responseBox.innerHTML = `
         <div class="error">
-          <div style="font-size: 2rem; margin-bottom: 1rem;">⚠️</div>
-          <div style="font-size: 1.1rem; margin-bottom: 1rem;">Neural Interface Error</div>
-          <div>${message}</div>
+          <div style="font-size: 1.5rem; margin-bottom: 1rem;">⚠️</div>
+          <div style="margin-bottom: 0.5rem;">Neural Interface Error</div>
+          <div style="font-size: 0.85rem;">${message}</div>
         </div>
       `;
     }
@@ -1132,7 +706,7 @@ class AdvancedSpockResponseLayer {
       
       setTimeout(() => {
         notification.remove();
-      }, 4000);
+      }, 3000);
     }
 
     // Resizable pane functionality
@@ -1153,8 +727,8 @@ class AdvancedSpockResponseLayer {
 
       const containerRect = container.getBoundingClientRect();
       const newWidth = e.clientX - containerRect.left;
-      const minWidth = 300;
-      const maxWidth = containerRect.width * 0.6;
+      const minWidth = 280;
+      const maxWidth = containerRect.width * 0.45;
 
       if (newWidth >= minWidth && newWidth <= maxWidth) {
         sidebar.style.width = newWidth + 'px';
@@ -1169,7 +743,6 @@ class AdvancedSpockResponseLayer {
         document.body.style.cursor = '';
         document.body.style.userSelect = '';
         
-        // Save the width preference
         const currentWidth = sidebar.offsetWidth;
         localStorage.setItem('spock-sidebar-width', currentWidth);
       }
@@ -1179,7 +752,7 @@ class AdvancedSpockResponseLayer {
     const savedWidth = localStorage.getItem('spock-sidebar-width');
     if (savedWidth) {
       const width = parseInt(savedWidth);
-      if (width >= 300 && width <= window.innerWidth * 0.6) {
+      if (width >= 280 && width <= window.innerWidth * 0.45) {
         sidebar.style.width = width + 'px';
         document.documentElement.style.setProperty('--sidebar-width', width + 'px');
       }
@@ -1194,7 +767,7 @@ class AdvancedSpockResponseLayer {
       });
       
       textarea.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
+        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
           e.preventDefault();
           submitToSpock();
         }
@@ -1203,9 +776,9 @@ class AdvancedSpockResponseLayer {
       document.getElementById('projectSelector').addEventListener('change', function() {
         const projectInfo = document.getElementById('projectInfo');
         const descriptions = {
-          telegram: "Advanced Telegram Lead Flow - Neural lead capture with AI-powered qualification and predictive scoring systems",
-          email: "Intelligent Email Portal Logging - Real-time monitoring with quantum optimization and predictive failure detection", 
-          response: "Next-Gen AI Response Layer - Multi-model synthesis with Vulcan logic processing and quantum efficiency optimization"
+          telegram: "Advanced lead capture with AI-powered qualification and predictive scoring",
+          email: "Real-time monitoring with optimization and predictive failure detection", 
+          response: "Multi-model synthesis with logic processing and efficiency optimization"
         };
         projectInfo.textContent = descriptions[this.value];
       });
