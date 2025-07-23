@@ -1,16 +1,15 @@
-// Spock Console - Production Script
+// Spock Console - Browser-Ready Production Script
 const assistantId = "asst_z1ejGukZ2eUJCJeTkpNX3MnD"; // Your actual Assistant ID
 
-// Secure API key handling - no hardcoded keys in code
-let openAiApiKey;
+// Browser-compatible API key handling
+let openAiApiKey = localStorage.getItem('spock_openai_key');
 
-// Try to get API key from environment variables (Netlify) or prompt user
-if (typeof process !== 'undefined' && process.env && process.env.OPENAI_API_KEY) {
-  openAiApiKey = process.env.OPENAI_API_KEY;
-} else {
-  // For local testing or when environment variables aren't available
+if (!openAiApiKey) {
   openAiApiKey = prompt("🔑 Enter your OpenAI API key (starts with sk-):") || "demo-mode";
-  if (openAiApiKey === "demo-mode") {
+  if (openAiApiKey !== "demo-mode" && openAiApiKey.startsWith('sk-')) {
+    localStorage.setItem('spock_openai_key', openAiApiKey);
+    console.log("✅ API key saved for future sessions");
+  } else if (openAiApiKey === "demo-mode") {
     alert("⚠️ Demo mode - Spock responses will be simulated");
   }
 }
@@ -56,6 +55,12 @@ async function submitToSpock() {
     return;
   }
 
+  // Check if we're in demo mode
+  if (openAiApiKey === "demo-mode") {
+    displayDemoResponse(userInput, project);
+    return;
+  }
+
   // Disable button and show loading
   setLoadingState(true);
   responseBox.innerHTML = `<div class="loading">Spock is analyzing your request...
@@ -89,10 +94,119 @@ Provide a structured response with code examples, explanations, and next actions
   } catch (error) {
     console.error('Spock Console Error:', error);
     showError(`System Error: ${error.message}`);
+    
+    // If auth error, clear stored key
+    if (error.message.includes('Incorrect API key') || error.message.includes('authentication')) {
+      localStorage.removeItem('spock_openai_key');
+      showError("Invalid API key. Please refresh the page to enter a new one.");
+    }
   } finally {
     setLoadingState(false);
     document.getElementById('userInput').value = '';
   }
+}
+
+function displayDemoResponse(userInput, project) {
+  const demoResponses = {
+    telegram: `**SPOCK ANALYSIS - TELEGRAM LEAD FLOW**
+
+Query: "${userInput}"
+
+\`\`\`javascript
+// Supabase Edge Function for Telegram Lead Processing
+export async function handler(req) {
+  const { message, user_id, chat_id } = await req.json();
+  
+  // Log incoming message
+  const { data, error } = await supabase
+    .from('telegram_leads')
+    .insert({
+      user_id,
+      chat_id, 
+      message,
+      timestamp: new Date().toISOString(),
+      status: 'new'
+    });
+    
+  return new Response(JSON.stringify({ success: true }));
+}
+\`\`\`
+
+**SPOCK RECOMMENDATION:**
+This demonstrates basic lead capture structure. Next actions:
+1. Add validation for message content
+2. Implement lead scoring algorithm
+3. Connect to CRM pipeline
+
+*Logic is the beginning of wisdom, not the end.*`,
+
+    email: `**SPOCK ANALYSIS - EMAIL PORTAL LOGGING**
+
+Query: "${userInput}"
+
+\`\`\`javascript
+// Email Portal Logger
+async function logEmailEvent(eventData) {
+  const logEntry = {
+    email_id: eventData.id,
+    event_type: eventData.type,
+    timestamp: new Date(),
+    portal_session: eventData.session_id,
+    success_rate: calculateSuccessRate()
+  };
+  
+  await supabase
+    .from('email_logs')
+    .insert(logEntry);
+}
+\`\`\`
+
+**SYSTEM STATUS:** Optimal
+- Email throughput: 1,247/day
+- Portal success: 89%
+- Response time: 156ms
+
+**NEXT ACTIONS:**
+1. Implement real-time alerts
+2. Add deduplication logic
+3. Optimize storage compression`,
+
+    response: `**SPOCK ANALYSIS - AI RESPONSE LAYER**
+
+Query: "${userInput}"
+
+\`\`\`javascript
+// AI Response Handler
+class SpockResponseLayer {
+  async generateResponse(query, context) {
+    const response = await this.callPrimaryModel(query);
+    
+    // Cache for optimization
+    await this.cacheResponse(query, response);
+    
+    return {
+      response,
+      confidence: this.calculateConfidence(response),
+      latency: this.measureLatency(),
+      tokens_used: this.countTokens(response)
+    };
+  }
+}
+\`\`\`
+
+**PERFORMANCE METRICS:**
+- Success rate: 98.7%
+- Avg response: 342ms
+- Cache hit ratio: 76%
+
+**OPTIMIZATION QUEUE:**
+1. Fine-tune response templates
+2. Implement A/B testing
+3. Reduce token usage by 15%`
+  };
+
+  const demoResponse = demoResponses[project] || "Demo mode active. Please add your OpenAI API key for full functionality.";
+  displayResponse(demoResponse);
 }
 
 async function createThread() {
@@ -105,12 +219,16 @@ async function createThread() {
     }
   });
   
+  if (!response.ok) {
+    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+  }
+  
   const data = await response.json();
   return data.id;
 }
 
 async function addMessageToThread(threadId, content) {
-  await fetch(`https://api.openai.com/v1/threads/${threadId}/messages`, {
+  const response = await fetch(`https://api.openai.com/v1/threads/${threadId}/messages`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -122,6 +240,10 @@ async function addMessageToThread(threadId, content) {
       content: content
     })
   });
+  
+  if (!response.ok) {
+    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+  }
 }
 
 async function runAssistant(threadId) {
@@ -137,6 +259,10 @@ async function runAssistant(threadId) {
     })
   });
   
+  if (!response.ok) {
+    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+  }
+  
   const data = await response.json();
   return data.id;
 }
@@ -149,6 +275,10 @@ async function pollForCompletion(threadId, runId) {
         "OpenAI-Beta": "assistants=v2"
       }
     });
+    
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    }
     
     const run = await response.json();
     
@@ -171,6 +301,10 @@ async function getLatestMessage(threadId) {
     }
   });
   
+  if (!response.ok) {
+    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+  }
+  
   const data = await response.json();
   return data.data[0].content[0].text.value;
 }
@@ -187,6 +321,7 @@ function displayResponse(response) {
       <div class="response-actions">
         <button onclick="copyToClipboard()" class="action-btn">📋 Copy</button>
         <button onclick="regenerateResponse()" class="action-btn">🔄 Regenerate</button>
+        <button onclick="clearApiKey()" class="action-btn">🔑 Reset Key</button>
       </div>
     </div>
     <div class="response-content">${formattedResponse}</div>
@@ -218,6 +353,11 @@ function regenerateResponse() {
     document.getElementById('userInput').value = lastInput;
     submitToSpock();
   }
+}
+
+function clearApiKey() {
+  localStorage.removeItem('spock_openai_key');
+  showNotification('API key cleared. Refresh to enter a new one.');
 }
 
 function setLoadingState(isLoading) {
@@ -271,4 +411,11 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Initialize first project description
   document.getElementById('projectSelector').dispatchEvent(new Event('change'));
+  
+  // Show API key status
+  if (openAiApiKey === "demo-mode") {
+    console.log("🚀 Spock Console loaded in demo mode");
+  } else {
+    console.log("🔑 Spock Console loaded with API key");
+  }
 });
