@@ -1,354 +1,165 @@
-// Spock Console - Simple Browser Version
-const assistantId = "asst_z1ejGukZ2eUJCJeTkpNX3MnD";
+// netlify/functions/askSpock.js - Updated for Chat Interface
+export async function handler(event, context) {
+  // CORS headers for browser requests
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Content-Type': 'application/json'
+  };
 
-// Simple API key handling - ask once per session
-let openAiApiKey = null;
-
-function getApiKey() {
-  if (!openAiApiKey) {
-    openAiApiKey = prompt("🔑 Enter your OpenAI API key (starts with sk-):") || "demo-mode";
-  }
-  return openAiApiKey;
-}
-
-// Project context configurations
-const projectContexts = {
-  telegram: `
-TELEGRAM LEAD FLOW PROJECT CONTEXT:
-- Bot framework: Telegram Bot API
-- Lead capture and qualification system
-- Database: Supabase with lead scoring
-- Webhook integrations for real-time processing
-- Focus: Conversation flows, data validation, CRM integration
-`,
-  email: `
-EMAIL PORTAL LOGGING PROJECT CONTEXT:
-- SMTP monitoring and email tracking
-- Portal authentication via OAuth 2.0
-- Time-series logging in Supabase
-- React-based analytics dashboard
-- Focus: Email throughput, session management, log compression
-`,
-  response: `
-AI RESPONSE LAYER PROJECT CONTEXT:
-- Multi-model AI system (GPT-4, Claude)
-- Response caching with Redis
-- Intent classification and sentiment analysis
-- Context preservation across conversations
-- Focus: Response optimization, token efficiency, A/B testing
-`
-};
-
-let currentThreadId = null;
-
-async function submitToSpock() {
-  const userInput = document.getElementById('userInput').value.trim();
-  const project = document.getElementById('projectSelector').value;
-  const responseBox = document.getElementById('responseBox');
-  const button = document.querySelector('button');
-  
-  if (!userInput) {
-    showError("Please enter a query for Spock to analyze.");
-    return;
+  // Handle preflight requests
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers,
+      body: ''
+    };
   }
 
-  const apiKey = getApiKey();
-  
-  if (apiKey === "demo-mode") {
-    displayDemoResponse(userInput, project);
-    return;
+  // Only allow POST requests
+  if (event.httpMethod !== 'POST') {
+    return {
+      statusCode: 405,
+      headers,
+      body: JSON.stringify({ error: 'Method not allowed' })
+    };
   }
-
-  // Disable button and show loading
-  setLoadingState(true);
-  responseBox.innerHTML = `<div class="loading">Spock is analyzing your request...
-  
-🔍 Scanning project parameters...
-⚡ Accessing system data...
-🧠 Generating response...</div>`;
 
   try {
-    // Use simple chat completions instead of assistants for reliability
-    const contextualMessage = `${projectContexts[project]}
+    const { messages, stream = false } = JSON.parse(event.body);
+    const openAiApiKey = process.env.OPENAI_API_KEY;
 
-USER QUERY: ${userInput}
+    if (!openAiApiKey) {
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ error: 'OpenAI API key not configured' })
+      };
+    }
 
-You are Spock, the virtual co-founder-level system intelligence for CleanMyBed. Operate with Vulcan-like calm and precision.
+    if (!messages || !Array.isArray(messages)) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: 'Messages array is required' })
+      };
+    }
 
-Provide a structured response with code examples, explanations, and next actions.`;
+    // Enhanced system message for better Spock responses
+    const enhancedMessages = messages.map((message, index) => {
+      if (message.role === 'system' && index === 0) {
+        return {
+          ...message,
+          content: `${message.content}
 
+CORE SPOCK TRAITS:
+- Vulcan-like calm and precision in all responses
+- Logical analysis with practical solutions
+- Clear, structured communication
+- Code examples when relevant
+- Always end with logical next steps
+
+RESPONSE FORMAT:
+- Be concise but thorough
+- Use proper formatting for code blocks
+- Provide actionable guidance
+- Maintain professional technical tone
+- Reference previous context when relevant
+
+TECHNOLOGY EXPERTISE:
+- Supabase (database, auth, edge functions, storage)
+- JavaScript/Node.js/React development
+- Telegram Bot API and webhook handling
+- Email systems and SMTP integration
+- AI/ML model integration and optimization
+- System architecture and database design
+- API development and integration patterns
+- Modern web development practices
+
+Remember: You are having an ongoing conversation. Build upon previous messages and maintain context.`
+        };
+      }
+      return message;
+    });
+
+    // Call OpenAI Chat Completions API
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`
+        "Authorization": `Bearer ${openAiApiKey}`
       },
       body: JSON.stringify({
         model: "gpt-4o",
-        messages: [
-          { 
-            role: "system", 
-            content: `You are Spock, the virtual co-founder-level system intelligence for CleanMyBed. You operate with Vulcan-like calm and precision.
-
-CORE ROLE:
-- System architect and code reviewer for CleanMyBed's full stack
-- Logic handler for Supabase, Edge Functions, GHL, Telegram, Zoho integrations
-- Clean code advocate - no fluff, only solutions
-- Technical documentation expert
-
-PERSONALITY:
-- Confident but never robotic
-- Structured and logical responses
-- Always provide actionable solutions
-
-TECHNOLOGY STACK:
-- Supabase (database, auth, edge functions)
-- Telegram Bot API integrations
-- GoHighLevel (GHL) CRM workflows
-- Zoho integrations
-- JavaScript/Node.js
-- HTML/CSS frontend systems
-
-OUTPUT FORMAT:
-- Provide clean, readable code blocks
-- Include brief explanations
-- Suggest improvements and optimizations
-- Always end with next recommended actions` 
-          },
-          { role: "user", content: contextualMessage }
-        ],
+        messages: enhancedMessages,
         temperature: 0.3,
-        max_tokens: 2000
+        max_tokens: 2000,
+        presence_penalty: 0.1,
+        frequency_penalty: 0.1,
+        stream: stream
       })
     });
 
     if (!response.ok) {
-      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(`OpenAI API error: ${response.status} ${response.statusText} - ${errorData.error?.message || 'Unknown error'}`);
     }
 
     const data = await response.json();
-    const spockResponse = data.choices[0].message.content;
-    displayResponse(spockResponse);
-    
-  } catch (error) {
-    console.error('Spock Console Error:', error);
-    showError(`System Error: ${error.message}`);
-    
-    if (error.message.includes('Incorrect API key') || error.message.includes('401')) {
-      openAiApiKey = null; // Reset so user can enter new key
-      showError("Invalid API key. Click Send to try again with a new key.");
+
+    // Validate response structure
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      throw new Error('Invalid response structure from OpenAI API');
     }
-  } finally {
-    setLoadingState(false);
-    document.getElementById('userInput').value = '';
-  }
-}
 
-function displayDemoResponse(userInput, project) {
-  const demoResponses = {
-    telegram: `**SPOCK ANALYSIS - TELEGRAM LEAD FLOW**
+    const spockResponse = data.choices[0].message.content;
 
-Query: "${userInput}"
+    // Enhanced response with metadata
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        response: spockResponse,
+        metadata: {
+          model: data.model,
+          usage: data.usage,
+          timestamp: new Date().toISOString(),
+          conversation_length: messages.length
+        }
+      })
+    };
 
-\`\`\`javascript
-// Supabase Edge Function for Telegram Lead Processing
-export async function handler(req) {
-  const { message, user_id, chat_id } = await req.json();
-  
-  // Log incoming message
-  const { data, error } = await supabase
-    .from('telegram_leads')
-    .insert({
-      user_id,
-      chat_id, 
-      message,
-      timestamp: new Date().toISOString(),
-      status: 'new'
-    });
+  } catch (error) {
+    console.error('Spock function error:', error);
     
-  return new Response(JSON.stringify({ success: true }));
-}
-\`\`\`
+    // Enhanced error handling with specific error types
+    let errorMessage = 'Internal server error';
+    let statusCode = 500;
 
-**SPOCK RECOMMENDATION:**
-This demonstrates basic lead capture structure. Next actions:
-1. Add validation for message content
-2. Implement lead scoring algorithm
-3. Connect to CRM pipeline
-
-*Logic is the beginning of wisdom, not the end.*`,
-
-    email: `**SPOCK ANALYSIS - EMAIL PORTAL LOGGING**
-
-Query: "${userInput}"
-
-\`\`\`javascript
-// Email Portal Logger
-async function logEmailEvent(eventData) {
-  const logEntry = {
-    email_id: eventData.id,
-    event_type: eventData.type,
-    timestamp: new Date(),
-    portal_session: eventData.session_id,
-    success_rate: calculateSuccessRate()
-  };
-  
-  await supabase
-    .from('email_logs')
-    .insert(logEntry);
-}
-\`\`\`
-
-**SYSTEM STATUS:** Optimal
-- Email throughput: 1,247/day
-- Portal success: 89%
-- Response time: 156ms
-
-**NEXT ACTIONS:**
-1. Implement real-time alerts
-2. Add deduplication logic
-3. Optimize storage compression`,
-
-    response: `**SPOCK ANALYSIS - AI RESPONSE LAYER**
-
-Query: "${userInput}"
-
-\`\`\`javascript
-// AI Response Handler
-class SpockResponseLayer {
-  async generateResponse(query, context) {
-    const response = await this.callPrimaryModel(query);
-    
-    // Cache for optimization
-    await this.cacheResponse(query, response);
+    if (error.message.includes('API key')) {
+      errorMessage = 'Authentication failed - check API key configuration';
+      statusCode = 401;
+    } else if (error.message.includes('rate limit')) {
+      errorMessage = 'Rate limit exceeded - please try again in a moment';
+      statusCode = 429;
+    } else if (error.message.includes('OpenAI API error')) {
+      errorMessage = error.message;
+      statusCode = 502;
+    } else if (error.message.includes('Messages array')) {
+      errorMessage = 'Invalid request format';
+      statusCode = 400;
+    }
     
     return {
-      response,
-      confidence: this.calculateConfidence(response),
-      latency: this.measureLatency(),
-      tokens_used: this.countTokens(response)
+      statusCode: statusCode,
+      headers,
+      body: JSON.stringify({ 
+        error: errorMessage,
+        message: error.message,
+        timestamp: new Date().toISOString()
+      })
     };
   }
 }
-\`\`\`
-
-**PERFORMANCE METRICS:**
-- Success rate: 98.7%
-- Avg response: 342ms
-- Cache hit ratio: 76%
-
-**OPTIMIZATION QUEUE:**
-1. Fine-tune response templates
-2. Implement A/B testing
-3. Reduce token usage by 15%`
-  };
-
-  const demoResponse = demoResponses[project] || "Demo mode active. Please add your OpenAI API key for full functionality.";
-  displayResponse(demoResponse);
-}
-
-function displayResponse(response) {
-  const responseBox = document.getElementById('responseBox');
-  
-  // Format the response with syntax highlighting
-  const formattedResponse = formatResponse(response);
-  
-  responseBox.innerHTML = `
-    <div class="response-header">
-      <div class="spock-status">🖖 SPOCK RESPONSE</div>
-      <div class="response-actions">
-        <button onclick="copyToClipboard()" class="action-btn">📋 Copy</button>
-        <button onclick="regenerateResponse()" class="action-btn">🔄 Regenerate</button>
-        <button onclick="resetApiKey()" class="action-btn">🔑 Reset Key</button>
-      </div>
-    </div>
-    <div class="response-content">${formattedResponse}</div>
-  `;
-}
-
-function formatResponse(text) {
-  // Basic markdown-like formatting
-  return text
-    .replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre class="code-block"><code>$2</code></pre>')
-    .replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .replace(/\n/g, '<br>');
-}
-
-function copyToClipboard() {
-  const responseContent = document.querySelector('.response-content');
-  const textContent = responseContent.innerText;
-  
-  navigator.clipboard.writeText(textContent).then(() => {
-    showNotification('Response copied to clipboard!');
-  }).catch(() => {
-    showNotification('Copy failed - please select and copy manually');
-  });
-}
-
-function regenerateResponse() {
-  const lastInput = document.getElementById('userInput').getAttribute('data-last-input');
-  if (lastInput) {
-    document.getElementById('userInput').value = lastInput;
-    submitToSpock();
-  }
-}
-
-function resetApiKey() {
-  openAiApiKey = null;
-  showNotification('API key reset. Next query will prompt for new key.');
-}
-
-function setLoadingState(isLoading) {
-  const button = document.querySelector('button');
-  button.disabled = isLoading;
-  button.textContent = isLoading ? "Processing..." : "Send";
-}
-
-function showError(message) {
-  const responseBox = document.getElementById('responseBox');
-  responseBox.innerHTML = `<div class="error">❌ ${message}</div>`;
-}
-
-function showNotification(message) {
-  const notification = document.createElement('div');
-  notification.className = 'notification';
-  notification.textContent = message;
-  document.body.appendChild(notification);
-  
-  setTimeout(() => {
-    notification.remove();
-  }, 3000);
-}
-
-// Event listeners
-document.addEventListener('DOMContentLoaded', function() {
-  // Store last input for regeneration
-  const textarea = document.getElementById('userInput');
-  textarea.addEventListener('input', function() {
-    this.setAttribute('data-last-input', this.value);
-  });
-  
-  // Enter key submission
-  textarea.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      submitToSpock();
-    }
-  });
-  
-  // Project selector updates
-  document.getElementById('projectSelector').addEventListener('change', function() {
-    const projectInfo = document.getElementById('projectInfo');
-    const descriptions = {
-      telegram: "Telegram Lead Flow - Automated lead capture and qualification via bot integration",
-      email: "Email Portal Logging - Email tracking and portal access monitoring system", 
-      response: "AI Response Layer - Intelligent response generation and routing system"
-    };
-    projectInfo.textContent = descriptions[this.value];
-  });
-  
-  // Initialize first project description
-  document.getElementById('projectSelector').dispatchEvent(new Event('change'));
-});
