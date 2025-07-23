@@ -1,6 +1,5 @@
-// netlify/functions/askSpock.js - Updated for Chat Interface
+// netlify/functions/askSpock.js
 export async function handler(event, context) {
-  // CORS headers for browser requests
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
@@ -8,16 +7,10 @@ export async function handler(event, context) {
     'Content-Type': 'application/json'
   };
 
-  // Handle preflight requests
   if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers,
-      body: ''
-    };
+    return { statusCode: 200, headers, body: '' };
   }
 
-  // Only allow POST requests
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
@@ -27,99 +20,29 @@ export async function handler(event, context) {
   }
 
   try {
-    // Parse the request body
-    const requestBody = JSON.parse(event.body);
-    
-    // DEBUG: Log what we received
-    console.log('=== SPOCK FUNCTION DEBUG ===');
-    console.log('Received body:', JSON.stringify(requestBody, null, 2));
-    console.log('Body keys:', Object.keys(requestBody));
-    
-    // Handle both old and new formats for backward compatibility
-    let messages, stream = false;
-    
-    if (requestBody.messages) {
-      // New chat format
-      messages = requestBody.messages;
-      stream = requestBody.stream || false;
-    } else if (requestBody.userInput && requestBody.project) {
-      // Old single-query format - convert to new format
-      const projectContexts = {
-        telegram: "You are Spock, the system intelligence for CleanMyBed's Telegram Lead Flow project. Focus on bot development, lead capture, franchisee assignment, and CRM integration.",
-        email: "You are Spock, the system intelligence for CleanMyBed's Email Portal Logging project. Focus on SMTP monitoring, response tracking, and portal analytics.",
-        response: "You are Spock, the system intelligence for CleanMyBed's AI Response Layer. Focus on response optimization, model selection, and performance analytics.",
-        club: "You are Spock, the system intelligence for CleanMyBed Club. Focus on membership logic, benefits tracking, and customer engagement features.",
-        b2b: "You are Spock, the system intelligence for CleanMyBed's B2B Certificate Flow. Focus on certificate generation, compliance tracking, and hospitality integration.",
-        booking: "You are Spock, the system intelligence for CleanMyBed's Booking Engine. Focus on scheduling logic, payment processing, and booking optimization.",
-        spock: "You are Spock, helping to build and improve the Spock Console itself. Focus on chat interfaces, conversation management, Canvas systems, and developer productivity features."
-      };
-      
-      const systemPrompt = projectContexts[requestBody.project] || "You are Spock, the CleanMyBed system intelligence.";
-      
-      messages = [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: requestBody.userInput }
-      ];
-    } else {
-      throw new Error('Invalid request format. Expected either { messages: [...] } or { userInput: "...", project: "..." }');
-    }
-
+    const body = JSON.parse(event.body);
     const openAiApiKey = process.env.OPENAI_API_KEY;
 
     if (!openAiApiKey) {
       return {
         statusCode: 500,
         headers,
-        body: JSON.stringify({ error: 'OpenAI API key not configured' })
+        body: JSON.stringify({ error: 'API key not configured' })
       };
     }
 
-    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+    // Handle the messages array from the new chat interface
+    const messages = body.messages || [];
+    
+    if (messages.length === 0) {
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ error: 'Valid messages array is required' })
+        body: JSON.stringify({ error: 'No messages provided' })
       };
     }
 
-    // Enhanced system message for better Spock responses
-    const enhancedMessages = messages.map((message, index) => {
-      if (message.role === 'system' && index === 0) {
-        return {
-          ...message,
-          content: `${message.content}
-
-CORE SPOCK TRAITS:
-- Vulcan-like calm and precision in all responses
-- Logical analysis with practical solutions
-- Clear, structured communication
-- Code examples when relevant
-- Always end with logical next steps
-
-RESPONSE FORMAT:
-- Be concise but thorough
-- Use proper formatting for code blocks
-- Provide actionable guidance
-- Maintain professional technical tone
-- Reference previous context when relevant
-
-TECHNOLOGY EXPERTISE:
-- Supabase (database, auth, edge functions, storage)
-- JavaScript/Node.js/React development
-- Telegram Bot API and webhook handling
-- Email systems and SMTP integration
-- AI/ML model integration and optimization
-- System architecture and database design
-- API development and integration patterns
-- Modern web development practices
-
-Remember: You are having an ongoing conversation. Build upon previous messages and maintain context.`
-        };
-      }
-      return message;
-    });
-
-    // Call OpenAI Chat Completions API
+    // Call OpenAI
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -128,73 +51,35 @@ Remember: You are having an ongoing conversation. Build upon previous messages a
       },
       body: JSON.stringify({
         model: "gpt-4o",
-        messages: enhancedMessages,
+        messages: messages,
         temperature: 0.3,
-        max_tokens: 2000,
-        presence_penalty: 0.1,
-        frequency_penalty: 0.1,
-        stream: stream
+        max_tokens: 2000
       })
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(`OpenAI API error: ${response.status} ${response.statusText} - ${errorData.error?.message || 'Unknown error'}`);
+      throw new Error(`OpenAI API error: ${response.status}`);
     }
 
     const data = await response.json();
 
-    // Validate response structure
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      throw new Error('Invalid response structure from OpenAI API');
-    }
-
-    const spockResponse = data.choices[0].message.content;
-
-    // Enhanced response with metadata
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify({
         success: true,
-        response: spockResponse,
-        metadata: {
-          model: data.model,
-          usage: data.usage,
-          timestamp: new Date().toISOString(),
-          conversation_length: messages.length
-        }
+        response: data.choices[0].message.content
       })
     };
 
   } catch (error) {
-    console.error('Spock function error:', error);
-    
-    // Enhanced error handling with specific error types
-    let errorMessage = 'Internal server error';
-    let statusCode = 500;
-
-    if (error.message.includes('API key')) {
-      errorMessage = 'Authentication failed - check API key configuration';
-      statusCode = 401;
-    } else if (error.message.includes('rate limit')) {
-      errorMessage = 'Rate limit exceeded - please try again in a moment';
-      statusCode = 429;
-    } else if (error.message.includes('OpenAI API error')) {
-      errorMessage = error.message;
-      statusCode = 502;
-    } else if (error.message.includes('Messages array')) {
-      errorMessage = 'Invalid request format';
-      statusCode = 400;
-    }
-    
+    console.error('Function error:', error);
     return {
-      statusCode: statusCode,
+      statusCode: 500,
       headers,
       body: JSON.stringify({ 
-        error: errorMessage,
-        message: error.message,
-        timestamp: new Date().toISOString()
+        error: 'Server error',
+        message: error.message 
       })
     };
   }
