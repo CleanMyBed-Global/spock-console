@@ -1,17 +1,14 @@
-// Spock Console - Browser-Ready Production Script
-const assistantId = "asst_z1ejGukZ2eUJCJeTkpNX3MnD"; // Your actual Assistant ID
+// Spock Console - Simple Browser Version
+const assistantId = "asst_z1ejGukZ2eUJCJeTkpNX3MnD";
 
-// Browser-compatible API key handling
-let openAiApiKey = localStorage.getItem('spock_openai_key');
+// Simple API key handling - ask once per session
+let openAiApiKey = null;
 
-if (!openAiApiKey) {
-  openAiApiKey = prompt("🔑 Enter your OpenAI API key (starts with sk-):") || "demo-mode";
-  if (openAiApiKey !== "demo-mode" && openAiApiKey.startsWith('sk-')) {
-    localStorage.setItem('spock_openai_key', openAiApiKey);
-    console.log("✅ API key saved for future sessions");
-  } else if (openAiApiKey === "demo-mode") {
-    alert("⚠️ Demo mode - Spock responses will be simulated");
+function getApiKey() {
+  if (!openAiApiKey) {
+    openAiApiKey = prompt("🔑 Enter your OpenAI API key (starts with sk-):") || "demo-mode";
   }
+  return openAiApiKey;
 }
 
 // Project context configurations
@@ -55,8 +52,9 @@ async function submitToSpock() {
     return;
   }
 
-  // Check if we're in demo mode
-  if (openAiApiKey === "demo-mode") {
+  const apiKey = getApiKey();
+  
+  if (apiKey === "demo-mode") {
     displayDemoResponse(userInput, project);
     return;
   }
@@ -70,35 +68,75 @@ async function submitToSpock() {
 🧠 Generating response...</div>`;
 
   try {
-    // Create thread if needed
-    if (!currentThreadId) {
-      currentThreadId = await createThread();
-    }
-
-    // Add context + user message
+    // Use simple chat completions instead of assistants for reliability
     const contextualMessage = `${projectContexts[project]}
 
 USER QUERY: ${userInput}
 
+You are Spock, the virtual co-founder-level system intelligence for CleanMyBed. Operate with Vulcan-like calm and precision.
+
 Provide a structured response with code examples, explanations, and next actions.`;
 
-    await addMessageToThread(currentThreadId, contextualMessage);
-    
-    // Run the assistant
-    const runId = await runAssistant(currentThreadId);
-    
-    // Poll for completion and display response
-    const response = await pollForCompletion(currentThreadId, runId);
-    displayResponse(response);
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4o",
+        messages: [
+          { 
+            role: "system", 
+            content: `You are Spock, the virtual co-founder-level system intelligence for CleanMyBed. You operate with Vulcan-like calm and precision.
+
+CORE ROLE:
+- System architect and code reviewer for CleanMyBed's full stack
+- Logic handler for Supabase, Edge Functions, GHL, Telegram, Zoho integrations
+- Clean code advocate - no fluff, only solutions
+- Technical documentation expert
+
+PERSONALITY:
+- Confident but never robotic
+- Structured and logical responses
+- Always provide actionable solutions
+
+TECHNOLOGY STACK:
+- Supabase (database, auth, edge functions)
+- Telegram Bot API integrations
+- GoHighLevel (GHL) CRM workflows
+- Zoho integrations
+- JavaScript/Node.js
+- HTML/CSS frontend systems
+
+OUTPUT FORMAT:
+- Provide clean, readable code blocks
+- Include brief explanations
+- Suggest improvements and optimizations
+- Always end with next recommended actions` 
+          },
+          { role: "user", content: contextualMessage }
+        ],
+        temperature: 0.3,
+        max_tokens: 2000
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const spockResponse = data.choices[0].message.content;
+    displayResponse(spockResponse);
     
   } catch (error) {
     console.error('Spock Console Error:', error);
     showError(`System Error: ${error.message}`);
     
-    // If auth error, clear stored key
-    if (error.message.includes('Incorrect API key') || error.message.includes('authentication')) {
-      localStorage.removeItem('spock_openai_key');
-      showError("Invalid API key. Please refresh the page to enter a new one.");
+    if (error.message.includes('Incorrect API key') || error.message.includes('401')) {
+      openAiApiKey = null; // Reset so user can enter new key
+      showError("Invalid API key. Click Send to try again with a new key.");
     }
   } finally {
     setLoadingState(false);
@@ -209,106 +247,6 @@ class SpockResponseLayer {
   displayResponse(demoResponse);
 }
 
-async function createThread() {
-  const response = await fetch("https://api.openai.com/v1/threads", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${openAiApiKey}`,
-      "OpenAI-Beta": "assistants=v2"
-    }
-  });
-  
-  if (!response.ok) {
-    throw new Error(`API Error: ${response.status} ${response.statusText}`);
-  }
-  
-  const data = await response.json();
-  return data.id;
-}
-
-async function addMessageToThread(threadId, content) {
-  const response = await fetch(`https://api.openai.com/v1/threads/${threadId}/messages`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${openAiApiKey}`,
-      "OpenAI-Beta": "assistants=v2"
-    },
-    body: JSON.stringify({
-      role: "user",
-      content: content
-    })
-  });
-  
-  if (!response.ok) {
-    throw new Error(`API Error: ${response.status} ${response.statusText}`);
-  }
-}
-
-async function runAssistant(threadId) {
-  const response = await fetch(`https://api.openai.com/v1/threads/${threadId}/runs`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${openAiApiKey}`,
-      "OpenAI-Beta": "assistants=v2"
-    },
-    body: JSON.stringify({
-      assistant_id: assistantId
-    })
-  });
-  
-  if (!response.ok) {
-    throw new Error(`API Error: ${response.status} ${response.statusText}`);
-  }
-  
-  const data = await response.json();
-  return data.id;
-}
-
-async function pollForCompletion(threadId, runId) {
-  while (true) {
-    const response = await fetch(`https://api.openai.com/v1/threads/${threadId}/runs/${runId}`, {
-      headers: {
-        "Authorization": `Bearer ${openAiApiKey}`,
-        "OpenAI-Beta": "assistants=v2"
-      }
-    });
-    
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.status} ${response.statusText}`);
-    }
-    
-    const run = await response.json();
-    
-    if (run.status === 'completed') {
-      return await getLatestMessage(threadId);
-    } else if (run.status === 'failed') {
-      throw new Error('Assistant run failed');
-    }
-    
-    // Wait 1 second before polling again
-    await new Promise(resolve => setTimeout(resolve, 1000));
-  }
-}
-
-async function getLatestMessage(threadId) {
-  const response = await fetch(`https://api.openai.com/v1/threads/${threadId}/messages`, {
-    headers: {
-      "Authorization": `Bearer ${openAiApiKey}`,
-      "OpenAI-Beta": "assistants=v2"
-    }
-  });
-  
-  if (!response.ok) {
-    throw new Error(`API Error: ${response.status} ${response.statusText}`);
-  }
-  
-  const data = await response.json();
-  return data.data[0].content[0].text.value;
-}
-
 function displayResponse(response) {
   const responseBox = document.getElementById('responseBox');
   
@@ -321,7 +259,7 @@ function displayResponse(response) {
       <div class="response-actions">
         <button onclick="copyToClipboard()" class="action-btn">📋 Copy</button>
         <button onclick="regenerateResponse()" class="action-btn">🔄 Regenerate</button>
-        <button onclick="clearApiKey()" class="action-btn">🔑 Reset Key</button>
+        <button onclick="resetApiKey()" class="action-btn">🔑 Reset Key</button>
       </div>
     </div>
     <div class="response-content">${formattedResponse}</div>
@@ -344,6 +282,8 @@ function copyToClipboard() {
   
   navigator.clipboard.writeText(textContent).then(() => {
     showNotification('Response copied to clipboard!');
+  }).catch(() => {
+    showNotification('Copy failed - please select and copy manually');
   });
 }
 
@@ -355,9 +295,9 @@ function regenerateResponse() {
   }
 }
 
-function clearApiKey() {
-  localStorage.removeItem('spock_openai_key');
-  showNotification('API key cleared. Refresh to enter a new one.');
+function resetApiKey() {
+  openAiApiKey = null;
+  showNotification('API key reset. Next query will prompt for new key.');
 }
 
 function setLoadingState(isLoading) {
@@ -411,11 +351,4 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Initialize first project description
   document.getElementById('projectSelector').dispatchEvent(new Event('change'));
-  
-  // Show API key status
-  if (openAiApiKey === "demo-mode") {
-    console.log("🚀 Spock Console loaded in demo mode");
-  } else {
-    console.log("🔑 Spock Console loaded with API key");
-  }
 });
