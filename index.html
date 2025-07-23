@@ -123,6 +123,267 @@
       margin-top: 0.5rem;
     }
     
+    /* PHASE 2: LIVING SUMMARY SYSTEM STYLES */
+
+    /* Summary Panel Container */
+    .summary-panel {
+      background: rgba(212, 175, 55, 0.05);
+      border: 1px solid rgba(212, 175, 55, 0.15);
+      border-radius: 8px;
+      margin: 1rem 0;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .summary-panel.collapsed {
+      max-height: 60px;
+      overflow: hidden;
+    }
+
+    .summary-panel.expanded {
+      max-height: none;
+    }
+
+    /* Summary Header */
+    .summary-header {
+      background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+      color: var(--primary-gold);
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .summary-title {
+      font-weight: 600;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .summary-version {
+      background: rgba(212, 175, 55, 0.2);
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 0.7rem;
+      font-weight: 500;
+    }
+
+    .summary-toggle {
+      color: var(--primary-gold);
+      font-size: 16px;
+      transition: transform 0.3s ease;
+    }
+
+    .summary-toggle.expanded {
+      transform: rotate(180deg);
+    }
+
+    /* Summary Content */
+    .summary-content {
+      padding: 16px;
+      max-height: 350px;
+      overflow-y: auto;
+    }
+
+    /* Summary Categories */
+    .summary-category {
+      margin-bottom: 16px;
+    }
+
+    .category-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      color: var(--primary-gold);
+      margin-bottom: 8px;
+      font-size: 0.8rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .category-items {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .category-items li {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      padding: 8px 10px;
+      margin-bottom: 4px;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      position: relative;
+      color: var(--text-secondary);
+    }
+
+    .category-items li:last-child {
+      margin-bottom: 0;
+    }
+
+    .category-items li.empty {
+      color: var(--text-tertiary);
+      font-style: italic;
+      background: rgba(255, 255, 255, 0.01);
+      text-align: center;
+    }
+
+    /* Diff Status Indicators */
+    .diff-new {
+      border-left: 3px solid #28a745;
+      background: rgba(40, 167, 69, 0.1);
+    }
+
+    .diff-updated {
+      border-left: 3px solid #007bff;
+      background: rgba(0, 123, 255, 0.1);
+    }
+
+    .diff-removed {
+      border-left: 3px solid #dc3545;
+      background: rgba(220, 53, 69, 0.1);
+      text-decoration: line-through;
+      opacity: 0.7;
+    }
+
+    /* Summary Actions */
+    .summary-actions {
+      background: rgba(0, 0, 0, 0.2);
+      border-top: 1px solid var(--border-subtle);
+      padding: 12px 16px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .summary-btn {
+      background: linear-gradient(135deg, var(--primary-gold) 0%, var(--secondary-gold) 100%);
+      color: var(--dark-bg);
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 0.7rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .summary-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+    }
+
+    .summary-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .summary-btn.secondary {
+      background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+      color: white;
+    }
+
+    /* Loading States */
+    .summary-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+      color: var(--text-tertiary);
+      font-style: italic;
+      font-size: 0.8rem;
+    }
+
+    .loading-spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-top: 2px solid var(--primary-gold);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Empty State */
+    .summary-empty {
+      text-align: center;
+      padding: 32px 16px;
+      color: var(--text-tertiary);
+    }
+
+    .summary-empty-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+      opacity: 0.5;
+    }
+
+    .summary-empty h3 {
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+      color: var(--primary-gold);
+    }
+
+    .summary-empty p {
+      font-size: 0.8rem;
+      line-height: 1.4;
+    }
+
+    /* Auto-Summary Notification */
+    .auto-summary-notification {
+      background: linear-gradient(135deg, var(--primary-gold) 0%, var(--secondary-gold) 100%);
+      color: var(--dark-bg);
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin: 8px 0;
+      font-size: 0.8rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      animation: slideIn 0.3s ease;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .notification-close {
+      margin-left: auto;
+      cursor: pointer;
+      font-weight: bold;
+      opacity: 0.7;
+    }
+
+    .notification-close:hover {
+      opacity: 1;
+    }
+    
     .chat-controls {
       display: flex;
       gap: 0.5rem;
@@ -476,6 +737,19 @@
       .message {
         max-width: 95%;
       }
+      
+      .summary-actions {
+        flex-direction: column;
+      }
+      
+      .summary-btn {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .summary-content {
+        max-height: 250px;
+      }
     }
   </style>
 </head>
@@ -501,6 +775,131 @@
         <div class="project-info" id="projectInfo">
           Select a project to see details...
         </div>
+      </div>
+
+      <!-- PHASE 2: SUMMARY PANEL -->
+      <div id="summaryPanel" class="summary-panel collapsed">
+        <!-- Summary Header -->
+        <div class="summary-header" onclick="toggleSummaryPanel()">
+          <div class="summary-title">
+            <span>📋</span>
+            <span>Project Summary</span>
+            <span id="summaryVersion" class="summary-version">v1.0</span>
+          </div>
+          <div id="summaryToggle" class="summary-toggle">▼</div>
+        </div>
+        
+        <!-- Summary Content -->
+        <div class="summary-content">
+          <div id="summaryContentArea">
+            <!-- Empty State -->
+            <div id="summaryEmpty" class="summary-empty">
+              <div class="summary-empty-icon">🧠</div>
+              <h3>No Summary Yet</h3>
+              <p>Start a conversation and click "Summarize Progress" to generate your first project summary.</p>
+            </div>
+            
+            <!-- Loading State -->
+            <div id="summaryLoading" class="summary-loading" style="display: none;">
+              <div class="loading-spinner"></div>
+              <span>Analyzing conversation and generating summary...</span>
+            </div>
+            
+            <!-- Summary Categories -->
+            <div id="summaryCategories" style="display: none;">
+              <div class="summary-category">
+                <div class="category-header">
+                  <span>🏗️</span>
+                  <span>Architecture Decisions</span>
+                </div>
+                <ul id="architectureItems" class="category-items"></ul>
+              </div>
+              
+              <div class="summary-category">
+                <div class="category-header">
+                  <span>💻</span>
+                  <span>Code Changes</span>
+                </div>
+                <ul id="codeChangesItems" class="category-items"></ul>
+              </div>
+              
+              <div class="summary-category">
+                <div class="category-header">
+                  <span>📋</span>
+                  <span>Todo Items</span>
+                </div>
+                <ul id="todoItems" class="category-items"></ul>
+              </div>
+              
+              <div class="summary-category">
+                <div class="category-header">
+                  <span>🐛</span>
+                  <span>Issues & Solutions</span>
+                </div>
+                <ul id="issuesItems" class="category-items"></ul>
+              </div>
+              
+              <div class="summary-category">
+                <div class="category-header">
+                  <span>📊</span>
+                  <span>Performance Notes</span>
+                </div>
+                <ul id="performanceItems" class="category-items"></ul>
+              </div>
+              
+              <div class="summary-category">
+                <div class="category-header">
+                  <span>🔗</span>
+                  <span>Dependencies & Integrations</span>
+                </div>
+                <ul id="dependenciesItems" class="category-items"></ul>
+              </div>
+              
+              <div class="summary-category">
+                <div class="category-header">
+                  <span>🎯</span>
+                  <span>Key Decisions</span>
+                </div>
+                <ul id="keyDecisionsItems" class="category-items"></ul>
+              </div>
+              
+              <div class="summary-category">
+                <div class="category-header">
+                  <span>💡</span>
+                  <span>Insights</span>
+                </div>
+                <ul id="insightsItems" class="category-items"></ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Summary Actions -->
+        <div class="summary-actions">
+          <button id="summarizeBtn" class="summary-btn" onclick="generateSummary()">
+            <span>🧠</span>
+            <span>Summarize Progress</span>
+          </button>
+          <button id="viewDiffBtn" class="summary-btn secondary" onclick="viewSummaryDiff()" disabled>
+            <span>🔍</span>
+            <span>View Changes</span>
+          </button>
+          <button id="clearKeepSummaryBtn" class="summary-btn secondary" onclick="clearChatKeepSummary()" disabled>
+            <span>🗑️</span>
+            <span>Clear Chat, Keep Summary</span>
+          </button>
+          <button id="exportSummaryBtn" class="summary-btn secondary" onclick="exportSummary()" disabled>
+            <span>📄</span>
+            <span>Export Summary</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Auto-Summary Notification (hidden by default) -->
+      <div id="autoSummaryNotification" class="auto-summary-notification" style="display: none;">
+        <span>🤖</span>
+        <span>Auto-summary triggered! Your conversation has been analyzed and the summary updated.</span>
+        <span class="notification-close" onclick="hideAutoSummaryNotification()">×</span>
       </div>
       
       <div class="chat-controls">
@@ -562,6 +961,259 @@
     let currentProject = 'spock';
     let conversationHistory = [];
     let isLoading = false;
+
+    // PHASE 2: LIVING SUMMARY SYSTEM JAVASCRIPT
+    
+    // Global summary state
+    let currentSummary = null;
+    let summaryHistory = [];
+    let autoSummaryMessageCount = 0;
+    const AUTO_SUMMARY_THRESHOLD = 15; // Messages
+
+    // Toggle summary panel visibility
+    function toggleSummaryPanel() {
+      const panel = document.getElementById('summaryPanel');
+      const toggle = document.getElementById('summaryToggle');
+      
+      if (panel.classList.contains('collapsed')) {
+        panel.classList.remove('collapsed');
+        panel.classList.add('expanded');
+        toggle.classList.add('expanded');
+      } else {
+        panel.classList.remove('expanded');
+        panel.classList.add('collapsed');
+        toggle.classList.remove('expanded');
+      }
+    }
+
+    // Generate summary from current conversation
+    async function generateSummary(isAutomatic = false) {
+      const summarizeBtn = document.getElementById('summarizeBtn');
+      const loadingArea = document.getElementById('summaryLoading');
+      const emptyArea = document.getElementById('summaryEmpty');
+      const categoriesArea = document.getElementById('summaryCategories');
+      
+      try {
+        // Show loading state
+        summarizeBtn.disabled = true;
+        loadingArea.style.display = 'flex';
+        emptyArea.style.display = 'none';
+        categoriesArea.style.display = 'none';
+        
+        // Get current conversation messages
+        if (!conversationHistory || conversationHistory.length === 0) {
+          throw new Error('No conversation to summarize');
+        }
+        
+        // Get current project
+        const projectSelector = document.getElementById('projectSelector');
+        const projectName = projectSelector.value;
+        
+        // Call summarization API
+        const response = await fetch('/.netlify/functions/spockSummarize', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            messages: conversationHistory,
+            projectName: projectName,
+            currentSummary: currentSummary
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Summarization failed: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!data.success) {
+          throw new Error(data.error || 'Summarization failed');
+        }
+        
+        // Update summary state
+        if (currentSummary) {
+          summaryHistory.push({...currentSummary, timestamp: new Date().toISOString()});
+        }
+        
+        currentSummary = data.summary;
+        
+        // Update UI
+        displaySummary(currentSummary);
+        updateSummaryControls();
+        
+        // Show auto-summary notification if automatic
+        if (isAutomatic) {
+          showAutoSummaryNotification();
+        }
+        
+      } catch (error) {
+        console.error('Summary generation error:', error);
+        showSummaryError(error.message);
+      } finally {
+        // Hide loading state
+        loadingArea.style.display = 'none';
+        summarizeBtn.disabled = false;
+      }
+    }
+
+    // Display summary in UI
+    function displaySummary(summary) {
+      const emptyArea = document.getElementById('summaryEmpty');
+      const categoriesArea = document.getElementById('summaryCategories');
+      const versionSpan = document.getElementById('summaryVersion');
+      
+      // Hide empty state, show categories
+      emptyArea.style.display = 'none';
+      categoriesArea.style.display = 'block';
+      
+      // Update version
+      versionSpan.textContent = `v${summary.version || '1.0'}`;
+      
+      // Populate categories
+      const categoryMappings = {
+        'architectureItems': summary.architecture || [],
+        'codeChangesItems': summary.codeChanges || [],
+        'todoItems': summary.todoItems || [],
+        'issuesItems': summary.issues || [],
+        'performanceItems': summary.performance || [],
+        'dependenciesItems': summary.dependencies || [],
+        'keyDecisionsItems': summary.keyDecisions || [],
+        'insightsItems': summary.insights || []
+      };
+      
+      Object.entries(categoryMappings).forEach(([elementId, items]) => {
+        const element = document.getElementById(elementId);
+        element.innerHTML = '';
+        
+        if (items.length === 0) {
+          const emptyItem = document.createElement('li');
+          emptyItem.className = 'empty';
+          emptyItem.textContent = 'No items yet';
+          element.appendChild(emptyItem);
+        } else {
+          items.forEach(item => {
+            const listItem = document.createElement('li');
+            listItem.textContent = item;
+            // TODO: Add diff classes (diff-new, diff-updated, diff-removed) in Phase 2B
+            element.appendChild(listItem);
+          });
+        }
+      });
+      
+      // Expand panel if collapsed
+      const panel = document.getElementById('summaryPanel');
+      if (panel.classList.contains('collapsed')) {
+        toggleSummaryPanel();
+      }
+    }
+
+    // Update summary control buttons
+    function updateSummaryControls() {
+      const viewDiffBtn = document.getElementById('viewDiffBtn');
+      const clearKeepSummaryBtn = document.getElementById('clearKeepSummaryBtn');
+      const exportSummaryBtn = document.getElementById('exportSummaryBtn');
+      
+      const hasSummary = currentSummary !== null;
+      const hasHistory = summaryHistory.length > 0;
+      
+      viewDiffBtn.disabled = !hasHistory;
+      clearKeepSummaryBtn.disabled = !hasSummary;
+      exportSummaryBtn.disabled = !hasSummary;
+    }
+
+    // Check if auto-summary should trigger
+    function checkAutoSummary() {
+      autoSummaryMessageCount++;
+      
+      if (autoSummaryMessageCount >= AUTO_SUMMARY_THRESHOLD) {
+        autoSummaryMessageCount = 0; // Reset counter
+        generateSummary(true); // Trigger automatic summary
+      }
+    }
+
+    // Show auto-summary notification
+    function showAutoSummaryNotification() {
+      const notification = document.getElementById('autoSummaryNotification');
+      notification.style.display = 'flex';
+      
+      // Auto-hide after 5 seconds
+      setTimeout(() => {
+        hideAutoSummaryNotification();
+      }, 5000);
+    }
+
+    // Hide auto-summary notification
+    function hideAutoSummaryNotification() {
+      const notification = document.getElementById('autoSummaryNotification');
+      notification.style.display = 'none';
+    }
+
+    // Clear chat but keep summary
+    function clearChatKeepSummary() {
+      if (confirm('Clear the chat conversation but keep the project summary?')) {
+        // Clear messages but preserve summary
+        conversationHistory = [];
+        const messagesDiv = document.getElementById('chatMessages');
+        messagesDiv.innerHTML = `
+          <div class="welcome-message">
+            <div class="welcome-icon">🖖</div>
+            <div class="welcome-title">SPOCK NEURAL INTERFACE</div>
+            <div class="welcome-subtitle">
+              Ready for new conversation.<br><br>
+              <em style="color: var(--primary-gold);">"Logic is the beginning of wisdom, not the end."</em>
+            </div>
+          </div>
+        `;
+        
+        // Reset auto-summary counter
+        autoSummaryMessageCount = 0;
+        
+        // Show notification
+        showNotification('Chat cleared! Your project summary has been preserved.');
+      }
+    }
+
+    // Export summary as JSON
+    function exportSummary() {
+      if (!currentSummary) return;
+      
+      const exportData = {
+        summary: currentSummary,
+        history: summaryHistory,
+        project: document.getElementById('projectSelector').value,
+        exportDate: new Date().toISOString()
+      };
+      
+      const dataStr = JSON.stringify(exportData, null, 2);
+      const dataBlob = new Blob([dataStr], {type: 'application/json'});
+      
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(dataBlob);
+      link.download = `spock-summary-${Date.now()}.json`;
+      link.click();
+    }
+
+    // Show summary error
+    function showSummaryError(message) {
+      const loadingArea = document.getElementById('summaryLoading');
+      const emptyArea = document.getElementById('summaryEmpty');
+      
+      loadingArea.style.display = 'none';
+      emptyArea.style.display = 'block';
+      emptyArea.innerHTML = `
+        <div class="summary-empty-icon">⚠️</div>
+        <h3>Summary Generation Failed</h3>
+        <p>${message}</p>
+        <p>Please try again or check your connection.</p>
+      `;
+    }
+
+    // View summary diff (placeholder for Phase 2B)
+    function viewSummaryDiff() {
+      showNotification('Summary diff viewer coming in Phase 2B! This will show you what changed between summary versions.');
+    }
 
     async function sendMessage() {
       const input = document.getElementById('messageInput');
@@ -627,6 +1279,9 @@ You operate with Vulcan-like calm and precision. Always provide:
           role: 'assistant',
           content: data.response
         });
+        
+        // PHASE 2: Check for auto-summary trigger
+        checkAutoSummary();
         
       } catch (error) {
         console.error('Error:', error);
@@ -724,6 +1379,8 @@ You operate with Vulcan-like calm and precision. Always provide:
     function clearChat() {
       if (confirm('Clear this conversation?')) {
         conversationHistory = [];
+        // Reset auto-summary counter when clearing chat
+        autoSummaryMessageCount = 0;
         const messagesContainer = document.getElementById('chatMessages');
         messagesContainer.innerHTML = `
           <div class="welcome-message">
