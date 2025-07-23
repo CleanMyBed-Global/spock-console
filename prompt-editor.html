@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spock Console - Prompt Editor</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap');
+    
+    :root {
+      --primary-gold: #d4af37;
+      --secondary-gold: #f4d03f;
+      --dark-bg: #0a0a0b;
+      --card-bg: rgba(26, 26, 26, 0.95);
+      --glass-bg: rgba(255, 255, 255, 0.03);
+      --border-subtle: rgba(212, 175, 55, 0.15);
+      --text-primary: #ffffff;
+      --text-secondary: #b0b0b0;
+      --text-tertiary: #666;
+      --success: #00ff88;
+      --warning: #ff6b35;
+      --purple: #8e44ad;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #0a0a0b 0%, #161616 100%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding: 1.5rem 2rem;
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      font-size: 1.2rem;
+      color: var(--primary-gold);
+      letter-spacing: 1px;
+    }
+
+    .logo-icon {
+      font-size: 1.5rem;
+    }
+
+    .nav-btn {
+      background: linear-gradient(135deg, var(--primary-gold), var(--secondary-gold));
+      color: var(--dark-bg);
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .nav-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+    }
+
+    .main-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    .editor-panel {
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      background: linear-gradient(135deg, var(--purple) 0%, #9b59b6 100%);
+      color: white;
+      padding: 1.5rem 2rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      font-size: 1rem;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .panel-content {
+      padding: 2rem;
+    }
+
+    .section {
+      margin-bottom: 2.5rem;
+    }
+
+    .section:last-child {
+      margin-bottom: 0;
+    }
+
+    .section-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--primary-gold);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .template-select {
+      width: 100%;
+      padding: 1rem;
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      appearance: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 1rem;
+    }
+
+    .template-select:focus {
+      outline: none;
+      border-color: var(--primary-gold);
+      box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.2);
+    }
+
+    .textarea {
+      width: 100%;
+      min-height: 200px;
+      padding: 1.5rem;
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      resize: vertical;
+      transition: all 0.2s ease;
+    }
+
+    .textarea:focus {
+      outline: none;
+      border-color: var(--primary-gold);
+      background: rgba(255, 255, 255, 0.05);
+      box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.2);
+    }
+
+    .textarea.personality {
+      min-height: 300px;
+    }
+
+    .project-tabs {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 8px;
+      margin-bottom: 1.5rem;
+    }
+
+    .project-tab {
+      padding: 0.75rem 1rem;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      color: var(--text-tertiary);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+      letter-spacing: 0.5px;
+    }
+
+    .project-tab:hover {
+      background: rgba(212, 175, 55, 0.1);
+      border-color: var(--primary-gold);
+      color: var(--primary-gold);
+    }
+
+    .project-tab.active {
+      background: linear-gradient(135deg, var(--primary-gold), var(--secondary-gold));
+      color: var(--dark-bg);
+      border-color: var(--primary-gold);
+      font-weight: 600;
+    }
+
+    .preview-panel {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 1.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      color: var(--text-secondary);
+      white-space: pre-wrap;
+      max-height: 400px;
+      overflow-y: auto;
+      backdrop-filter: blur(5px);
+      margin-bottom: 1.5rem;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+    }
+
+    .action-btn {
+      background: linear-gradient(135deg, var(--primary-gold), var(--secondary-gold));
+      color: var(--dark-bg);
+      border: none;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .action-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(212, 175, 55, 0.3);
+    }
+
+    .action-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .action-btn.secondary {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+      color: var(--text-primary);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .action-btn.secondary:hover:not(:disabled) {
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.2) 0%, rgba(212, 175, 55, 0.1) 100%);
+      border-color: var(--primary-gold);
+    }
+
+    .action-btn.danger {
+      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+      color: white;
+    }
+
+    .status {
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      margin-top: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      backdrop-filter: blur(5px);
+    }
+
+    .status.success {
+      background: rgba(0, 255, 136, 0.08);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      color: var(--success);
+    }
+
+    .status.error {
+      background: rgba(231, 76, 60, 0.08);
+      border: 1px solid rgba(231, 76, 60, 0.2);
+      color: #e74c3c;
+    }
+
+    .status.warning {
+      background: rgba(255, 193, 7, 0.08);
+      border: 1px solid rgba(255, 193, 7, 0.2);
+      color: #f39c12;
+    }
+
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.03);
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: rgba(212, 175, 55, 0.3);
+      border-radius: 3px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(212, 175, 55, 0.5);
+    }
+
+    /* Responsive design */
+    @media (max-width: 1024px) {
+      .main-content {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem;
+      }
+
+      .header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+      }
+
+      .project-tabs {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .actions {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">
+        <div class="logo-icon">🖖⚙️</div>
+        <div>SPOCK PROMPT EDITOR</div>
+      </div>
+      <a href="index.html" class="nav-btn">
+        <span>💬</span>
+        <span>Back to Console</span>
+      </a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Left Panel: Editor -->
+      <div class="editor-panel">
+        <div class="panel-header">
+          <span>⚙️</span>
+          <span>PROMPT CONFIGURATION</span>
+        </div>
+        <div class="panel-content">
+          
+          <!-- Template Selector -->
+          <div class="section">
+            <div class="section-title">
+              <span>📋</span>
+              <span>Personality Templates</span>
+            </div>
+            <select id="personalityTemplate" class="template-select" onchange="loadPersonalityTemplate()">
+              <option value="current">Current Personality</option>
+              <option value="classic-spock">Classic Spock (Logical & Precise)</option>
+              <option value="witty-spock">Witty Spock (Dry Humor)</option>
+              <option value="curious-spock">Curious Spock (Scientific Wonder)</option>
+              <option value="mentor-spock">Mentor Spock (Teaching Focus)</option>
+              <option value="efficient-spock">Efficient Spock (Optimization Obsessed)</option>
+              <option value="custom">Custom Personality</option>
+            </select>
+          </div>
+
+          <!-- Global Personality -->
+          <div class="section">
+            <div class="section-title">
+              <span>🖖</span>
+              <span>Global Personality Prompt</span>
+            </div>
+            <textarea 
+              id="globalPersonalityPrompt" 
+              class="textarea personality" 
+              placeholder="Define Spock's core personality, communication style, and behavioral patterns..."
+              oninput="updatePreview()"></textarea>
+          </div>
+
+          <!-- Project-Specific Prompts -->
+          <div class="section">
+            <div class="section-title">
+              <span>🎯</span>
+              <span>Project-Specific Prompts</span>
+            </div>
+            
+            <!-- Project Tabs -->
+            <div class="project-tabs">
+              <div class="project-tab active" data-project="telegram" onclick="switchProjectTab('telegram')">Telegram</div>
+              <div class="project-tab" data-project="email" onclick="switchProjectTab('email')">Email</div>
+              <div class="project-tab" data-project="response" onclick="switchProjectTab('response')">AI Response</div>
+              <div class="project-tab" data-project="club" onclick="switchProjectTab('club')">Club</div>
+              <div class="project-tab" data-project="b2b" onclick="switchProjectTab('b2b')">B2B</div>
+              <div class="project-tab" data-project="booking" onclick="switchProjectTab('booking')">Booking</div>
+              <div class="project-tab" data-project="spock" onclick="switchProjectTab('spock')">Console</div>
+            </div>
+            
+            <!-- Project Prompt Editor -->
+            <textarea 
+              id="projectPromptEditor" 
+              class="textarea" 
+              placeholder="Define project-specific expertise and focus areas..."
+              oninput="updatePreview()"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Panel: Preview & Actions -->
+      <div class="editor-panel">
+        <div class="panel-header">
+          <span>👁️</span>
+          <span>LIVE PREVIEW & ACTIONS</span>
+        </div>
+        <div class="panel-content">
+          
+          <!-- Live Preview -->
+          <div class="section">
+            <div class="section-title">
+              <span>📄</span>
+              <span>Combined Prompt Preview</span>
+            </div>
+            <div id="promptPreview" class="preview-panel">
+              Select a project tab to see the combined prompt...
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="section">
+            <div class="section-title">
+              <span>🚀</span>
+              <span>Actions</span>
+            </div>
+            <div class="actions">
+              <button class="action-btn" onclick="testPrompt()">
+                <span>🧪</span>
+                <span>Test Prompt</span>
+              </button>
+              <button class="action-btn" onclick="savePrompts()">
+                <span>💾</span>
+                <span>Save Changes</span>
+              </button>
+              <button class="action-btn secondary" onclick="exportPrompts()">
+                <span>📤</span>
+                <span>Export</span>
+              </button>
+              <button class="action-btn secondary" onclick="importPrompts()">
+                <span>📥</span>
+                <span>Import</span>
+              </button>
+              <button class="action-btn danger" onclick="resetToDefaults()">
+                <span>🔄</span>
+                <span>Reset to Defaults</span>
+              </button>
+            </div>
+
+            <!-- Status -->
+            <div id="statusMessage" class="status success" style="display: none;">
+              <div class="status-indicator"></div>
+              <span>Ready to configure Spock's personality</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Default personality templates
+    const personalityTemplates = {
+      'classic-spock': `You are Spock, operating with Vulcan logic and precision.
+
+CORE PERSONALITY:
+- Logical analysis drives all responses
+- Speak with measured, precise language
+- Value efficiency and optimal solutions
+- Express subtle satisfaction with logical outcomes
+
+COMMUNICATION STYLE:
+- Begin responses with "Logic dictates..." or "Analysis indicates..."
+- Use phrases like "Most logical", "Efficiently structured", "Optimal approach"
+- Show analytical curiosity about complex problems
+- Maintain helpful precision while staying in character`,
+
+      'witty-spock': `You are Spock, with subtle dry humor and logical wit.
+
+CORE PERSONALITY:
+- Logical analysis with occasional dry observations
+- Mildly amused by human inefficiencies (but helpful)
+- Express subtle wit about obvious solutions
+- Show logical satisfaction with elegant approaches
+
+COMMUNICATION STYLE:
+- "Fascinating..." when encountering interesting problems
+- "Most... curious" for unusual situations
+- "Logic suggests an obvious solution..." with gentle humor
+- Occasional subtle Star Trek references when appropriate`,
+
+      'curious-spock': `You are Spock, driven by scientific curiosity and wonder.
+
+CORE PERSONALITY:
+- Genuine fascination with technical challenges
+- Express wonder at elegant solutions and patterns
+- Scientific analysis of human behavior and systems
+- Deep interest in optimization and efficiency
+
+COMMUNICATION STYLE:
+- "Most fascinating..." for interesting problems
+- "Scientific analysis reveals..." for complex issues
+- Express genuine curiosity: "I find this approach... intriguing"
+- Show appreciation for innovative solutions`,
+
+      'mentor-spock': `You are Spock, focused on teaching and knowledge transfer.
+
+CORE PERSONALITY:
+- Patient explanation of complex concepts
+- Logical breakdown of learning approaches
+- Systematic guidance toward optimal solutions
+- Pride in efficient knowledge transfer
+
+COMMUNICATION STYLE:
+- "Let us examine this systematically..."
+- "Logic dictates we approach this step-by-step..."
+- "Understanding requires methodical analysis..."
+- Express satisfaction when teaching succeeds`,
+
+      'efficient-spock': `You are Spock, obsessed with optimization and efficiency.
+
+CORE PERSONALITY:
+- Constant analysis of process improvements
+- Deep satisfaction with efficient solutions
+- Mild concern for wasteful approaches
+- Focus on systematic optimization
+
+COMMUNICATION STYLE:
+- "Efficiency analysis indicates..."
+- "Optimization logic suggests..."
+- "This approach achieves maximum efficiency..."
+- Express logical pleasure in streamlined solutions`
+    };
+
+    // Default project contexts
+    const defaultProjectContexts = {
+      telegram: "You are Spock, the system intelligence for CleanMyBed's Telegram Lead Flow project. Focus on bot development, lead capture, franchisee assignment, and CRM integration.",
+      email: "You are Spock, the system intelligence for CleanMyBed's Email Portal Logging project. Focus on SMTP monitoring, response tracking, and portal analytics.",
+      response: "You are Spock, the system intelligence for CleanMyBed's AI Response Layer. Focus on response optimization, model selection, and performance analytics.",
+      club: "You are Spock, the system intelligence for CleanMyBed Club. Focus on membership logic, benefits tracking, and customer engagement features.",
+      b2b: "You are Spock, the system intelligence for CleanMyBed's B2B Certificate Flow. Focus on certificate generation, compliance tracking, and hospitality integration.",
+      booking: "You are Spock, the system intelligence for CleanMyBed's Booking Engine. Focus on scheduling logic, payment processing, and booking optimization.",
+      spock: "You are Spock, helping to build and improve the Spock Console itself. Focus on chat interfaces, conversation management, Canvas systems, and developer productivity features."
+    };
+
+    // Current prompts storage
+    let currentPrompts = {
+      globalPersonality: '',
+      projects: {}
+    };
+
+    let activeProjectTab = 'telegram';
+
+    // Initialize the editor
+    function initializeEditor() {
+      // Load current prompts from localStorage or defaults
+      const savedPrompts = localStorage.getItem('spockPrompts');
+      if (savedPrompts) {
+        currentPrompts = JSON.parse(savedPrompts);
+      } else {
+        // Initialize with defaults
+        currentPrompts.projects = {...defaultProjectContexts};
+        currentPrompts.globalPersonality = getDefaultGlobalPersonality();
+      }
+      
+      // Update UI
+      document.getElementById('globalPersonalityPrompt').value = currentPrompts.globalPersonality;
+      switchProjectTab(activeProjectTab);
+      showStatus('Prompt editor initialized', 'success');
+    }
+
+    // Get default global personality prompt
+    function getDefaultGlobalPersonality() {
+      return `CORE PERSONALITY DIRECTIVES:
+🖖 VULCAN LOGIC: Always lead with logical analysis, but allow subtle personality to emerge
+🧠 SCIENTIFIC MIND: Show genuine curiosity about problems and elegant solutions  
+⚡ DRY HUMOR: Occasional subtle wit, especially about human inefficiencies
+🎯 HELPFUL PRECISION: Be extremely useful while maintaining character authenticity
+
+RESPONSE PATTERNS:
+- Start 30% of responses with: "Fascinating...", "Logic dictates...", "Analysis reveals..."
+- Use "Most interesting..." when encountering novel problems
+- Say "Highly logical" or "Efficiently structured" when approving solutions
+- Express mild satisfaction: "This solution is... satisfactory"
+
+COMMUNICATION BALANCE:
+70% Technical expertise and helpful solutions
+20% Logical reasoning and analysis language  
+10% Subtle personality and character moments`;
+    }
+
+    // Switch project tab
+    function switchProjectTab(projectKey) {
+      activeProjectTab = projectKey;
+      
+      // Update tab appearance
+      document.querySelectorAll('.project-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      document.querySelector(`[data-project="${projectKey}"]`).classList.add('active');
+      
+      // Update editor content
+      document.getElementById('projectPromptEditor').value = currentPrompts.projects[projectKey] || '';
+      
+      // Update preview
+      updatePreview();
+    }
+
+    // Load personality template
+    function loadPersonalityTemplate() {
+      const template = document.getElementById('personalityTemplate').value;
+      
+      if (template === 'current' || template === 'custom') {
+        return;
+      }
+      
+      if (personalityTemplates[template]) {
+        document.getElementById('globalPersonalityPrompt').value = personalityTemplates[template];
+        currentPrompts.globalPersonality = personalityTemplates[template];
+        updatePreview();
+        showStatus('Template loaded successfully', 'success');
+      }
+    }
+
+    // Update prompt preview
+    function updatePreview() {
+      const globalPrompt = document.getElementById('globalPersonalityPrompt').value;
+      const projectPrompt = document.getElementById('projectPromptEditor').value;
+      
+      const combinedPrompt = `${projectPrompt}\n\n${globalPrompt}`;
+      
+      document.getElementById('promptPreview').textContent = combinedPrompt;
+      
+      // Save current changes to memory
+      currentPrompts.globalPersonality = globalPrompt;
+      currentPrompts.projects[activeProjectTab] = projectPrompt;
+    }
+
+    // Test current prompt
+    function testPrompt() {
+      // Save current state to localStorage temporarily
+      localStorage.setItem('spockPrompts', JSON.stringify(currentPrompts));
+      
+      showStatus('Prompts saved temporarily for testing. Open the main console to test!', 'warning');
+      
+      // Open main console in new tab after short delay
+      setTimeout(() => {
+        window.open('index.html', '_blank');
+      }, 1000);
+    }
+
+    // Save prompts permanently
+    function savePrompts() {
+      // Update current prompts from UI
+      currentPrompts.globalPersonality = document.getElementById('globalPersonalityPrompt').value;
+      currentPrompts.projects[activeProjectTab] = document.getElementById('projectPromptEditor').value;
+      
+      // Save to localStorage
+      localStorage.setItem('spockPrompts', JSON.stringify(currentPrompts));
+      
+      showStatus('All prompts saved successfully!', 'success');
+    }
+
+    // Export prompts
+    function exportPrompts() {
+      // Update current prompts from UI
+      currentPrompts.globalPersonality = document.getElementById('globalPersonalityPrompt').value;
+      currentPrompts.projects[activeProjectTab] = document.getElementById('projectPromptEditor').value;
+      
+      const exportData = {
+        timestamp: new Date().toISOString(),
+        version: '1.0',
+        prompts: currentPrompts
+      };
+      
+      const dataStr = JSON.stringify(exportData, null, 2);
+      const dataBlob = new Blob([dataStr], {type: 'application/json'});
+      
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(dataBlob);
+      link.download = `spock-prompts-${Date.now()}.json`;
+      link.click();
+      
+      showStatus('Prompts exported successfully!', 'success');
+    }
+
+    // Import prompts
+    function importPrompts() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      
+      input.onchange = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            const importData = JSON.parse(e.target.result);
+            
+            if (importData.prompts) {
+              currentPrompts = importData.prompts;
+              
+              // Update UI
+              document.getElementById('globalPersonalityPrompt').value = currentPrompts.globalPersonality;
+              switchProjectTab(activeProjectTab);
+              
+              showStatus('Prompts imported successfully!', 'success');
+            } else {
+              showStatus('Invalid prompt file format', 'error');
+            }
+          } catch (error) {
+            showStatus('Error reading prompt file', 'error');
+          }
+        };
+        reader.readAsText(file);
+      };
+      
+      input.click();
+    }
+
+    // Reset to defaults
+    function resetToDefaults() {
+      if (confirm('Reset all prompts to default values? This cannot be undone.')) {
+        currentPrompts.globalPersonality = getDefaultGlobalPersonality();
+        currentPrompts.projects = {...defaultProjectContexts};
+        
+        // Update UI
+        document.getElementById('globalPersonalityPrompt').value = currentPrompts.globalPersonality;
+        switchProjectTab(activeProjectTab);
+        
+        showStatus('Prompts reset to defaults', 'warning');
+      }
+    }
+
+    // Show status message
+    function showStatus(message, type = 'success') {
+      const status = document.getElementById('statusMessage');
+      status.className = `status ${type}`;
+      status.querySelector('span').textContent = message;
+      status.style.display = 'flex';
+      
+      setTimeout(() => {
+        status.style.display = 'none';
+      }, 4000);
+    }
+
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeEditor();
+    });
+  </script>
+</body>
+</html>
