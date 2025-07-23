@@ -30,6 +30,11 @@ export async function handler(event, context) {
     // Parse the request body
     const requestBody = JSON.parse(event.body);
     
+    // DEBUG: Log what we received
+    console.log('=== SPOCK FUNCTION DEBUG ===');
+    console.log('Received body:', JSON.stringify(requestBody, null, 2));
+    console.log('Body keys:', Object.keys(requestBody));
+    
     // Handle both old and new formats for backward compatibility
     let messages, stream = false;
     
