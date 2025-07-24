@@ -52,54 +52,115 @@
     }
     
     .sidebar {
-      width: 320px;
+      width: 300px;
       min-width: 280px;
       max-width: 40%;
       background: linear-gradient(180deg, var(--card-bg) 0%, rgba(15, 15, 15, 0.98) 100%);
       backdrop-filter: blur(10px);
       border-right: 1px solid var(--border-subtle);
-      padding: 1rem;
+      padding: 0.75rem;
       overflow-y: auto;
       position: relative;
       flex-shrink: 0;
       display: flex;
       flex-direction: column;
+      transition: all 0.3s ease;
+    }
+
+    .sidebar.collapsed {
+      width: 0;
+      min-width: 0;
+      padding: 0;
+      opacity: 0;
+      overflow: hidden;
+    }
+
+    .sidebar-toggle {
+      position: absolute;
+      top: 1rem;
+      right: -15px;
+      width: 30px;
+      height: 30px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.8rem;
+      color: var(--primary-gold);
+      z-index: 100;
+      transition: all 0.3s ease;
+    }
+
+    .sidebar-toggle:hover {
+      background: rgba(212, 175, 55, 0.1);
+      transform: scale(1.1);
+    }
+
+    .main {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(135deg, rgba(10, 10, 11, 0.95) 0%, rgba(15, 15, 16, 0.95) 100%);
+      position: relative;
+    }
+
+    .resize-handle {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: transparent;
+      cursor: col-resize;
+      z-index: 10;
+    }
+
+    .resize-handle:hover {
+      background: rgba(212, 175, 55, 0.3);
+    }
+
+    .resize-handle.dragging {
+      background: var(--primary-gold);
     }
     
     .logo {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 1rem;
-      padding: 0.75rem 1rem;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+      padding: 0.5rem 0.75rem;
       background: var(--glass-bg);
       border: 1px solid var(--border-subtle);
-      border-radius: 8px;
+      border-radius: 6px;
       font-family: 'JetBrains Mono', monospace;
       font-weight: 500;
-      font-size: 0.9rem;
+      font-size: 0.8rem;
       color: var(--primary-gold);
       letter-spacing: 1px;
     }
     
     .logo-icon {
-      font-size: 1.2rem;
+      font-size: 1rem;
     }
 
-    /* DEVELOPER TOGGLE STYLES */
+    /* DEVELOPER TOGGLE STYLES - COMPACT */
     .developer-section {
-      margin-bottom: 1rem;
-      padding: 0.75rem;
+      margin-bottom: 0.75rem;
+      padding: 0.5rem;
       background: rgba(231, 76, 60, 0.08);
       border: 1px solid rgba(231, 76, 60, 0.2);
-      border-radius: 8px;
+      border-radius: 6px;
       flex-shrink: 0;
     }
 
     .developer-toggle-label {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 0.75rem;
       cursor: pointer;
       user-select: none;
     }
@@ -110,10 +171,10 @@
 
     .developer-toggle-slider {
       position: relative;
-      width: 50px;
-      height: 24px;
+      width: 40px;
+      height: 20px;
       background: rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
+      border-radius: 10px;
       transition: all 0.3s ease;
       border: 1px solid var(--border-subtle);
     }
@@ -123,8 +184,8 @@
       position: absolute;
       top: 2px;
       left: 2px;
-      width: 18px;
-      height: 18px;
+      width: 14px;
+      height: 14px;
       background: var(--text-tertiary);
       border-radius: 50%;
       transition: all 0.3s ease;
@@ -136,13 +197,13 @@
     }
 
     .developer-checkbox:checked + .developer-toggle-slider::before {
-      transform: translateX(26px);
+      transform: translateX(20px);
       background: white;
     }
 
     .developer-toggle-text {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.8rem;
+      font-size: 0.7rem;
       font-weight: 500;
       color: var(--developer-accent);
       text-transform: uppercase;
@@ -150,11 +211,11 @@
     }
 
     .developer-info {
-      margin-top: 0.5rem;
-      font-size: 0.7rem;
+      margin-top: 0.4rem;
+      font-size: 0.65rem;
       color: var(--text-tertiary);
       font-family: 'JetBrains Mono', monospace;
-      line-height: 1.3;
+      line-height: 1.2;
     }
 
     .developer-info.active {
@@ -162,29 +223,29 @@
     }
     
     .project-section {
-      margin-bottom: 1rem;
+      margin-bottom: 0.75rem;
       flex-shrink: 0;
     }
     
     .section-title {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       font-weight: 500;
       color: var(--text-tertiary);
       text-transform: uppercase;
       letter-spacing: 1px;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.4rem;
     }
     
     select {
       width: 100%;
-      padding: 0.75rem;
+      padding: 0.6rem;
       background: var(--glass-bg);
       border: 1px solid var(--border-subtle);
-      border-radius: 6px;
+      border-radius: 5px;
       color: var(--text-primary);
       font-family: 'Inter', sans-serif;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       appearance: none;
       cursor: pointer;
       transition: border-color 0.2s ease;
@@ -198,12 +259,12 @@
     .project-info {
       background: rgba(212, 175, 55, 0.05);
       border: 1px solid rgba(212, 175, 55, 0.1);
-      border-radius: 6px;
-      padding: 0.75rem;
-      font-size: 0.8rem;
-      line-height: 1.4;
+      border-radius: 4px;
+      padding: 0.5rem;
+      font-size: 0.75rem;
+      line-height: 1.3;
       color: var(--text-secondary);
-      margin-top: 0.5rem;
+      margin-top: 0.4rem;
     }
 
     .model-info {
@@ -484,20 +545,20 @@
     
     .chat-controls {
       display: flex;
-      gap: 0.5rem;
-      margin-top: 1rem;
+      gap: 0.4rem;
+      margin-bottom: 0.75rem;
       flex-shrink: 0;
     }
     
     .control-btn {
       flex: 1;
-      padding: 0.5rem;
+      padding: 0.4rem;
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid var(--border-subtle);
       border-radius: 4px;
       color: var(--text-tertiary);
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       cursor: pointer;
       transition: all 0.2s ease;
     }
@@ -511,17 +572,17 @@
     .prompt-editor-link {
       background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%);
       color: white;
-      padding: 0.75rem;
-      border-radius: 6px;
+      padding: 0.5rem;
+      border-radius: 5px;
       text-decoration: none;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.8rem;
+      font-size: 0.7rem;
       font-weight: 600;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      margin-top: 1rem;
+      gap: 6px;
+      margin-bottom: 0.4rem;
       transition: all 0.3s ease;
       position: relative;
     }
@@ -551,22 +612,24 @@
     .status {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem 0.75rem;
+      gap: 0.4rem;
+      padding: 0.4rem 0.6rem;
       background: rgba(0, 255, 136, 0.08);
       border: 1px solid rgba(0, 255, 136, 0.2);
       border-radius: 4px;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       color: var(--success);
-      margin-top: 1rem;
+      margin-top: auto;
+      flex-shrink: 0;
     }
     
     .status-indicator {
-      width: 6px;
-      height: 6px;
+      width: 5px;
+      height: 5px;
       background: var(--success);
       border-radius: 50%;
+      animation: pulse 2s infinite;
     }
     
     .main {
@@ -588,10 +651,10 @@
     
     .chat-title {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       font-weight: 400;
       color: var(--primary-gold);
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
     }
     
     .chat-messages {
@@ -1030,34 +1093,14 @@
 <body>
   <div class="container">
     <div class="sidebar">
+      <div class="sidebar-toggle" onclick="toggleSidebar()">←</div>
+      
       <div class="logo">
         <div class="logo-icon">🖖</div>
         <div>SPOCK CONSOLE</div>
       </div>
 
-      <!-- DEVELOPER TOGGLE SECTION -->
-      <div class="developer-section">
-        <label class="developer-toggle-label" for="developerMode">
-          <input type="checkbox" id="developerMode" class="developer-checkbox" onchange="toggleDeveloperMode()">
-          <span class="developer-toggle-slider"></span>
-          <span class="developer-toggle-text">Developer Mode</span>
-        </label>
-        <div id="developerInfo" class="developer-info">
-          System prompts hidden. Enable to access core behavior controls.
-        </div>
-      </div>
-      
-      <!-- Personality Selector -->
-      <div class="project-section">
-        <div class="section-title">Personality</div>
-        <select id="personalitySelector">
-          <!-- Personalities will be populated dynamically -->
-        </select>
-        <div class="project-info" id="personalityInfo">
-          Loading personalities...
-        </div>
-      </div>
-
+      <!-- 1. Project Context (Highest Priority) -->
       <div class="project-section">
         <div class="section-title">Project Context</div>
         <select id="projectSelector">
@@ -1068,33 +1111,12 @@
         </div>
       </div>
 
-      <!-- AI Model Selector -->
-      <div class="project-section">
-        <div class="section-title">AI Model</div>
-        <select id="modelSelector">
-          <option value="gpt-4o">GPT-4o (Recommended)</option>
-          <option value="gpt-4-turbo">GPT-4 Turbo (Fast)</option>
-          <option value="gpt-4">GPT-4 (Standard)</option>
-          <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Economy)</option>
-          <option value="claude-3-5-sonnet">Claude 3.5 Sonnet (Alternative)</option>
-        </select>
-        <div class="model-info" id="modelInfo">
-          <div class="model-status">
-            <span class="model-indicator"></span>
-            <span id="modelStatusText">GPT-4o Active</span>
-          </div>
-          <div class="model-description" id="modelDescription">
-            Latest multimodal model with superior reasoning and efficiency
-          </div>
-        </div>
-      </div>
-
-      <!-- SUMMARY PANEL -->
+      <!-- 2. Project Summary -->
       <div id="summaryPanel" class="summary-panel collapsed">
         <div class="summary-header" onclick="toggleSummaryPanel()">
           <div class="summary-title">
             <span>📋</span>
-            <span>Project Summary</span>
+            <span>Summary</span>
             <span id="summaryVersion" class="summary-version">v1.0</span>
           </div>
           <div id="summaryToggle" class="summary-toggle">▼</div>
@@ -1197,32 +1219,80 @@
         </div>
       </div>
 
-      <div id="autoSummaryNotification" class="auto-summary-notification" style="display: none;">
-        <span>🤖</span>
-        <span>Auto-summary triggered! Your conversation has been analyzed and the summary updated.</span>
-        <span class="notification-close" onclick="hideAutoSummaryNotification()">×</span>
-      </div>
-      
+      <!-- 3. Quick Actions -->
       <div class="chat-controls">
         <button class="control-btn" onclick="clearChat()">Clear Chat</button>
         <button class="control-btn" onclick="exportChat()">Export</button>
       </div>
 
-      <a href="personality-manager.html" class="prompt-editor-link" style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); margin-bottom: 0.5rem;">
-        <span>🎭</span>
-        <span>PERSONALITY MANAGER</span>
-      </a>
+      <!-- 4. Personality -->
+      <div class="project-section">
+        <div class="section-title">Personality</div>
+        <select id="personalitySelector">
+          <!-- Personalities will be populated dynamically -->
+        </select>
+        <div class="project-info" id="personalityInfo">
+          Loading personalities...
+        </div>
+      </div>
 
-      <a href="project-manager.html" class="prompt-editor-link" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); margin-bottom: 0.5rem;">
+      <!-- 5. AI Model -->
+      <div class="project-section">
+        <div class="section-title">AI Model</div>
+        <select id="modelSelector">
+          <option value="gpt-4o">GPT-4o (Recommended)</option>
+          <option value="gpt-4-turbo">GPT-4 Turbo (Fast)</option>
+          <option value="gpt-4">GPT-4 (Standard)</option>
+          <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Economy)</option>
+          <option value="claude-3-5-sonnet">Claude 3.5 Sonnet (Alternative)</option>
+        </select>
+        <div class="model-info" id="modelInfo">
+          <div class="model-status">
+            <span class="model-indicator"></span>
+            <span id="modelStatusText">GPT-4o Active</span>
+          </div>
+          <div class="model-description" id="modelDescription">
+            Latest multimodal model with superior reasoning and efficiency
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Management Links -->
+      <a href="project-manager.html" class="prompt-editor-link" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); margin-bottom: 0.4rem;">
         <span>📁</span>
         <span>PROJECT MANAGER</span>
+      </a>
+
+      <a href="personality-manager.html" class="prompt-editor-link" style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); margin-bottom: 0.4rem;">
+        <span>🎭</span>
+        <span>PERSONALITY MANAGER</span>
       </a>
 
       <a href="prompt-editor.html" id="promptEditorLink" class="prompt-editor-link" onclick="return handleNavigation(this)">
         <span>⚙️</span>
         <span>PROMPT EDITOR</span>
       </a>
+
+      <!-- 7. Developer Mode -->
+      <div class="developer-section">
+        <label class="developer-toggle-label" for="developerMode">
+          <input type="checkbox" id="developerMode" class="developer-checkbox" onchange="toggleDeveloperMode()">
+          <span class="developer-toggle-slider"></span>
+          <span class="developer-toggle-text">Developer Mode</span>
+        </label>
+        <div id="developerInfo" class="developer-info">
+          System prompts hidden. Enable to access core behavior controls.
+        </div>
+      </div>
+
+      <!-- Auto Summary Notification -->
+      <div id="autoSummaryNotification" class="auto-summary-notification" style="display: none;">
+        <span>🤖</span>
+        <span>Auto-summary triggered! Your conversation has been analyzed and the summary updated.</span>
+        <span class="notification-close" onclick="hideAutoSummaryNotification()">×</span>
+      </div>
       
+      <!-- 8. Status (Pinned to Bottom) -->
       <div class="status">
         <div class="status-indicator"></div>
         <span>Neural networks online</span>
@@ -1230,6 +1300,8 @@
     </div>
     
     <div class="main">
+      <div class="resize-handle"></div>
+      
       <div class="chat-header">
         <div class="chat-title" id="chatTitle">🖖 SPOCK NEURAL INTERFACE</div>
       </div>
@@ -1529,9 +1601,10 @@ Perfect for: Performance optimization, workflow improvement, rapid development, 
       messagesContainer.innerHTML = `
         <div class="welcome-message">
           <div class="welcome-icon">🖖</div>
-          <div class="welcome-title">PROJECT: ${projects[currentProject]?.name.toUpperCase() || currentProject.toUpperCase()}</div>
+          <div class="welcome-title">SPOCK NEURAL INTERFACE INITIALIZED</div>
           <div class="welcome-subtitle">
-            ${projects[currentProject]?.description || 'Ready for new conversation.'}<br><br>
+            ${projects[currentProject]?.description || 'Advanced AI systems online. Neural networks calibrated.'}<br>
+            Ready for complex analysis and code generation.<br><br>
             <em style="color: var(--primary-gold);">"Logic is the beginning of wisdom, not the end."</em>
           </div>
         </div>
@@ -1577,11 +1650,62 @@ Perfect for: Performance optimization, workflow improvement, rapid development, 
       }
     }
 
-    // Update chat title
+    // Update chat title with project and personality
     function updateChatTitle() {
       const chatTitle = document.getElementById('chatTitle');
-      if (chatTitle && projects[currentProject]) {
-        chatTitle.textContent = `🖖 ${projects[currentProject].name.toUpperCase()}`;
+      if (chatTitle && projects[currentProject] && personalities[currentPersonality]) {
+        const projectName = projects[currentProject].name;
+        const personalityEmoji = personalities[currentPersonality].emoji;
+        const personalityName = personalities[currentPersonality].name;
+        chatTitle.textContent = `PROJECT: ${projectName.toUpperCase()} | ${personalityEmoji} ${personalityName}`;
+      }
+    }
+
+    // Toggle sidebar visibility
+    function toggleSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      const toggle = document.querySelector('.sidebar-toggle');
+      
+      sidebar.classList.toggle('collapsed');
+      toggle.textContent = sidebar.classList.contains('collapsed') ? '→' : '←';
+    }
+
+    // Initialize resizable panels
+    function initializeResizer() {
+      const resizeHandle = document.querySelector('.resize-handle');
+      const sidebar = document.querySelector('.sidebar');
+      let isResizing = false;
+      
+      if (!resizeHandle || !sidebar) return;
+      
+      resizeHandle.addEventListener('mousedown', (e) => {
+        isResizing = true;
+        resizeHandle.classList.add('dragging');
+        document.addEventListener('mousemove', handleResize);
+        document.addEventListener('mouseup', stopResize);
+        e.preventDefault();
+      });
+      
+      function handleResize(e) {
+        if (!isResizing) return;
+        const newWidth = e.clientX;
+        if (newWidth >= 250 && newWidth <= 500) {
+          sidebar.style.width = newWidth + 'px';
+          localStorage.setItem('spockSidebarWidth', newWidth);
+        }
+      }
+      
+      function stopResize() {
+        isResizing = false;
+        resizeHandle.classList.remove('dragging');
+        document.removeEventListener('mousemove', handleResize);
+        document.removeEventListener('mouseup', stopResize);
+      }
+      
+      // Restore saved width
+      const savedWidth = localStorage.getItem('spockSidebarWidth');
+      if (savedWidth) {
+        sidebar.style.width = savedWidth + 'px';
       }
     }
 
@@ -2458,6 +2582,7 @@ ${canvasContext.content}`;
         updateProjectInfo();
         updatePersonalityInfo();
         updateChatTitle();
+        initializeResizer();
       }, 100);
 
       modelSelector.addEventListener('change', function() {
