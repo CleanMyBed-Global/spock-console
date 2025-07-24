@@ -1610,8 +1610,9 @@ ${canvasContext.content}`;
             }
           }
           
-          // Add system prompts if developer mode is enabled and they exist
-          if (developerModeEnabled && prompts.systemPrompts) {
+          // ALWAYS apply system prompts (the "Gazza Context Layer") regardless of developer mode
+          // System prompts are the core behavior rules that should never be disabled
+          if (prompts.systemPrompts) {
             systemPrompt = `${prompts.systemPrompts}\n\n${systemPrompt}`;
           }
           
