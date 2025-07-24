@@ -1050,16 +1050,10 @@
       <div class="project-section">
         <div class="section-title">Project Context</div>
         <select id="projectSelector">
-          <option value="telegram">Telegram Lead Flow</option>
-          <option value="email">Email Portal Logging</option>
-          <option value="response">AI Response Layer</option>
-          <option value="club">CleanMyBed Club</option>
-          <option value="b2b">B2B Certificate Flow</option>
-          <option value="booking">Booking Engine</option>
-          <option value="spock">Spock Console Development</option>
+          <!-- Projects will be populated dynamically -->
         </select>
         <div class="project-info" id="projectInfo">
-          Select a project to see details...
+          Loading projects...
         </div>
       </div>
 
@@ -1203,6 +1197,11 @@
         <button class="control-btn" onclick="exportChat()">Export</button>
       </div>
 
+      <a href="project-manager.html" class="prompt-editor-link" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); margin-bottom: 0.5rem;">
+        <span>📁</span>
+        <span>PROJECT MANAGER</span>
+      </a>
+
       <a href="prompt-editor.html" id="promptEditorLink" class="prompt-editor-link" onclick="return handleNavigation(this)">
         <span>⚙️</span>
         <span>PROMPT EDITOR</span>
@@ -1248,21 +1247,149 @@
   </div>
 
   <script>
-    const projectContexts = {
-      telegram: "You are Spock, the system intelligence for CleanMyBed's Telegram Lead Flow project. Focus on bot development, lead capture, franchisee assignment, and CRM integration.",
-      email: "You are Spock, the system intelligence for CleanMyBed's Email Portal Logging project. Focus on SMTP monitoring, response tracking, and portal analytics.",
-      response: "You are Spock, the system intelligence for CleanMyBed's AI Response Layer. Focus on response optimization, model selection, and performance analytics.",
-      club: "You are Spock, the system intelligence for CleanMyBed Club. Focus on membership logic, benefits tracking, and customer engagement features.",
-      b2b: "You are Spock, the system intelligence for CleanMyBed's B2B Certificate Flow. Focus on certificate generation, compliance tracking, and hospitality integration.",
-      booking: "You are Spock, the system intelligence for CleanMyBed's Booking Engine. Focus on scheduling logic, payment processing, and booking optimization.",
-      spock: "You are Spock, helping to build and improve the Spock Console itself. Focus on chat interfaces, conversation management, Canvas systems, and developer productivity features."
-    };
-
-    let currentProject = 'spock';
+    // DYNAMIC PROJECT SYSTEM - Replaces hardcoded projects
+    let projects = {};
+    let currentProject = 'general'; // Default to general project
     let currentModel = 'gpt-4o';
     let conversationHistory = [];
     let isLoading = false;
     let developerModeEnabled = false;
+
+    // Default Projects (fallback if no projects exist)
+    const defaultProjects = {
+      'general': {
+        id: 'general',
+        name: 'General',
+        description: 'General development and technical assistance',
+        prompt: 'Provide clear technical guidance and solutions across various technologies and domains. Focus on best practices, clean code, and practical implementation advice.',
+        created: new Date().toISOString(),
+        lastUsed: new Date().toISOString(),
+        isDefault: true
+      },
+      'playground': {
+        id: 'playground', 
+        name: 'Playground',
+        description: 'Experimental testing and rapid prototyping',
+        prompt: 'Focus on quick experimentation, testing ideas, and rapid iteration without production constraints. Encourage creative problem-solving and proof-of-concept development.',
+        created: new Date().toISOString(),
+        lastUsed: new Date().toISOString(),
+        isDefault: true
+      }
+    };
+
+    // Load Projects from localStorage
+    function loadProjects() {
+      const savedProjects = localStorage.getItem('spockProjects');
+      if (savedProjects) {
+        projects = JSON.parse(savedProjects);
+      } else {
+        // First time - initialize with defaults
+        projects = {...defaultProjects};
+        localStorage.setItem('spockProjects', JSON.stringify(projects));
+      }
+    }
+
+    // Update project last used timestamp
+    function updateProjectLastUsed(projectId) {
+      if (projects[projectId]) {
+        projects[projectId].lastUsed = new Date().toISOString();
+        localStorage.setItem('spockProjects', JSON.stringify(projects));
+      }
+    }
+
+    // Get project context prompt
+    function getProjectContext(projectId) {
+      return projects[projectId]?.prompt || defaultProjects.general.prompt;
+    }
+
+    // Populate project selector dropdown
+    function populateProjectSelector() {
+      const selector = document.getElementById('projectSelector');
+      if (!selector) return;
+      
+      // Clear existing options
+      selector.innerHTML = '';
+      
+      // Sort projects - defaults first, then by name
+      const projectArray = Object.values(projects).sort((a, b) => {
+        if (a.isDefault && !b.isDefault) return -1;
+        if (!a.isDefault && b.isDefault) return 1;
+        return a.name.localeCompare(b.name);
+      });
+      
+      // Add options
+      projectArray.forEach(project => {
+        const option = document.createElement('option');
+        option.value = project.id;
+        option.textContent = project.name;
+        if (project.isDefault) {
+          option.textContent += ' ⭐';
+        }
+        selector.appendChild(option);
+      });
+      
+      // Set current selection
+      selector.value = currentProject;
+    }
+
+    // Handle project switching with auto-save
+    function switchProject(newProjectId) {
+      if (newProjectId === currentProject) return;
+      
+      // Auto-save current conversation if it exists
+      if (conversationHistory.length > 0) {
+        autoSaveCurrentState();
+        showNotification(`💾 Auto-saved conversation for ${projects[currentProject]?.name || currentProject}`);
+      }
+      
+      // Switch to new project
+      const oldProject = currentProject;
+      currentProject = newProjectId;
+      
+      // Update last used timestamp
+      updateProjectLastUsed(currentProject);
+      
+      // Update UI
+      updateProjectInfo();
+      updateChatTitle();
+      
+      // Clear current conversation for new project
+      conversationHistory = [];
+      const messagesContainer = document.getElementById('chatMessages');
+      messagesContainer.innerHTML = `
+        <div class="welcome-message">
+          <div class="welcome-icon">🖖</div>
+          <div class="welcome-title">PROJECT: ${projects[currentProject]?.name.toUpperCase() || currentProject.toUpperCase()}</div>
+          <div class="welcome-subtitle">
+            ${projects[currentProject]?.description || 'Ready for new conversation.'}<br><br>
+            <em style="color: var(--primary-gold);">"Logic is the beginning of wisdom, not the end."</em>
+          </div>
+        </div>
+      `;
+      
+      // Try to restore auto-saved conversation for this project
+      setTimeout(() => {
+        restoreAutoSavedState();
+      }, 100);
+      
+      showNotification(`🚀 Switched to ${projects[currentProject]?.name || currentProject}`);
+    }
+
+    // Update project info display
+    function updateProjectInfo() {
+      const projectInfo = document.getElementById('projectInfo');
+      if (projectInfo && projects[currentProject]) {
+        projectInfo.textContent = projects[currentProject].description;
+      }
+    }
+
+    // Update chat title
+    function updateChatTitle() {
+      const chatTitle = document.getElementById('chatTitle');
+      if (chatTitle && projects[currentProject]) {
+        chatTitle.textContent = `🖖 ${projects[currentProject].name.toUpperCase()}`;
+      }
+    }
 
     // Model configurations
     const modelConfigs = {
@@ -1609,14 +1736,14 @@
             if (systemPrompt) systemPrompt += '\n\n';
             systemPrompt += prompts.projects[currentProject];
           } else {
-            // Fallback to default project context
+            // Fallback to dynamic project context
             if (systemPrompt) systemPrompt += '\n\n';
-            systemPrompt += projectContexts[currentProject];
+            systemPrompt += getProjectContext(currentProject);
           }
           
         } else {
-          // No saved prompts - use defaults only
-          systemPrompt = projectContexts[currentProject];
+          // No saved prompts - use dynamic project context
+          systemPrompt = getProjectContext(currentProject);
           systemPrompt += `\n\nYou operate with Vulcan-like calm and precision. Always provide:
 - Clear, actionable solutions
 - Clean code examples when relevant  
@@ -2123,27 +2250,20 @@ ${canvasContext.content}`;
       });
       
       projectSelector.addEventListener('change', function() {
-        currentProject = this.value;
-        
-        const descriptions = {
-          telegram: "Advanced lead capture with AI-powered qualification and predictive scoring",
-          email: "Real-time monitoring with optimization and predictive failure detection",
-          response: "Multi-model synthesis with logic processing and efficiency optimization",
-          club: "Membership system with benefits tracking and engagement features",
-          b2b: "Automated certificate generation for hospitality compliance",
-          booking: "Advanced booking system with scheduling and payment integration",
-          spock: "Building the AI development console with conversation threads and Canvas management"
-        };
-        
-        document.getElementById('projectInfo').textContent = descriptions[this.value];
-        document.getElementById('chatTitle').textContent = `🖖 ${this.options[this.selectedIndex].text.toUpperCase()}`;
+        switchProject(this.value);
       });
+      
+      // Initialize projects and populate selector
+      loadProjects();
+      populateProjectSelector();
+      
+      // Set initial project info and title
+      updateProjectInfo();
+      updateChatTitle();
 
       modelSelector.addEventListener('change', function() {
         updateModelSelection(this.value);
       });
-      
-      projectSelector.dispatchEvent(new Event('change'));
       
       // Initialize model selector
       initializeModelSelector();
