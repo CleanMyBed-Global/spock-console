@@ -1,5 +1,4 @@
-// ===== STEP 1: PLUGIN FOUNDATION =====
-
+// ===== CANVAS PLUGIN - COMPLETE FILE =====
 // FILE: plugins/canvas/canvas-plugin.js
 class CanvasPlugin {
   constructor() {
@@ -506,6 +505,7 @@ let canvasPlugin = null;
 async function loadCanvasPlugin() {
   try {
     canvasPlugin = new CanvasPlugin();
+    window.canvasPlugin = canvasPlugin; // Make sure it's globally available
     await canvasPlugin.initialize();
   } catch (error) {
     console.error('Failed to load Canvas Plugin:', error);
