@@ -1552,6 +1552,7 @@
       `;
     }
 
+    // FIXED sendMessage() FUNCTION WITH CORRECT HIERARCHY
     async function sendMessage() {
       const input = document.getElementById('messageInput');
       const message = input.value.trim();
@@ -1570,10 +1571,60 @@
       setLoading(true);
       
       try {
-        // FIXED: Check for custom prompts from localStorage and build proper hierarchy
-        let systemPrompt = projectContexts[currentProject];
+        // CLEAN HIERARCHY IMPLEMENTATION - CORRECT ORDER
+        // Build system prompt in correct priority order
+        let systemPrompt = '';
         
-        // Add canvas context if active
+        const savedPrompts = localStorage.getItem('spockPrompts');
+        if (savedPrompts) {
+          const prompts = JSON.parse(savedPrompts);
+          
+          // 1. GLOBAL SYSTEM PROMPTS (Highest Priority - Always Applied)
+          if (prompts.systemPrompts) {
+            systemPrompt = prompts.systemPrompts;
+          }
+          
+          // 2. CANVAS SETTINGS (Only if enabled and not causing interference)
+          if (prompts.canvasSettings && prompts.canvasSettings.enabled && prompts.canvasSettings.instructions) {
+            if (systemPrompt) systemPrompt += '\n\n';
+            systemPrompt += prompts.canvasSettings.instructions;
+          }
+          
+          // 3. PERSONALITY PROMPTS
+          if (prompts.globalPersonality) {
+            if (systemPrompt) systemPrompt += '\n\n';
+            systemPrompt += prompts.globalPersonality;
+          } else {
+            // Default personality if none set
+            if (systemPrompt) systemPrompt += '\n\n';
+            systemPrompt += `You operate with Vulcan-like calm and precision. Always provide:
+- Clear, actionable solutions
+- Clean code examples when relevant  
+- Logical next steps
+- Professional technical guidance`;
+          }
+          
+          // 4. PROJECT CONTEXT (Lowest Priority - Most Specific)
+          if (prompts.projects && prompts.projects[currentProject]) {
+            if (systemPrompt) systemPrompt += '\n\n';
+            systemPrompt += prompts.projects[currentProject];
+          } else {
+            // Fallback to default project context
+            if (systemPrompt) systemPrompt += '\n\n';
+            systemPrompt += projectContexts[currentProject];
+          }
+          
+        } else {
+          // No saved prompts - use defaults only
+          systemPrompt = projectContexts[currentProject];
+          systemPrompt += `\n\nYou operate with Vulcan-like calm and precision. Always provide:
+- Clear, actionable solutions
+- Clean code examples when relevant  
+- Logical next steps
+- Professional technical guidance`;
+        }
+        
+        // CANVAS CONTEXT (Active Canvas Override - Applied Last if Canvas is Active)
         if (window.canvasPlugin && canvasPlugin.hasActiveCanvas()) {
           const canvasContext = canvasPlugin.getCanvasContext();
           systemPrompt += `\n\nACTIVE CANVAS CONTEXT:
@@ -1586,74 +1637,6 @@ When the user asks for modifications, additions, or improvements to this canvas:
 
 Current canvas content:
 ${canvasContext.content}`;
-        }
-        
-        const savedPrompts = localStorage.getItem('spockPrompts');
-        if (savedPrompts) {
-          const prompts = JSON.parse(savedPrompts);
-          
-          // ALWAYS apply system prompts (the "Gazza Context Layer") FIRST - HIGHEST PRIORITY
-          if (prompts.systemPrompts) {
-            systemPrompt = `${prompts.systemPrompts}\n\n${systemPrompt}`;
-          }
-          
-          // Apply project-specific prompts if they exist
-          if (prompts.projects && prompts.projects[currentProject]) {
-            systemPrompt = `${systemPrompt}\n\n${prompts.projects[currentProject]}`;
-            
-            // Add canvas context to custom prompts
-            if (window.canvasPlugin && canvasPlugin.hasActiveCanvas()) {
-              const canvasContext = canvasPlugin.getCanvasContext();
-              systemPrompt += `\n\nACTIVE CANVAS CONTEXT:
-You are currently working on a canvas: "${canvasContext.name}"
-When the user asks for modifications, additions, or improvements:
-- Start your response with [UPDATE-CANVAS] 
-- Provide the updated content
-- DO NOT create a new canvas
-- Focus on surgical edits that preserve existing work
-
-Current canvas content:
-${canvasContext.content}`;
-            }
-          } else {
-            // Add canvas context to default project prompts
-            if (window.canvasPlugin && canvasPlugin.hasActiveCanvas()) {
-              const canvasContext = canvasPlugin.getCanvasContext();
-              systemPrompt += `\n\nACTIVE CANVAS CONTEXT:
-You are currently working on a canvas: "${canvasContext.name}"
-When the user asks for modifications, additions, or improvements:
-- Start your response with [UPDATE-CANVAS] 
-- Provide the updated content
-- DO NOT create a new canvas
-- Focus on surgical edits that preserve existing work
-
-Current canvas content:
-${canvasContext.content}`;
-            }
-          }
-          
-          // Apply personality prompts - AFTER project context  
-          if (prompts.globalPersonality) {
-            systemPrompt += `\n\n${prompts.globalPersonality}`;
-          } else {
-            systemPrompt += `\n\nYou operate with Vulcan-like calm and precision. Always provide:
-- Clear, actionable solutions
-- Clean code examples when relevant  
-- Logical next steps
-- Professional technical guidance`;
-          }
-          
-          // Apply Canvas Behavior Settings if enabled - LAST
-          if (prompts.canvasSettings && prompts.canvasSettings.enabled && prompts.canvasSettings.instructions) {
-            systemPrompt += `\n\n${prompts.canvasSettings.instructions}`;
-          }
-          
-        } else {
-          systemPrompt += `\n\nYou operate with Vulcan-like calm and precision. Always provide:
-- Clear, actionable solutions
-- Clean code examples when relevant  
-- Logical next steps
-- Professional technical guidance`;
         }
 
         const messages = [
