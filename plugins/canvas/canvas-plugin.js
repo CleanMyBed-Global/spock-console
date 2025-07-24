@@ -1,590 +1,597 @@
-/* ===== CANVAS PLUGIN STYLES ===== */
-
-/* Canvas Toggle Button in Header */
-.canvas-toggle-btn {
-  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.8rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  letter-spacing: 0.5px;
-}
-
-.canvas-toggle-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
-  background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
-}
-
-/* Canvas Container */
-.canvas-container {
-  width: 50%;
-  min-width: 400px;
-  background: linear-gradient(135deg, rgba(15, 15, 16, 0.95) 0%, rgba(20, 20, 21, 0.95) 100%);
-  backdrop-filter: blur(10px);
-  border-left: 1px solid var(--border-subtle);
-  display: flex;
-  flex-direction: column;
-  transition: all 0.3s ease;
-}
-
-.canvas-container.hidden {
-  width: 0;
-  min-width: 0;
-  overflow: hidden;
-  border-left: none;
-}
-
-/* Split Mode Layout */
-.main.split-mode {
-  width: 50%;
-}
-
-/* Canvas Header */
-.canvas-header {
-  background: linear-gradient(135deg, var(--card-bg) 0%, rgba(15, 15, 15, 0.98) 100%);
-  backdrop-filter: blur(10px);
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--border-subtle);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.canvas-title {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--primary-gold);
-  letter-spacing: 1px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.canvas-controls {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.canvas-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-subtle);
-  border-radius: 4px;
-  color: var(--text-tertiary);
-  padding: 0.5rem 1rem;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.canvas-btn:hover {
-  background: rgba(212, 175, 55, 0.1);
-  border-color: var(--primary-gold);
-  color: var(--primary-gold);
-}
-
-.canvas-btn.primary {
-  background: linear-gradient(135deg, var(--primary-gold), var(--secondary-gold));
-  color: var(--dark-bg);
-  border-color: var(--primary-gold);
-}
-
-.canvas-btn.primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
-}
-
-/* Canvas Content */
-.canvas-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 1rem;
-  background: rgba(10, 10, 11, 0.3);
-}
-
-/* Canvas Placeholder */
-.canvas-placeholder {
-  text-align: center;
-  padding: 4rem 2rem;
-  color: var(--text-tertiary);
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-.canvas-placeholder-icon {
-  font-size: 4rem;
-  margin-bottom: 1.5rem;
-  opacity: 0.3;
-  filter: grayscale(1);
-}
-
-.canvas-placeholder-text {
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  margin-bottom: 0.75rem;
-  font-family: 'JetBrains Mono', monospace;
-}
-
-.canvas-placeholder-hint {
-  font-size: 0.85rem;
-  line-height: 1.5;
-  color: var(--text-tertiary);
-  max-width: 300px;
-}
-
-/* Canvas Editor */
-.canvas-editor {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.canvas-tabs {
-  display: flex;
-  background: rgba(0, 0, 0, 0.2);
-  border-bottom: 1px solid var(--border-subtle);
-  padding: 0.5rem;
-  gap: 0.25rem;
-  overflow-x: auto;
-}
-
-.canvas-tab {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--border-subtle);
-  border-radius: 6px 6px 0 0;
-  padding: 0.5rem 1rem;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.75rem;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-}
-
-.canvas-tab:hover {
-  background: rgba(212, 175, 55, 0.1);
-  border-color: var(--primary-gold);
-  color: var(--primary-gold);
-}
-
-.canvas-tab.active {
-  background: linear-gradient(135deg, rgba(212, 175, 55, 0.2) 0%, rgba(212, 175, 55, 0.1) 100%);
-  border-color: var(--primary-gold);
-  color: var(--primary-gold);
-  border-bottom-color: transparent;
-}
-
-.canvas-tab-name {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.canvas-tab-close {
-  opacity: 0.5;
-  cursor: pointer;
-  padding: 2px;
-  border-radius: 2px;
-  transition: all 0.2s ease;
-}
-
-.canvas-tab-close:hover {
-  opacity: 1;
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.canvas-tab-add {
-  background: transparent;
-  border: 1px dashed var(--border-subtle);
-  color: var(--text-tertiary);
-  min-width: 40px;
-  justify-content: center;
-  font-size: 1rem;
-}
-
-.canvas-tab-add:hover {
-  border-style: solid;
-  border-color: var(--primary-gold);
-  color: var(--primary-gold);
-}
-
-/* Canvas Workspace */
-.canvas-workspace {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background: rgba(5, 5, 6, 0.5);
-}
-
-.canvas-toolbar {
-  background: rgba(0, 0, 0, 0.3);
-  border-bottom: 1px solid var(--border-subtle);
-  padding: 0.75rem 1rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-}
-
-.canvas-toolbar-left {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.canvas-toolbar-right {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.canvas-name-input {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--border-subtle);
-  border-radius: 4px;
-  padding: 0.5rem 0.75rem;
-  color: var(--text-primary);
-  font-family: 'Inter', sans-serif;
-  font-size: 0.85rem;
-  min-width: 200px;
-}
-
-.canvas-name-input:focus {
-  outline: none;
-  border-color: var(--primary-gold);
-  background: rgba(255, 255, 255, 0.05);
-}
-
-/* Canvas Content Area */
-.canvas-content-area {
-  flex: 1;
-  padding: 1.5rem;
-  overflow-y: auto;
-  background: linear-gradient(135deg, rgba(10, 10, 11, 0.8) 0%, rgba(15, 15, 16, 0.8) 100%);
-}
-
-.canvas-artifact {
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
-  overflow: hidden;
-  margin-bottom: 1rem;
-}
-
-.canvas-artifact-header {
-  background: rgba(0, 0, 0, 0.6);
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--border-subtle);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.canvas-artifact-title {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.8rem;
-  color: var(--primary-gold);
-  font-weight: 500;
-}
-
-.canvas-artifact-actions {
-  display: flex;
-  gap: 0.25rem;
-}
-
-.canvas-artifact-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-subtle);
-  border-radius: 3px;
-  color: var(--text-tertiary);
-  padding: 0.25rem 0.5rem;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.canvas-artifact-btn:hover {
-  background: rgba(212, 175, 55, 0.1);
-  border-color: var(--primary-gold);
-  color: var(--primary-gold);
-}
-
-.canvas-artifact-content {
-  padding: 1rem;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.8rem;
-  line-height: 1.5;
-  color: var(--text-primary);
-  background: rgba(0, 0, 0, 0.2);
-  white-space: pre-wrap;
-  overflow-x: auto;
-}
-
-/* Responsive Design */
-@media (max-width: 1200px) {
-  .canvas-container {
-    width: 45%;
-    min-width: 350px;
+// ===== CANVAS PLUGIN - COMPLETE FILE =====
+// FILE: plugins/canvas/canvas-plugin.js
+class CanvasPlugin {
+  constructor() {
+    this.isEnabled = false;
+    this.isInitialized = false;
+    this.version = '1.0.0';
+    
+    console.log('🎨 Canvas Plugin loaded v' + this.version);
   }
   
-  .main.split-mode {
-    width: 55%;
-  }
-}
-
-@media (max-width: 768px) {
-  .canvas-container {
-    width: 100%;
-    min-width: 0;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 1000;
-    border-left: none;
-  }
-  
-  .canvas-container.hidden {
-    display: none;
-  }
-  
-  .main.split-mode {
-    width: 100%;
-  }
-  
-  .canvas-toggle-btn {
-    padding: 0.5rem;
-    font-size: 0.7rem;
-  }
-  
-  .canvas-placeholder {
-    padding: 2rem 1rem;
+  // Initialize the plugin
+  async initialize() {
+    try {
+      console.log('🎨 Initializing Canvas Plugin...');
+      
+      // Load required CSS
+      this.loadCSS();
+      
+      // Set up event listeners
+      this.setupEventListeners();
+      
+      // Initialize UI components
+      this.initializeUI();
+      
+      this.isInitialized = true;
+      this.isEnabled = true;
+      
+      console.log('✅ Canvas Plugin initialized successfully');
+      
+      // Notify the main app
+      window.dispatchEvent(new CustomEvent('canvas-plugin-ready', {
+        detail: { version: this.version }
+      }));
+      
+    } catch (error) {
+      console.error('❌ Canvas Plugin initialization failed:', error);
+      this.isEnabled = false;
+    }
   }
   
-  .canvas-placeholder-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
+  // Load plugin CSS
+  loadCSS() {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = './plugins/canvas/canvas-styles.css';
+    document.head.appendChild(link);
   }
   
-  .canvas-tabs {
-    padding: 0.25rem;
+  // Set up event listeners for chat integration
+  setupEventListeners() {
+    // Listen for chat messages
+    window.addEventListener('spock-chat-message', (event) => {
+      this.handleChatMessage(event.detail);
+    });
+    
+    // Listen for canvas creation requests
+    window.addEventListener('canvas-create-request', (event) => {
+      this.createCanvas(event.detail);
+    });
   }
   
-  .canvas-tab {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.7rem;
+  // Initialize UI components
+  initializeUI() {
+    // Add canvas toggle button to chat header
+    this.addCanvasToggleButton();
+    
+    // Create hidden canvas container
+    this.createCanvasContainer();
   }
   
-  .canvas-toolbar {
-    padding: 0.5rem;
-    flex-wrap: wrap;
+  // Add canvas toggle button to existing chat header
+  addCanvasToggleButton() {
+    const chatHeader = document.querySelector('.chat-header');
+    if (!chatHeader) return;
+    
+    const toggleButton = document.createElement('button');
+    toggleButton.id = 'canvasToggleBtn';
+    toggleButton.className = 'canvas-toggle-btn';
+    toggleButton.innerHTML = '🎨 Show Canvas';
+    toggleButton.onclick = () => this.toggleCanvas();
+    
+    chatHeader.appendChild(toggleButton);
   }
   
-  .canvas-name-input {
-    min-width: 150px;
-    font-size: 0.8rem;
-  }
-}
-
-/* Canvas Confirmation UI */
-.canvas-confirmation {
-  background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(8, 145, 178, 0.1) 100%);
-  border: 1px solid rgba(6, 182, 212, 0.3);
-  border-radius: 12px;
-  margin: 1rem 0;
-  padding: 1.5rem;
-  animation: slideInUp 0.3s ease-out;
-  backdrop-filter: blur(10px);
-}
-
-@keyframes slideInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.canvas-confirmation-content {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.canvas-confirmation-icon {
-  font-size: 2rem;
-  filter: hue-rotate(180deg);
-}
-
-.canvas-confirmation-text {
-  flex: 1;
-}
-
-.canvas-confirmation-title {
-  font-family: 'JetBrains Mono', monospace;
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: #06b6d4;
-  margin-bottom: 0.25rem;
-}
-
-.canvas-confirmation-subtitle {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  font-style: italic;
-}
-
-.canvas-confirmation-actions {
-  display: flex;
-  gap: 0.5rem;
-  flex-direction: column;
-}
-
-.canvas-confirmation-btn {
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.75rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: none;
-  white-space: nowrap;
-  min-width: 130px;
-}
-
-.canvas-confirmation-btn.create {
-  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
-  color: white;
-}
-
-.canvas-confirmation-btn.create:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.4);
-}
-
-.canvas-confirmation-btn.cancel {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-subtle);
-  color: var(--text-tertiary);
-}
-
-.canvas-confirmation-btn.cancel:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text-primary);
-}
-
-/* Canvas Status */
-.canvas-status {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
-  color: var(--success);
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-/* Enhanced Canvas Artifact */
-.canvas-artifact {
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
-  overflow: hidden;
-  margin-bottom: 1rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.canvas-artifact-header {
-  background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(8, 145, 178, 0.1) 100%);
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid rgba(6, 182, 212, 0.2);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.canvas-artifact-title {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.85rem;
-  color: #06b6d4;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.canvas-artifact-content {
-  padding: 1.5rem;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.85rem;
-  line-height: 1.6;
-  color: var(--text-primary);
-  background: rgba(0, 0, 0, 0.2);
-  white-space: pre-wrap;
-  overflow-x: auto;
-}
-
-/* Responsive confirmation */
-@media (max-width: 768px) {
-  .canvas-confirmation-content {
-    flex-direction: column;
-    text-align: center;
-    gap: 1rem;
+  // Create canvas container (initially hidden)
+  createCanvasContainer() {
+    const main = document.querySelector('.main');
+    if (!main) return;
+    
+    const canvasContainer = document.createElement('div');
+    canvasContainer.id = 'canvasContainer';
+    canvasContainer.className = 'canvas-container hidden';
+    canvasContainer.innerHTML = `
+      <div class="canvas-header">
+        <div class="canvas-title">🎨 Canvas Workspace</div>
+        <div class="canvas-controls">
+          <button class="canvas-btn" onclick="canvasPlugin.hideCanvas()">Hide</button>
+        </div>
+      </div>
+      <div class="canvas-content">
+        <div class="canvas-placeholder">
+          <div class="canvas-placeholder-icon">🎨</div>
+          <div class="canvas-placeholder-text">No canvas created yet</div>
+          <div class="canvas-placeholder-hint">Ask Spock to build something to create your first canvas</div>
+        </div>
+      </div>
+    `;
+    
+    // Insert after main content
+    document.querySelector('.container').appendChild(canvasContainer);
   }
   
-  .canvas-confirmation-actions {
-    flex-direction: row;
-    justify-content: center;
+  // Handle incoming chat messages
+  handleChatMessage(messageData) {
+    if (!this.isEnabled) return;
+    
+    console.log('🎨 Canvas Plugin received chat message:', messageData);
+    
+    // Check for canvas update command
+    if (messageData.content.startsWith('[UPDATE-CANVAS]')) {
+      this.updateActiveCanvas(messageData.content);
+      return;
+    }
+    
+    // Enhanced canvas trigger detection for new canvas creation
+    const message = messageData.content.toLowerCase();
+    const canvasData = this.detectCanvasTrigger(message);
+    
+    if (canvasData) {
+      console.log('🎨 Canvas trigger detected:', canvasData);
+      this.showCanvasConfirmation(canvasData);
+    }
+  }
+
+  // Update active canvas with new content
+  updateActiveCanvas(content) {
+    if (!this.hasActiveCanvas()) {
+      console.warn('🎨 No active canvas to update');
+      return;
+    }
+
+    // Remove the [UPDATE-CANVAS] prefix
+    const updatedContent = content.replace('[UPDATE-CANVAS]', '').trim();
+    
+    // Update the canvas content
+    const contentArea = document.querySelector('.canvas-artifact-content');
+    if (contentArea) {
+      contentArea.textContent = updatedContent;
+      console.log('🎨 Canvas updated with new content');
+      
+      // Visual feedback
+      contentArea.style.border = '2px solid #06b6d4';
+      setTimeout(() => {
+        contentArea.style.border = '';
+      }, 1000);
+      
+      // Show notification in chat
+      this.addCanvasUpdateNotification();
+    }
+  }
+
+  // Add canvas update notification to chat
+  addCanvasUpdateNotification() {
+    const chatMessages = document.getElementById('chatMessages');
+    if (!chatMessages) return;
+
+    const notification = document.createElement('div');
+    notification.className = 'canvas-update-notification';
+    notification.innerHTML = `
+      <div class="canvas-update-content">
+        <div class="canvas-update-icon">🎨</div>
+        <div class="canvas-update-text">Canvas updated successfully</div>
+      </div>
+    `;
+    
+    chatMessages.appendChild(notification);
+    this.scrollToBottom();
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+      notification.remove();
+    }, 3000);
   }
   
-  .canvas-confirmation-btn {
-    min-width: 110px;
-    font-size: 0.7rem;
+  // Smart canvas trigger detection
+  detectCanvasTrigger(message) {
+    // Define trigger patterns with confidence scores
+    const patterns = [
+      // High confidence triggers
+      { regex: /build\s+(me\s+)?(?:a\s+)?(.+?)(?:\s+(?:system|app|component|interface|feature|module|function|class|api))?$/i, confidence: 0.9, type: 'build' },
+      { regex: /create\s+(?:a\s+)?(.+?)(?:\s+(?:system|app|component|interface|feature|module|function|class|api))?$/i, confidence: 0.9, type: 'create' },
+      { regex: /generate\s+(?:a\s+)?(.+?)(?:\s+(?:system|code|script|function|class|component))?$/i, confidence: 0.8, type: 'generate' },
+      { regex: /make\s+(?:me\s+)?(?:a\s+)?(.+?)(?:\s+(?:system|app|component|interface|feature))?$/i, confidence: 0.8, type: 'make' },
+      { regex: /develop\s+(?:a\s+)?(.+?)(?:\s+(?:system|application|feature|module))?$/i, confidence: 0.8, type: 'develop' },
+      { regex: /write\s+(?:a\s+)?(.+?)(?:\s+(?:function|class|component|script|module))?$/i, confidence: 0.7, type: 'write' },
+      
+      // Medium confidence triggers
+      { regex: /implement\s+(?:a\s+)?(.+?)$/i, confidence: 0.6, type: 'implement' },
+      { regex: /design\s+(?:a\s+)?(.+?)$/i, confidence: 0.5, type: 'design' },
+      { regex: /code\s+(?:a\s+)?(.+?)$/i, confidence: 0.7, type: 'code' },
+      
+      // Code-specific triggers
+      { regex: /(?:html|css|javascript|python|react|vue|angular|node|express)\s+(.+)/i, confidence: 0.8, type: 'code' },
+      { regex: /(?:function|class|component|api|endpoint|database|auth|login|signup)\s+(.+)/i, confidence: 0.7, type: 'code' }
+    ];
+    
+    // Keywords that boost confidence
+    const boostKeywords = [
+      'system', 'application', 'app', 'interface', 'dashboard', 'portal',
+      'component', 'module', 'feature', 'function', 'class', 'api',
+      'database', 'auth', 'authentication', 'login', 'signup', 'user',
+      'admin', 'management', 'booking', 'payment', 'chat', 'bot'
+    ];
+    
+    // Keywords that reduce confidence (discussion words)
+    const reduceKeywords = [
+      'about', 'how', 'why', 'what', 'when', 'where', 'explain', 'tell',
+      'describe', 'discuss', 'think', 'opinion', 'advice', 'help',
+      'question', 'problem', 'issue', 'error', 'debug', 'fix'
+    ];
+    
+    for (const pattern of patterns) {
+      const match = message.match(pattern.regex);
+      if (match && match[1]) {
+        let confidence = pattern.confidence;
+        const extractedName = match[1].trim();
+        
+        // Skip if extracted name is too short or generic
+        if (extractedName.length < 3 || ['it', 'this', 'that', 'one', 'something'].includes(extractedName)) {
+          continue;
+        }
+        
+        // Boost confidence for specific keywords
+        if (boostKeywords.some(keyword => message.includes(keyword))) {
+          confidence += 0.1;
+        }
+        
+        // Reduce confidence for discussion keywords
+        if (reduceKeywords.some(keyword => message.includes(keyword))) {
+          confidence -= 0.2;
+        }
+        
+        // Only trigger if confidence is above threshold
+        if (confidence >= 0.6) {
+          return {
+            name: this.cleanCanvasName(extractedName),
+            type: pattern.type,
+            confidence: confidence,
+            originalText: match[0]
+          };
+        }
+      }
+    }
+    
+    return null;
+  }
+  
+  // Clean and format canvas name
+  cleanCanvasName(name) {
+    return name
+      .replace(/(?:system|app|application|component|interface|feature|module|function|class|api)$/i, '')
+      .trim()
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  }
+  
+  // Show canvas creation confirmation
+  showCanvasConfirmation(canvasData) {
+    // Remove any existing confirmation
+    this.hideCanvasConfirmation();
+    
+    // Create confirmation UI
+    const confirmation = document.createElement('div');
+    confirmation.id = 'canvasConfirmation';
+    confirmation.className = 'canvas-confirmation';
+    confirmation.innerHTML = `
+      <div class="canvas-confirmation-content">
+        <div class="canvas-confirmation-icon">🎨</div>
+        <div class="canvas-confirmation-text">
+          <div class="canvas-confirmation-title">Create Canvas?</div>
+          <div class="canvas-confirmation-subtitle">"${canvasData.name}"</div>
+        </div>
+        <div class="canvas-confirmation-actions">
+          <button class="canvas-confirmation-btn create" onclick="canvasPlugin.confirmCanvasCreation('${canvasData.name}', '${canvasData.type}')">
+            ✅ Create Canvas
+          </button>
+          <button class="canvas-confirmation-btn cancel" onclick="canvasPlugin.hideCanvasConfirmation()">
+            💬 Chat Only
+          </button>
+        </div>
+      </div>
+    `;
+    
+    // Add to chat messages area
+    const chatMessages = document.getElementById('chatMessages');
+    if (chatMessages) {
+      chatMessages.appendChild(confirmation);
+      this.scrollToBottom();
+      
+      // Auto-hide after 10 seconds
+      setTimeout(() => {
+        this.hideCanvasConfirmation();
+      }, 10000);
+    }
+  }
+  
+  // Hide canvas confirmation
+  hideCanvasConfirmation() {
+    const confirmation = document.getElementById('canvasConfirmation');
+    if (confirmation) {
+      confirmation.remove();
+    }
+  }
+  
+  // Confirm canvas creation
+  confirmCanvasCreation(name, type) {
+    this.hideCanvasConfirmation();
+    console.log('🎨 Creating canvas:', { name, type });
+    
+    // Show canvas if hidden
+    this.showCanvas();
+    
+    // Create the actual canvas
+    this.createNewCanvas(name, type);
+  }
+  
+  // Check if canvas has active work
+  hasActiveCanvas() {
+    const canvasContent = document.querySelector('.canvas-content');
+    return canvasContent && !canvasContent.querySelector('.canvas-placeholder');
+  }
+  
+  // Get current canvas context
+  getCanvasContext() {
+    const nameInput = document.querySelector('.canvas-name-input');
+    const contentArea = document.querySelector('.canvas-artifact-content');
+    
+    return {
+      name: nameInput ? nameInput.value : 'Untitled Canvas',
+      content: contentArea ? contentArea.textContent : ''
+    };
+  }
+  
+  // Save current canvas state
+  saveCurrentState() {
+    // Implementation for saving canvas state
+    console.log('🎨 Canvas state saved');
+  }
+  
+  // Canvas action methods (placeholder implementations)
+  saveCanvas() {
+    console.log('🎨 Saving canvas...');
+    showNotification('Canvas saved!');
+  }
+  
+  deployCanvas() {
+    console.log('🎨 Deploying canvas...');
+    showNotification('Canvas deployed!');
+  }
+  
+  editCanvas() {
+    console.log('🎨 Editing canvas...');
+    showNotification('Edit mode activated');
+  }
+  
+  copyCanvas() {
+    const content = document.querySelector('.canvas-artifact-content');
+    if (content) {
+      navigator.clipboard.writeText(content.textContent).then(() => {
+        showNotification('Canvas content copied!');
+      });
+    }
+  }
+  
+  // Create a new canvas
+  createNewCanvas(name, type) {
+    const canvasId = 'canvas_' + Date.now();
+    
+    const newCanvas = {
+      id: canvasId,
+      name: name,
+      type: type,
+      content: this.getCanvasTemplate(name, type),
+      created: new Date().toISOString(),
+      saves: [],
+      isActive: true
+    };
+    
+    // For now, just update the placeholder
+    this.displayCanvas(newCanvas);
+    
+    console.log('🎨 Canvas created:', newCanvas);
+  }
+  
+  // Get canvas template based on type
+  getCanvasTemplate(name, type) {
+    const templates = {
+      'build': `# ${name}
+
+## Overview
+Building ${name.toLowerCase()} with the following components:
+
+## Architecture
+- [ ] Core structure
+- [ ] Key components
+- [ ] Integration points
+
+## Implementation Plan
+1. Foundation setup
+2. Core functionality
+3. Integration & testing
+
+## Code Structure
+\`\`\`
+// ${name} implementation will go here
+\`\`\`
+
+---
+*Canvas created: ${new Date().toLocaleString()}*`,
+
+      'create': `# ${name}
+
+## Requirements
+Creating ${name.toLowerCase()} with these specifications:
+
+## Features
+- [ ] Primary functionality
+- [ ] User interface
+- [ ] Data management
+
+## Technical Details
+\`\`\`
+// ${name} code structure
+\`\`\`
+
+---
+*Canvas created: ${new Date().toLocaleString()}*`,
+
+      'default': `# ${name}
+
+## Project Overview
+${name} development workspace
+
+## Current Status
+🚀 Canvas created - ready for development
+
+## Next Steps
+- [ ] Define requirements
+- [ ] Plan architecture
+- [ ] Begin implementation
+
+---
+*Canvas created: ${new Date().toLocaleString()}*`
+    };
+    
+    return templates[type] || templates['default'];
+  }
+  
+  // Display canvas content
+  displayCanvas(canvas) {
+    const canvasContent = document.querySelector('.canvas-content');
+    if (!canvasContent) return;
+    
+    canvasContent.innerHTML = `
+      <div class="canvas-editor">
+        <div class="canvas-workspace">
+          <div class="canvas-toolbar">
+            <div class="canvas-toolbar-left">
+              <input type="text" class="canvas-name-input" value="${canvas.name}" readonly>
+              <span class="canvas-status">📝 Active</span>
+            </div>
+            <div class="canvas-toolbar-right">
+              <button class="canvas-btn" onclick="canvasPlugin.saveCanvas()">💾 Save</button>
+              <button class="canvas-btn primary" onclick="canvasPlugin.deployCanvas()">🚀 Deploy</button>
+            </div>
+          </div>
+          <div class="canvas-content-area">
+            <div class="canvas-artifact">
+              <div class="canvas-artifact-header">
+                <div class="canvas-artifact-title">${canvas.name}</div>
+                <div class="canvas-artifact-actions">
+                  <button class="canvas-artifact-btn" onclick="canvasPlugin.editCanvas()">✏️ Edit</button>
+                  <button class="canvas-artifact-btn" onclick="canvasPlugin.copyCanvas()">📋 Copy</button>
+                </div>
+              </div>
+              <div class="canvas-artifact-content">${canvas.content}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  
+  // Helper function for scrolling
+  scrollToBottom() {
+    const messagesContainer = document.getElementById('chatMessages');
+    if (messagesContainer) {
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+  }
+  
+  // Toggle canvas visibility
+  toggleCanvas() {
+    const container = document.getElementById('canvasContainer');
+    const toggleBtn = document.getElementById('canvasToggleBtn');
+    
+    if (!container) return;
+    
+    if (container.classList.contains('hidden')) {
+      this.showCanvas();
+    } else {
+      this.hideCanvas();
+    }
+  }
+  
+  // Show canvas
+  showCanvas() {
+    const container = document.getElementById('canvasContainer');
+    const toggleBtn = document.getElementById('canvasToggleBtn');
+    const main = document.querySelector('.main');
+    
+    if (!container || !main) return;
+    
+    container.classList.remove('hidden');
+    main.classList.add('split-mode');
+    toggleBtn.innerHTML = '🎨 Hide Canvas';
+    
+    console.log('🎨 Canvas shown');
+  }
+  
+  // Hide canvas
+  hideCanvas() {
+    const container = document.getElementById('canvasContainer');
+    const toggleBtn = document.getElementById('canvasToggleBtn');
+    const main = document.querySelector('.main');
+    
+    if (!container || !main) return;
+    
+    container.classList.add('hidden');
+    main.classList.remove('split-mode');
+    toggleBtn.innerHTML = '🎨 Show Canvas';
+    
+    console.log('🎨 Canvas hidden');
+  }
+  
+  // Create a new canvas
+  createCanvas(canvasData) {
+    console.log('🎨 Creating canvas:', canvasData);
+    // Canvas creation logic will go here
+  }
+  
+  // Cleanup method for nuking the plugin
+  destroy() {
+    console.log('💥 Destroying Canvas Plugin...');
+    
+    // Remove UI elements
+    const toggleBtn = document.getElementById('canvasToggleBtn');
+    const container = document.getElementById('canvasContainer');
+    
+    if (toggleBtn) toggleBtn.remove();
+    if (container) container.remove();
+    
+    // Reset main layout
+    const main = document.querySelector('.main');
+    if (main) main.classList.remove('split-mode');
+    
+    // Remove event listeners
+    window.removeEventListener('spock-chat-message', this.handleChatMessage);
+    window.removeEventListener('canvas-create-request', this.createCanvas);
+    
+    this.isEnabled = false;
+    this.isInitialized = false;
+    
+    console.log('💥 Canvas Plugin destroyed');
   }
 }
 
-/* Scrollbar styling for canvas */
-.canvas-content::-webkit-scrollbar,
-.canvas-content-area::-webkit-scrollbar {
-  width: 6px;
+// Global plugin instance
+let canvasPlugin = null;
+
+// Plugin loader function
+async function loadCanvasPlugin() {
+  try {
+    canvasPlugin = new CanvasPlugin();
+    window.canvasPlugin = canvasPlugin; // Make sure it's globally available
+    await canvasPlugin.initialize();
+  } catch (error) {
+    console.error('Failed to load Canvas Plugin:', error);
+  }
 }
 
-.canvas-content::-webkit-scrollbar-track,
-.canvas-content-area::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.canvas-content::-webkit-scrollbar-thumb,
-.canvas-content-area::-webkit-scrollbar-thumb {
-  background: rgba(6, 182, 212, 0.3);
-  border-radius: 3px;
-}
-
-.canvas-content::-webkit-scrollbar-thumb:hover,
-.canvas-content-area::-webkit-scrollbar-thumb:hover {
-  background: rgba(6, 182, 212, 0.5);
+// Export for potential future use
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = CanvasPlugin;
 }
