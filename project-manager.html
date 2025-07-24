@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spock Console - Project Manager</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap');
+    
+    :root {
+      --primary-gold: #d4af37;
+      --secondary-gold: #f4d03f;
+      --dark-bg: #0a0a0b;
+      --card-bg: rgba(26, 26, 26, 0.95);
+      --glass-bg: rgba(255, 255, 255, 0.03);
+      --border-subtle: rgba(212, 175, 55, 0.15);
+      --text-primary: #ffffff;
+      --text-secondary: #b0b0b0;
+      --text-tertiary: #666;
+      --success: #00ff88;
+      --warning: #ff6b35;
+      --error: #e74c3c;
+      --project-accent: #3498db;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #0a0a0b 0%, #161616 100%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* HEADER STYLES */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding: 1.5rem 2rem;
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      font-size: 1.2rem;
+      color: var(--primary-gold);
+      letter-spacing: 1px;
+    }
+
+    .logo-icon {
+      font-size: 1.5rem;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .nav-btn {
+      background: linear-gradient(135deg, var(--primary-gold), var(--secondary-gold));
+      color: var(--dark-bg);
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+    }
+
+    .nav-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+    }
+
+    .nav-btn.secondary {
+      background: linear-gradient(135deg, var(--project-accent) 0%, #2980b9 100%);
+      color: white;
+    }
+
+    /* MAIN CONTENT */
+    .content {
+      display: grid;
+      gap: 2rem;
+    }
+
+    .section {
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .section-header {
+      background: linear-gradient(135deg, var(--project-accent) 0%, #2980b9 100%);
+      color: white;
+      padding: 1.5rem 2rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      font-size: 1rem;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-content {
+      padding: 2rem;
+    }
+
+    /* PROJECT GRID */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .project-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .project-card:hover {
+      border-color: var(--project-accent);
+      background: rgba(52, 152, 219, 0.05);
+      transform: translateY(-2px);
+    }
+
+    .project-card.default {
+      border-color: var(--primary-gold);
+      background: rgba(212, 175, 55, 0.05);
+    }
+
+    .project-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    .project-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--primary-gold);
+      margin-bottom: 0.5rem;
+    }
+
+    .project-card.default .project-name {
+      color: var(--primary-gold);
+    }
+
+    .project-actions {
+      display: flex;
+      gap: 0.5rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .project-card:hover .project-actions {
+      opacity: 1;
+    }
+
+    .project-card.default .project-actions {
+      opacity: 0.5;
+    }
+
+    .action-btn {
+      padding: 0.25rem 0.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      color: var(--text-tertiary);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .action-btn:hover {
+      background: rgba(52, 152, 219, 0.1);
+      border-color: var(--project-accent);
+      color: var(--project-accent);
+    }
+
+    .action-btn.danger:hover {
+      background: rgba(231, 76, 60, 0.1);
+      border-color: var(--error);
+      color: var(--error);
+    }
+
+    .project-description {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.4;
+      margin-bottom: 1rem;
+    }
+
+    .project-prompt {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      padding: 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+      line-height: 1.4;
+      max-height: 100px;
+      overflow-y: auto;
+    }
+
+    .project-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1rem;
+      font-size: 0.7rem;
+      color: var(--text-tertiary);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .default-badge {
+      background: var(--primary-gold);
+      color: var(--dark-bg);
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 0.6rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* EMPTY STATE */
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--text-tertiary);
+    }
+
+    .empty-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    .empty-title {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      color: var(--project-accent);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .empty-subtitle {
+      font-size: 0.9rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+
+    /* MODAL STYLES */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(5px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal {
+      background: var(--card-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 2rem;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.active .modal {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .modal-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--project-accent);
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      transition: color 0.2s ease;
+    }
+
+    .modal-close:hover {
+      color: var(--text-primary);
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      display: block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.75rem;
+      background: var(--glass-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      transition: border-color 0.2s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--project-accent);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .form-textarea {
+      min-height: 100px;
+      resize: vertical;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+    }
+
+    .form-textarea.large {
+      min-height: 150px;
+    }
+
+    .form-help {
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+      margin-top: 0.25rem;
+    }
+
+    .form-error {
+      color: var(--error);
+      font-size: 0.8rem;
+      margin-top: 0.25rem;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    /* NOTIFICATION */
+    .notification {
+      position: fixed;
+      top: 2rem;
+      right: 2rem;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      font-weight: 500;
+      z-index: 2000;
+      transform: translateX(400px);
+      transition: transform 0.3s ease;
+    }
+
+    .notification.show {
+      transform: translateX(0);
+    }
+
+    .notification.success {
+      background: linear-gradient(135deg, var(--success) 0%, #00cc7a 100%);
+      color: var(--dark-bg);
+    }
+
+    .notification.error {
+      background: linear-gradient(135deg, var(--error) 0%, #c0392b 100%);
+      color: white;
+    }
+
+    .notification.warning {
+      background: linear-gradient(135deg, var(--warning) 0%, #e67e22 100%);
+      color: var(--dark-bg);
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem;
+      }
+
+      .header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+      }
+
+      .projects-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .modal {
+        width: 95%;
+        padding: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">
+        <div class="logo-icon">🖖📁</div>
+        <div>PROJECT MANAGER</div>
+      </div>
+      <div class="header-actions">
+        <button class="nav-btn secondary" onclick="createProject()">
+          <span>➕</span>
+          <span>New Project</span>
+        </button>
+        <a href="index.html" class="nav-btn">
+          <span>💬</span>
+          <span>Back to Console</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+      <!-- Projects Section -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">
+            <span>📋</span>
+            <span>Active Projects</span>
+          </div>
+          <div id="projectCount" class="project-count">2 Projects</div>
+        </div>
+        <div class="section-content">
+          <div id="projectsGrid" class="projects-grid">
+            <!-- Projects will be populated by JavaScript -->
+          </div>
+          
+          <!-- Empty State -->
+          <div id="emptyState" class="empty-state" style="display: none;">
+            <div class="empty-icon">📁</div>
+            <div class="empty-title">No Projects Yet</div>
+            <div class="empty-subtitle">
+              Create your first project to get started with organized development workflows.
+            </div>
+            <button class="nav-btn secondary" onclick="createProject()">
+              <span>➕</span>
+              <span>Create First Project</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Project Modal -->
+  <div id="projectModal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <div id="modalTitle" class="modal-title">New Project</div>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      
+      <form id="projectForm">
+        <div class="form-group">
+          <label class="form-label" for="projectName">Project Name *</label>
+          <input type="text" id="projectName" class="form-input" placeholder="Enter project name..." maxlength="30" required>
+          <div class="form-help">3-30 characters, displayed in dropdown selector</div>
+          <div id="nameError" class="form-error" style="display: none;"></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="projectDescription">Description *</label>
+          <textarea id="projectDescription" class="form-input form-textarea" placeholder="Brief overview of this project..." maxlength="100" required></textarea>
+          <div class="form-help">10-100 characters, shown in project cards</div>
+          <div id="descError" class="form-error" style="display: none;"></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="projectPrompt">Project Context Prompt *</label>
+          <textarea id="projectPrompt" class="form-input form-textarea large" placeholder="Define the AI's role and expertise for this project..." required></textarea>
+          <div class="form-help">Detailed context that guides AI behavior for this specific project</div>
+          <div id="promptError" class="form-error" style="display: none;"></div>
+        </div>
+      </form>
+
+      <div class="modal-actions">
+        <button class="nav-btn" style="background: rgba(255,255,255,0.1); color: var(--text-primary);" onclick="closeModal()">
+          Cancel
+        </button>
+        <button id="saveProjectBtn" class="nav-btn secondary" onclick="saveProject()">
+          <span id="saveIcon">💾</span>
+          <span id="saveText">Create Project</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="deleteModal" class="modal-overlay">
+    <div class="modal" style="max-width: 400px;">
+      <div class="modal-header">
+        <div class="modal-title" style="color: var(--error);">🗑️ Delete Project</div>
+        <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
+      </div>
+      
+      <div style="margin-bottom: 2rem;">
+        <p style="margin-bottom: 1rem;">Are you sure you want to delete this project?</p>
+        <div style="background: rgba(231, 76, 60, 0.1); border: 1px solid rgba(231, 76, 60, 0.3); border-radius: 6px; padding: 1rem;">
+          <div id="deleteProjectName" style="font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--error);"></div>
+          <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 0.5rem;">This action cannot be undone.</div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="nav-btn" style="background: rgba(255,255,255,0.1); color: var(--text-primary);" onclick="closeDeleteModal()">
+          Cancel
+        </button>
+        <button class="nav-btn" style="background: var(--error); color: white;" onclick="confirmDelete()">
+          <span>🗑️</span>
+          <span>Delete Project</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Project Management System
+    let projects = {};
+    let editingProjectId = null;
+    let deleteProjectId = null;
+
+    // Default Projects
+    const defaultProjects = {
+      'general': {
+        id: 'general',
+        name: 'General',
+        description: 'General development and technical assistance',
+        prompt: 'Provide clear technical guidance and solutions across various technologies and domains. Focus on best practices, clean code, and practical implementation advice.',
+        created: new Date().toISOString(),
+        lastUsed: new Date().toISOString(),
+        isDefault: true
+      },
+      'playground': {
+        id: 'playground', 
+        name: 'Playground',
+        description: 'Experimental testing and rapid prototyping',
+        prompt: 'Focus on quick experimentation, testing ideas, and rapid iteration without production constraints. Encourage creative problem-solving and proof-of-concept development.',
+        created: new Date().toISOString(),
+        lastUsed: new Date().toISOString(),
+        isDefault: true
+      }
+    };
+
+    // Initialize Projects
+    function initializeProjects() {
+      const savedProjects = localStorage.getItem('spockProjects');
+      if (savedProjects) {
+        projects = JSON.parse(savedProjects);
+      } else {
+        // First time - load defaults
+        projects = {...defaultProjects};
+        saveProjects();
+      }
+      renderProjects();
+    }
+
+    // Save Projects to localStorage
+    function saveProjects() {
+      localStorage.setItem('spockProjects', JSON.stringify(projects));
+    }
+
+    // Render Projects Grid
+    function renderProjects() {
+      const grid = document.getElementById('projectsGrid');
+      const emptyState = document.getElementById('emptyState');
+      const projectCount = document.getElementById('projectCount');
+      
+      const projectArray = Object.values(projects);
+      
+      if (projectArray.length === 0) {
+        grid.style.display = 'none';
+        emptyState.style.display = 'block';
+        projectCount.textContent = '0 Projects';
+        return;
+      }
+      
+      grid.style.display = 'grid';
+      emptyState.style.display = 'none';
+      projectCount.textContent = `${projectArray.length} Project${projectArray.length !== 1 ? 's' : ''}`;
+      
+      // Sort projects - defaults first, then by last used
+      projectArray.sort((a, b) => {
+        if (a.isDefault && !b.isDefault) return -1;
+        if (!a.isDefault && b.isDefault) return 1;
+        return new Date(b.lastUsed) - new Date(a.lastUsed);
+      });
+      
+      grid.innerHTML = projectArray.map(project => `
+        <div class="project-card ${project.isDefault ? 'default' : ''}">
+          <div class="project-header">
+            <div>
+              <div class="project-name">
+                ${project.name}
+                ${project.isDefault ? '<span class="default-badge">Default</span>' : ''}
+              </div>
+            </div>
+            <div class="project-actions">
+              ${!project.isDefault ? `
+                <button class="action-btn" onclick="editProject('${project.id}')" title="Edit Project">
+                  ✏️
+                </button>
+                <button class="action-btn danger" onclick="deleteProject('${project.id}')" title="Delete Project">
+                  🗑️
+                </button>
+              ` : `
+                <button class="action-btn" onclick="editProject('${project.id}')" title="Edit Project">
+                  ✏️
+                </button>
+              `}
+            </div>
+          </div>
+          
+          <div class="project-description">
+            ${project.description}
+          </div>
+          
+          <div class="project-prompt">
+            ${project.prompt}
+          </div>
+          
+          <div class="project-meta">
+            <span>Created: ${new Date(project.created).toLocaleDateString()}</span>
+            <span>Last Used: ${new Date(project.lastUsed).toLocaleDateString()}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Create New Project
+    function createProject() {
+      editingProjectId = null;
+      document.getElementById('modalTitle').textContent = 'New Project';
+      document.getElementById('saveText').textContent = 'Create Project';
+      document.getElementById('saveIcon').textContent = '➕';
+      
+      // Clear form
+      document.getElementById('projectForm').reset();
+      clearErrors();
+      
+      openModal();
+    }
+
+    // Edit Project
+    function editProject(projectId) {
+      editingProjectId = projectId;
+      const project = projects[projectId];
+      
+      document.getElementById('modalTitle').textContent = 'Edit Project';
+      document.getElementById('saveText').textContent = 'Save Changes';
+      document.getElementById('saveIcon').textContent = '💾';
+      
+      // Populate form
+      document.getElementById('projectName').value = project.name;
+      document.getElementById('projectDescription').value = project.description;
+      document.getElementById('projectPrompt').value = project.prompt;
+      
+      clearErrors();
+      openModal();
+    }
+
+    // Delete Project
+    function deleteProject(projectId) {
+      deleteProjectId = projectId;
+      const project = projects[projectId];
+      document.getElementById('deleteProjectName').textContent = project.name;
+      openDeleteModal();
+    }
+
+    // Confirm Delete
+    function confirmDelete() {
+      if (deleteProjectId && projects[deleteProjectId]) {
+        delete projects[deleteProjectId];
+        saveProjects();
+        renderProjects();
+        showNotification('Project deleted successfully', 'success');
+      }
+      closeDeleteModal();
+    }
+
+    // Save Project
+    function saveProject() {
+      const name = document.getElementById('projectName').value.trim();
+      const description = document.getElementById('projectDescription').value.trim();
+      const prompt = document.getElementById('projectPrompt').value.trim();
+      
+      // Clear previous errors
+      clearErrors();
+      
+      // Validation
+      let hasErrors = false;
+      
+      if (name.length < 3 || name.length > 30) {
+        showError('nameError', 'Project name must be 3-30 characters');
+        hasErrors = true;
+      }
+      
+      if (description.length < 10 || description.length > 100) {
+        showError('descError', 'Description must be 10-100 characters');
+        hasErrors = true;
+      }
+      
+      if (prompt.length < 50) {
+        showError('promptError', 'Project prompt must be at least 50 characters');
+        hasErrors = true;
+      }
+      
+      // Check for duplicate names (except when editing same project)
+      const existingProject = Object.values(projects).find(p => 
+        p.name.toLowerCase() === name.toLowerCase() && p.id !== editingProjectId
+      );
+      if (existingProject) {
+        showError('nameError', 'A project with this name already exists');
+        hasErrors = true;
+      }
+      
+      if (hasErrors) return;
+      
+      // Save project
+      const projectId = editingProjectId || generateId();
+      const now = new Date().toISOString();
+      
+      projects[projectId] = {
+        id: projectId,
+        name,
+        description,
+        prompt,
+        created: editingProjectId ? projects[editingProjectId].created : now,
+        lastUsed: now,
+        isDefault: editingProjectId ? projects[editingProjectId].isDefault || false : false
+      };
+      
+      saveProjects();
+      renderProjects();
+      closeModal();
+      
+      showNotification(
+        editingProjectId ? 'Project updated successfully' : 'Project created successfully',
+        'success'
+      );
+    }
+
+    // Utility Functions
+    function generateId() {
+      return 'proj_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    function openModal() {
+      document.getElementById('projectModal').classList.add('active');
+      document.getElementById('projectName').focus();
+    }
+
+    function closeModal() {
+      document.getElementById('projectModal').classList.remove('active');
+      editingProjectId = null;
+    }
+
+    function openDeleteModal() {
+      document.getElementById('deleteModal').classList.add('active');
+    }
+
+    function closeDeleteModal() {
+      document.getElementById('deleteModal').classList.remove('active');
+      deleteProjectId = null;
+    }
+
+    function showError(elementId, message) {
+      const errorElement = document.getElementById(elementId);
+      errorElement.textContent = message;
+      errorElement.style.display = 'block';
+    }
+
+    function clearErrors() {
+      const errorElements = document.querySelectorAll('.form-error');
+      errorElements.forEach(el => {
+        el.style.display = 'none';
+        el.textContent = '';
+      });
+    }
+
+    function showNotification(message, type = 'success') {
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => notification.classList.add('show'), 100);
+      setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        if (document.getElementById('projectModal').classList.contains('active')) {
+          closeModal();
+        }
+        if (document.getElementById('deleteModal').classList.contains('active')) {
+          closeDeleteModal();
+        }
+      }
+      
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'n') {
+          e.preventDefault();
+          createProject();
+        }
+      }
+    });
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', initializeProjects);
+  </script>
+</body>
+</html>
