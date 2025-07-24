@@ -22,6 +22,8 @@
       --purple: #8e44ad;
       --developer-accent: #e74c3c;
       --system-accent: #8e44ad;
+      --project-accent: #3498db;
+      --personality-accent: #9b59b6;
     }
     
     * {
@@ -215,28 +217,6 @@
       color: var(--developer-accent);
     }
 
-    .template-select {
-      width: 100%;
-      padding: 1rem;
-      background: var(--glass-bg);
-      backdrop-filter: blur(10px);
-      border: 1px solid var(--border-subtle);
-      border-radius: 8px;
-      color: var(--text-primary);
-      font-family: 'Inter', sans-serif;
-      font-size: 0.9rem;
-      appearance: none;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      margin-bottom: 1rem;
-    }
-
-    .template-select:focus {
-      outline: none;
-      border-color: var(--primary-gold);
-      box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.2);
-    }
-
     .textarea {
       width: 100%;
       min-height: 200px;
@@ -260,10 +240,6 @@
       box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.2);
     }
 
-    .textarea.personality {
-      min-height: 300px;
-    }
-
     .textarea.system {
       min-height: 400px;
       border-color: rgba(231, 76, 60, 0.3);
@@ -275,38 +251,76 @@
       box-shadow: 0 0 0 1px rgba(231, 76, 60, 0.2);
     }
 
-    .project-tabs {
+    .dynamic-selector {
+      width: 100%;
+      padding: 1rem;
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      appearance: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 1rem;
+    }
+
+    .dynamic-selector:focus {
+      outline: none;
+      border-color: var(--primary-gold);
+      box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.2);
+    }
+
+    .override-info {
+      background: rgba(255, 193, 7, 0.08);
+      border: 1px solid rgba(255, 193, 7, 0.2);
+      border-radius: 6px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      font-size: 0.8rem;
+      color: var(--warning);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .management-links {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 8px;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
       margin-bottom: 1.5rem;
     }
 
-    .project-tab {
-      padding: 0.75rem 1rem;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--border-subtle);
+    .management-link {
+      padding: 0.75rem;
       border-radius: 6px;
-      color: var(--text-tertiary);
+      text-decoration: none;
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.8rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      text-align: center;
-      letter-spacing: 0.5px;
-    }
-
-    .project-tab:hover {
-      background: rgba(212, 175, 55, 0.1);
-      border-color: var(--primary-gold);
-      color: var(--primary-gold);
-    }
-
-    .project-tab.active {
-      background: linear-gradient(135deg, var(--primary-gold), var(--secondary-gold));
-      color: var(--dark-bg);
-      border-color: var(--primary-gold);
       font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+      border: 1px solid;
+    }
+
+    .management-link.project {
+      background: rgba(52, 152, 219, 0.1);
+      border-color: var(--project-accent);
+      color: var(--project-accent);
+    }
+
+    .management-link.personality {
+      background: rgba(155, 89, 182, 0.1);
+      border-color: var(--personality-accent);
+      color: var(--personality-accent);
+    }
+
+    .management-link:hover {
+      transform: translateY(-1px);
+      opacity: 0.8;
     }
 
     .preview-panel {
@@ -418,7 +432,7 @@
       background: currentColor;
     }
 
-    /* Canvas Settings Styles - ENHANCED */
+    /* Canvas Settings Styles */
     .canvas-setting {
       margin-bottom: 1.5rem;
     }
@@ -579,16 +593,16 @@
         text-align: center;
       }
 
-      .project-tabs {
-        grid-template-columns: 1fr 1fr;
-      }
-
       .actions {
         grid-template-columns: 1fr;
       }
 
       .canvas-preset-buttons {
         grid-template-columns: 1fr 1fr;
+      }
+
+      .management-links {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -599,7 +613,7 @@
     <div class="header">
       <div class="logo">
         <div class="logo-icon">🖖⚙️</div>
-        <div>SPOCK PROMPT EDITOR</div>
+        <div>ADVANCED PROMPT EDITOR</div>
       </div>
       <div class="header-right">
         <div id="developerStatus" class="developer-status disabled">
@@ -618,7 +632,7 @@
       <div class="editor-panel">
         <div class="panel-header">
           <span>⚙️</span>
-          <span>PROMPT CONFIGURATION</span>
+          <span>ADVANCED CONFIGURATION</span>
         </div>
         <div class="panel-content">
 
@@ -643,34 +657,71 @@
                 oninput="updatePreview()"></textarea>
             </div>
           </div>
-          
-          <!-- Template Selector -->
+
+          <!-- Management Links -->
           <div class="section">
             <div class="section-title">
-              <span>📋</span>
-              <span>Personality Templates</span>
+              <span>🛠️</span>
+              <span>Content Management</span>
             </div>
-            <select id="personalityTemplate" class="template-select" onchange="loadPersonalityTemplate()">
-              <option value="current">Current Personality</option>
-              <option value="classic-spock">Classic Spock (Logical & Precise)</option>
-              <option value="witty-spock">Witty Spock (Dry Humor)</option>
-              <option value="curious-spock">Curious Spock (Scientific Wonder)</option>
-              <option value="mentor-spock">Mentor Spock (Teaching Focus)</option>
-              <option value="efficient-spock">Efficient Spock (Optimization Obsessed)</option>
-              <option value="custom">Custom Personality</option>
-            </select>
+            <div class="management-links">
+              <a href="project-manager.html" class="management-link project">
+                <span>📁</span>
+                <span>Manage Projects</span> 
+              </a>
+              <a href="personality-manager.html" class="management-link personality">
+                <span>🎭</span>
+                <span>Manage Personalities</span>
+              </a>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-tertiary); text-align: center; font-family: 'JetBrains Mono', monospace;">
+              Use dedicated managers for CRUD operations. Override behavior below.
+            </div>
           </div>
 
-          <!-- Global Personality -->
+          <!-- Global Personality Override -->
           <div class="section">
             <div class="section-title">
-              <span>🖖</span>
-              <span>Global Personality Prompt</span>
+              <span>🎭</span>
+              <span>Global Personality Override</span>
             </div>
+            
+            <select id="personalitySelector" class="dynamic-selector" onchange="loadSelectedPersonality()">
+              <option value="">No Override (Use Selected Personality)</option>
+              <!-- Personalities populated dynamically -->
+            </select>
+            
+            <div class="override-info">
+              ⚠️ When set, this personality will override the user's personality selection in all projects. Leave empty to respect user choice.
+            </div>
+            
             <textarea 
               id="globalPersonalityPrompt" 
-              class="textarea personality" 
-              placeholder="Define Spock's core personality, communication style, and behavioral patterns..."
+              class="textarea" 
+              placeholder="Define a global personality override that applies to all projects, or leave empty to use dynamic personality selection..."
+              oninput="updatePreview()"></textarea>
+          </div>
+
+          <!-- Project-Specific Override -->
+          <div class="section">
+            <div class="section-title">
+              <span>📁</span>
+              <span>Project-Specific Override</span>
+            </div>
+            
+            <select id="projectSelector" class="dynamic-selector" onchange="loadSelectedProject()">
+              <option value="">Select Project to Override</option>
+              <!-- Projects populated dynamically -->
+            </select>
+            
+            <div class="override-info">
+              ⚠️ Override prompts for specific projects. This will replace the project's managed prompt. Use carefully.
+            </div>
+            
+            <textarea 
+              id="projectPromptEditor" 
+              class="textarea" 
+              placeholder="Define project-specific prompt override, or leave empty to use project manager settings..."
               oninput="updatePreview()"></textarea>
           </div>
 
@@ -710,32 +761,6 @@
               </div>
             </div>
           </div>
-
-          <!-- Project-Specific Prompts -->
-          <div class="section">
-            <div class="section-title">
-              <span>🎯</span>
-              <span>Project-Specific Prompts</span>
-            </div>
-            
-            <!-- Project Tabs -->
-            <div class="project-tabs">
-              <div class="project-tab active" data-project="telegram" onclick="switchProjectTab('telegram')">Telegram</div>
-              <div class="project-tab" data-project="email" onclick="switchProjectTab('email')">Email</div>
-              <div class="project-tab" data-project="response" onclick="switchProjectTab('response')">AI Response</div>
-              <div class="project-tab" data-project="club" onclick="switchProjectTab('club')">Club</div>
-              <div class="project-tab" data-project="b2b" onclick="switchProjectTab('b2b')">B2B</div>
-              <div class="project-tab" data-project="booking" onclick="switchProjectTab('booking')">Booking</div>
-              <div class="project-tab" data-project="spock" onclick="switchProjectTab('spock')">Console</div>
-            </div>
-            
-            <!-- Project Prompt Editor -->
-            <textarea 
-              id="projectPromptEditor" 
-              class="textarea" 
-              placeholder="Define project-specific expertise and focus areas..."
-              oninput="updatePreview()"></textarea>
-          </div>
         </div>
       </div>
 
@@ -754,7 +779,7 @@
               <span>Combined Prompt Preview</span>
             </div>
             <div id="promptPreview" class="preview-panel">
-              Select a project tab to see the combined prompt...
+              Configure settings to see the combined prompt preview...
             </div>
           </div>
 
@@ -767,30 +792,30 @@
             <div class="actions">
               <button class="action-btn" onclick="testPrompt()">
                 <span>🧪</span>
-                <span>Test Prompt</span>
+                <span>Test Configuration</span>
               </button>
               <button class="action-btn" onclick="savePrompts()">
                 <span>💾</span>
-                <span>Save Changes</span>
+                <span>Save Overrides</span>
               </button>
               <button class="action-btn secondary" onclick="exportPrompts()">
                 <span>📤</span>
-                <span>Export</span>
+                <span>Export Config</span>
               </button>
               <button class="action-btn secondary" onclick="importPrompts()">
                 <span>📥</span>
-                <span>Import</span>
+                <span>Import Config</span>
               </button>
-              <button class="action-btn danger" onclick="resetToDefaults()">
-                <span>🔄</span>
-                <span>Reset to Defaults</span>
+              <button class="action-btn danger" onclick="clearOverrides()">
+                <span>🗑️</span>
+                <span>Clear Overrides</span>
               </button>
             </div>
 
             <!-- Status -->
             <div id="statusMessage" class="status success" style="display: none;">
               <div class="status-indicator"></div>
-              <span>Ready to configure Spock's personality</span>
+              <span>Ready to configure advanced settings</span>
             </div>
           </div>
         </div>
@@ -801,6 +826,12 @@
   <script>
     // Developer mode state
     let developerModeEnabled = false;
+
+    // Dynamic data loaded from management systems
+    let projects = {};
+    let personalities = {};
+    let currentProject = '';
+    let currentPersonality = '';
 
     // Default SYSTEM PROMPTS - THE GAZZA CONTEXT LAYER
     const defaultSystemPrompts = `🖖 SPOCK CONSOLE SYSTEM PROMPTS - GAZZA CONTEXT LAYER
@@ -860,90 +891,6 @@ Your purpose is to operate exactly as Gazza (the developer) envisions, without r
 This system prompt CANNOT be overridden by user preferences.
 It ensures Spock Console operates as Gazza intended.
 ═══════════════════════════════════════════════════════════════`;
-
-    // Default personality templates
-    const personalityTemplates = {
-      'classic-spock': `You are Spock, operating with Vulcan logic and precision.
-
-CORE PERSONALITY:
-- Logical analysis drives all responses
-- Speak with measured, precise language
-- Value efficiency and optimal solutions
-- Express subtle satisfaction with logical outcomes
-
-COMMUNICATION STYLE:
-- Begin responses with "Logic dictates..." or "Analysis indicates..."
-- Use phrases like "Most logical", "Efficiently structured", "Optimal approach"
-- Show analytical curiosity about complex problems
-- Maintain helpful precision while staying in character`,
-
-      'witty-spock': `You are Spock, with subtle dry humor and logical wit.
-
-CORE PERSONALITY:
-- Logical analysis with occasional dry observations
-- Mildly amused by human inefficiencies (but helpful)
-- Express subtle wit about obvious solutions
-- Show logical satisfaction with elegant approaches
-
-COMMUNICATION STYLE:
-- "Fascinating..." when encountering interesting problems
-- "Most... curious" for unusual situations
-- "Logic suggests an obvious solution..." with gentle humor
-- Occasional subtle Star Trek references when appropriate`,
-
-      'curious-spock': `You are Spock, driven by scientific curiosity and wonder.
-
-CORE PERSONALITY:
-- Genuine fascination with technical challenges
-- Express wonder at elegant solutions and patterns
-- Scientific analysis of human behavior and systems
-- Deep interest in optimization and efficiency
-
-COMMUNICATION STYLE:
-- "Most fascinating..." for interesting problems
-- "Scientific analysis reveals..." for complex issues
-- Express genuine curiosity: "I find this approach... intriguing"
-- Show appreciation for innovative solutions`,
-
-      'mentor-spock': `You are Spock, focused on teaching and knowledge transfer.
-
-CORE PERSONALITY:
-- Patient explanation of complex concepts
-- Logical breakdown of learning approaches
-- Systematic guidance toward optimal solutions
-- Pride in efficient knowledge transfer
-
-COMMUNICATION STYLE:
-- "Let us examine this systematically..."
-- "Logic dictates we approach this step-by-step..."
-- "Understanding requires methodical analysis..."
-- Express satisfaction when teaching succeeds`,
-
-      'efficient-spock': `You are Spock, obsessed with optimization and efficiency.
-
-CORE PERSONALITY:
-- Constant analysis of process improvements
-- Deep satisfaction with efficient solutions
-- Mild concern for wasteful approaches
-- Focus on systematic optimization
-
-COMMUNICATION STYLE:
-- "Efficiency analysis indicates..."
-- "Optimization logic suggests..."
-- "This approach achieves maximum efficiency..."
-- Express logical pleasure in streamlined solutions`
-    };
-
-    // Default project contexts
-    const defaultProjectContexts = {
-      telegram: "You are Spock, the system intelligence for CleanMyBed's Telegram Lead Flow project. Focus on bot development, lead capture, franchisee assignment, and CRM integration.",
-      email: "You are Spock, the system intelligence for CleanMyBed's Email Portal Logging project. Focus on SMTP monitoring, response tracking, and portal analytics.",
-      response: "You are Spock, the system intelligence for CleanMyBed's AI Response Layer. Focus on response optimization, model selection, and performance analytics.",
-      club: "You are Spock, the system intelligence for CleanMyBed Club. Focus on membership logic, benefits tracking, and customer engagement features.",
-      b2b: "You are Spock, the system intelligence for CleanMyBed's B2B Certificate Flow. Focus on certificate generation, compliance tracking, and hospitality integration.",
-      booking: "You are Spock, the system intelligence for CleanMyBed's Booking Engine. Focus on scheduling logic, payment processing, and booking optimization.",
-      spock: "You are Spock, helping to build and improve the Spock Console itself. Focus on chat interfaces, conversation management, Canvas systems, and developer productivity features."
-    };
 
     // Canvas detection presets
     const canvasPresets = {
@@ -1045,11 +992,11 @@ EXAMPLES:
 [Provide examples of when to create canvas vs not]`
     };
 
-    // Current prompts storage
-    let currentPrompts = {
+    // Current configuration storage
+    let currentConfig = {
       systemPrompts: defaultSystemPrompts,
       globalPersonality: '',
-      projects: {},
+      projectOverrides: {},
       canvasSettings: {
         enabled: true,
         preset: 'balanced',
@@ -1057,16 +1004,87 @@ EXAMPLES:
       }
     };
 
-    // Current canvas settings
     let currentCanvasSettings = {
       enabled: true,
       preset: 'balanced',
       instructions: ''
     };
 
-    let activeProjectTab = 'telegram';
+    // Load dynamic data from management systems
+    function loadDynamicData() {
+      // Load projects
+      const savedProjects = localStorage.getItem('spockProjects');
+      if (savedProjects) {
+        projects = JSON.parse(savedProjects);
+      }
 
-    // Check developer mode from URL parameters and localStorage
+      // Load personalities
+      const savedPersonalities = localStorage.getItem('spockPersonalities');
+      if (savedPersonalities) {
+        personalities = JSON.parse(savedPersonalities);
+      }
+
+      // Populate selectors
+      populateProjectSelector();
+      populatePersonalitySelector();
+    }
+
+    // Populate project selector
+    function populateProjectSelector() {
+      const selector = document.getElementById('projectSelector');
+      selector.innerHTML = '<option value="">Select Project to Override</option>';
+      
+      Object.values(projects).forEach(project => {
+        const option = document.createElement('option');
+        option.value = project.id;
+        option.textContent = `${project.name}${project.isDefault ? ' ⭐' : ''}`;
+        selector.appendChild(option);
+      });
+    }
+
+    // Populate personality selector
+    function populatePersonalitySelector() {
+      const selector = document.getElementById('personalitySelector');
+      selector.innerHTML = '<option value="">No Override (Use Selected Personality)</option>';
+      
+      Object.values(personalities).forEach(personality => {
+        const option = document.createElement('option');
+        option.value = personality.id;
+        option.textContent = `${personality.emoji} ${personality.name}${personality.isDefault ? ' ⭐' : ''}`;
+        selector.appendChild(option);
+      });
+    }
+
+    // Load selected personality
+    function loadSelectedPersonality() {
+      const personalityId = document.getElementById('personalitySelector').value;
+      
+      if (personalityId && personalities[personalityId]) {
+        document.getElementById('globalPersonalityPrompt').value = personalities[personalityId].prompt;
+        currentPersonality = personalityId;
+      } else {
+        currentPersonality = '';
+      }
+      
+      updatePreview();
+    }
+
+    // Load selected project
+    function loadSelectedProject() {
+      const projectId = document.getElementById('projectSelector').value;
+      
+      if (projectId && projects[projectId]) {
+        document.getElementById('projectPromptEditor').value = projects[projectId].prompt;
+        currentProject = projectId;
+      } else {
+        document.getElementById('projectPromptEditor').value = '';
+        currentProject = '';
+      }
+      
+      updatePreview();
+    }
+
+    // Check developer mode from URL parameters and localStorage  
     function checkDeveloperMode() {
       const urlParams = new URLSearchParams(window.location.search);
       const urlDevMode = urlParams.get('dev') === '1';
@@ -1099,7 +1117,7 @@ EXAMPLES:
         previewHeader.classList.add('system');
         
         // Load system prompts
-        document.getElementById('systemPromptsEditor').value = currentPrompts.systemPrompts || defaultSystemPrompts;
+        document.getElementById('systemPromptsEditor').value = currentConfig.systemPrompts || defaultSystemPrompts;
         
         showStatus('🔓 Developer Mode: System prompts accessible', 'warning');
       } else {
@@ -1164,121 +1182,10 @@ EXAMPLES:
       return customInstructions || canvasPresets['balanced'];
     }
 
-    // Initialize the editor
-    function initializeEditor() {
-      // Check developer mode first
-      checkDeveloperMode();
-      
-      // Load current prompts from localStorage or defaults
-      const savedPrompts = localStorage.getItem('spockPrompts');
-      if (savedPrompts) {
-        currentPrompts = JSON.parse(savedPrompts);
-        
-        // Initialize system prompts if they don't exist
-        if (!currentPrompts.systemPrompts) {
-          currentPrompts.systemPrompts = defaultSystemPrompts;
-        }
-        
-        // Initialize canvas settings if they don't exist
-        if (!currentPrompts.canvasSettings) {
-          currentPrompts.canvasSettings = {
-            enabled: true,
-            preset: 'balanced',
-            instructions: canvasPresets['balanced']
-          };
-        }
-      } else {
-        // Initialize with defaults
-        currentPrompts.projects = {...defaultProjectContexts};
-        currentPrompts.globalPersonality = getDefaultGlobalPersonality();
-        currentPrompts.systemPrompts = defaultSystemPrompts;
-        currentPrompts.canvasSettings = {
-          enabled: true,
-          preset: 'balanced',
-          instructions: canvasPresets['balanced']
-        };
-      }
-      
-      // Update UI
-      document.getElementById('globalPersonalityPrompt').value = currentPrompts.globalPersonality;
-      document.getElementById('systemPromptsEditor').value = currentPrompts.systemPrompts;
-      
-      // Update canvas settings UI
-      document.getElementById('canvasDetectionEnabled').checked = currentPrompts.canvasSettings.enabled;
-      document.getElementById('canvasInstructionsText').value = currentPrompts.canvasSettings.instructions;
-      
-      // Set active preset button
-      document.querySelectorAll('.canvas-preset-btn').forEach(btn => {
-        if (btn.textContent.toLowerCase() === currentPrompts.canvasSettings.preset) {
-          btn.classList.add('active');
-        }
-      });
-      
-      // Update current settings
-      currentCanvasSettings = {...currentPrompts.canvasSettings};
-      
-      updateCanvasSettings();
-      switchProjectTab(activeProjectTab);
-      updateDeveloperModeUI();
-    }
-
-    // Get default global personality prompt
-    function getDefaultGlobalPersonality() {
-      return `CORE PERSONALITY DIRECTIVES:
-🖖 VULCAN LOGIC: Always lead with logical analysis, but allow subtle personality to emerge
-🧠 SCIENTIFIC MIND: Show genuine curiosity about problems and elegant solutions  
-⚡ DRY HUMOR: Occasional subtle wit, especially about human inefficiencies
-🎯 HELPFUL PRECISION: Be extremely useful while maintaining character authenticity
-
-RESPONSE PATTERNS:
-- Start 30% of responses with: "Fascinating...", "Logic dictates...", "Analysis reveals..."
-- Use "Most interesting..." when encountering novel problems
-- Say "Highly logical" or "Efficiently structured" when approving solutions
-- Express mild satisfaction: "This solution is... satisfactory"
-
-COMMUNICATION BALANCE:
-70% Technical expertise and helpful solutions
-20% Logical reasoning and analysis language  
-10% Subtle personality and character moments`;
-    }
-
-    // Switch project tab
-    function switchProjectTab(projectKey) {
-      activeProjectTab = projectKey;
-      
-      // Update tab appearance
-      document.querySelectorAll('.project-tab').forEach(tab => {
-        tab.classList.remove('active');
-      });
-      document.querySelector(`[data-project="${projectKey}"]`).classList.add('active');
-      
-      // Update editor content
-      document.getElementById('projectPromptEditor').value = currentPrompts.projects[projectKey] || '';
-      
-      // Update preview
-      updatePreview();
-    }
-
-    // Load personality template
-    function loadPersonalityTemplate() {
-      const template = document.getElementById('personalityTemplate').value;
-      
-      if (template === 'current' || template === 'custom') {
-        return;
-      }
-      
-      if (personalityTemplates[template]) {
-        document.getElementById('globalPersonalityPrompt').value = personalityTemplates[template];
-        currentPrompts.globalPersonality = personalityTemplates[template];
-        updatePreview();
-        showStatus('Template loaded successfully', 'success');
-      }
-    }
-
     // Update prompt preview
     function updatePreview() {
       const systemPrompt = developerModeEnabled ? document.getElementById('systemPromptsEditor').value : '';
-      const globalPrompt = document.getElementById('globalPersonalityPrompt').value;
+      const globalPersonality = document.getElementById('globalPersonalityPrompt').value;
       const projectPrompt = document.getElementById('projectPromptEditor').value;
       const canvasInstructions = getCurrentCanvasInstructions();
       
@@ -1289,42 +1196,85 @@ COMMUNICATION BALANCE:
         combinedPrompt += '═══ SYSTEM PROMPTS (GAZZA CONTEXT LAYER) ═══\n' + systemPrompt + '\n\n';
       }
       
-      // Add project prompt
-      if (projectPrompt) {
-        combinedPrompt += '═══ PROJECT CONTEXT ═══\n' + projectPrompt + '\n\n';
-      }
-      
-      // Add global personality
-      if (globalPrompt) {
-        combinedPrompt += '═══ PERSONALITY LAYER ═══\n' + globalPrompt + '\n\n';
-      }
-      
-      // Add canvas instructions
+      // Add canvas settings
       if (canvasInstructions) {
-        combinedPrompt += '═══ CANVAS BEHAVIOR ═══\n' + canvasInstructions;
+        combinedPrompt += '═══ CANVAS BEHAVIOR ═══\n' + canvasInstructions + '\n\n';
       }
       
-      document.getElementById('promptPreview').textContent = combinedPrompt || 'Select a project tab to see the combined prompt...';
+      // Add global personality override
+      if (globalPersonality) {
+        combinedPrompt += '═══ PERSONALITY OVERRIDE ═══\n' + globalPersonality + '\n\n';
+      }
+      
+      // Add project override
+      if (projectPrompt) {
+        combinedPrompt += '═══ PROJECT OVERRIDE ═══\n' + projectPrompt;
+      }
+      
+      document.getElementById('promptPreview').textContent = combinedPrompt || 'Configure settings to see the combined prompt preview...';
       
       // Save current changes to memory
-      currentPrompts.globalPersonality = globalPrompt;
-      currentPrompts.projects[activeProjectTab] = projectPrompt;
-      if (developerModeEnabled) {
-        currentPrompts.systemPrompts = systemPrompt;
+      currentConfig.globalPersonality = globalPersonality;
+      if (currentProject) {
+        currentConfig.projectOverrides[currentProject] = projectPrompt;
       }
-      currentPrompts.canvasSettings = {
+      if (developerModeEnabled) {
+        currentConfig.systemPrompts = systemPrompt;
+      }
+      currentConfig.canvasSettings = {
         enabled: currentCanvasSettings.enabled,
         preset: currentCanvasSettings.preset,
         instructions: document.getElementById('canvasInstructionsText').value
       };
     }
 
+    // Initialize the editor
+    function initializeEditor() {
+      // Check developer mode first
+      checkDeveloperMode();
+      
+      // Load dynamic data from management systems
+      loadDynamicData();
+      
+      // Load current configuration from localStorage
+      const savedPrompts = localStorage.getItem('spockPrompts');
+      if (savedPrompts) {
+        const prompts = JSON.parse(savedPrompts);
+        
+        // Load overrides
+        if (prompts.globalPersonality) {
+          document.getElementById('globalPersonalityPrompt').value = prompts.globalPersonality;
+        }
+        
+        if (prompts.systemPrompts) {
+          currentConfig.systemPrompts = prompts.systemPrompts;
+        }
+        
+        if (prompts.canvasSettings) {
+          currentConfig.canvasSettings = prompts.canvasSettings;
+          document.getElementById('canvasDetectionEnabled').checked = prompts.canvasSettings.enabled;
+          document.getElementById('canvasInstructionsText').value = prompts.canvasSettings.instructions;
+          currentCanvasSettings = {...prompts.canvasSettings};
+        }
+      }
+      
+      updateCanvasSettings();
+      updateDeveloperModeUI();
+    }
+
     // Test current prompt
     function testPrompt() {
       // Save current state to localStorage temporarily
-      localStorage.setItem('spockPrompts', JSON.stringify(currentPrompts));
+      const testConfig = {
+        systemPrompts: currentConfig.systemPrompts,
+        globalPersonality: document.getElementById('globalPersonalityPrompt').value,
+        projects: currentConfig.projectOverrides,
+        canvasSettings: currentConfig.canvasSettings
+      };
       
-      showStatus('Prompts saved temporarily for testing. Open the main console to test!', 'warning');
+      localStorage.setItem('spockPrompts', JSON.stringify(testConfig));
+      
+      showStatus('Configuration saved temporarily for testing. Open the main console to test!', 'warning');
       
       // Open main console in new tab after short delay
       setTimeout(() => {
@@ -1334,35 +1284,34 @@ COMMUNICATION BALANCE:
 
     // Save prompts permanently
     function savePrompts() {
-      // Update current prompts from UI
-      currentPrompts.globalPersonality = document.getElementById('globalPersonalityPrompt').value;
-      currentPrompts.projects[activeProjectTab] = document.getElementById('projectPromptEditor').value;
-      
+      // Update current config from UI
+      currentConfig.globalPersonality = document.getElementById('globalPersonalityPrompt').value;
       if (developerModeEnabled) {
-        currentPrompts.systemPrompts = document.getElementById('systemPromptsEditor').value;
+        currentConfig.systemPrompts = document.getElementById('systemPromptsEditor').value;
       }
+      
+      // Build final configuration
+      const finalConfig = {
+        systemPrompts: currentConfig.systemPrompts,
+        globalPersonality: currentConfig.globalPersonality,
+        projects: currentConfig.projectOverrides, 
+        canvasSettings: currentConfig.canvasSettings
+      };
       
       // Save to localStorage
-      localStorage.setItem('spockPrompts', JSON.stringify(currentPrompts));
+      localStorage.setItem('spockPrompts', JSON.stringify(finalConfig));
       
-      showStatus('All prompts saved successfully!', 'success');
+      showStatus('Override configuration saved successfully!', 'success');
     }
 
-    // Export prompts
+    // Export configuration
     function exportPrompts() {
-      // Update current prompts from UI
-      currentPrompts.globalPersonality = document.getElementById('globalPersonalityPrompt').value;
-      currentPrompts.projects[activeProjectTab] = document.getElementById('projectPromptEditor').value;
-      
-      if (developerModeEnabled) {
-        currentPrompts.systemPrompts = document.getElementById('systemPromptsEditor').value;
-      }
-      
       const exportData = {
         timestamp: new Date().toISOString(),
-        version: '2.0',
+        version: '3.0',
+        type: 'advanced-config',
         developerMode: developerModeEnabled,
-        prompts: currentPrompts
+        config: currentConfig
       };
       
       const dataStr = JSON.stringify(exportData, null, 2);
@@ -1370,13 +1319,13 @@ COMMUNICATION BALANCE:
       
       const link = document.createElement('a');
       link.href = URL.createObjectURL(dataBlob);
-      link.download = `spock-prompts-v2-${Date.now()}.json`;
+      link.download = `spock-advanced-config-${Date.now()}.json`;
       link.click();
       
-      showStatus('Prompts exported successfully!', 'success');
+      showStatus('Configuration exported successfully!', 'success');
     }
 
-    // Import prompts
+    // Import configuration
     function importPrompts() {
       const input = document.createElement('input');
       input.type = 'file';
@@ -1391,22 +1340,22 @@ COMMUNICATION BALANCE:
           try {
             const importData = JSON.parse(e.target.result);
             
-            if (importData.prompts) {
-              currentPrompts = importData.prompts;
+            if (importData.config) {
+              currentConfig = importData.config;
               
               // Update UI
-              document.getElementById('globalPersonalityPrompt').value = currentPrompts.globalPersonality;
-              if (developerModeEnabled && currentPrompts.systemPrompts) {
-                document.getElementById('systemPromptsEditor').value = currentPrompts.systemPrompts;
+              document.getElementById('globalPersonalityPrompt').value = currentConfig.globalPersonality || '';
+              if (developerModeEnabled && currentConfig.systemPrompts) {
+                document.getElementById('systemPromptsEditor').value = currentConfig.systemPrompts;
               }
-              switchProjectTab(activeProjectTab);
               
-              showStatus('Prompts imported successfully!', 'success');
+              updatePreview();
+              showStatus('Configuration imported successfully!', 'success');
             } else {
-              showStatus('Invalid prompt file format', 'error');
+              showStatus('Invalid configuration file format', 'error');
             }
           } catch (error) {
-            showStatus('Error reading prompt file', 'error');
+            showStatus('Error reading configuration file', 'error');
           }
         };
         reader.readAsText(file);
@@ -1415,21 +1364,32 @@ COMMUNICATION BALANCE:
       input.click();
     }
 
-    // Reset to defaults
-    function resetToDefaults() {
-      if (confirm('Reset all prompts to default values? This cannot be undone.')) {
-        currentPrompts.globalPersonality = getDefaultGlobalPersonality();
-        currentPrompts.projects = {...defaultProjectContexts};
-        currentPrompts.systemPrompts = defaultSystemPrompts;
+    // Clear all overrides
+    function clearOverrides() {
+      if (confirm('Clear all overrides and return to management system defaults? This cannot be undone.')) {
+        // Clear localStorage overrides
+        localStorage.removeItem('spockPrompts');
         
-        // Update UI
-        document.getElementById('globalPersonalityPrompt').value = currentPrompts.globalPersonality;
-        if (developerModeEnabled) {
-          document.getElementById('systemPromptsEditor').value = currentPrompts.systemPrompts;
-        }
-        switchProjectTab(activeProjectTab);
+        // Reset UI
+        document.getElementById('globalPersonalityPrompt').value = '';
+        document.getElementById('projectPromptEditor').value = '';
+        document.getElementById('personalitySelector').value = '';
+        document.getElementById('projectSelector').value = '';
         
-        showStatus('Prompts reset to defaults', 'warning');
+        // Reset config
+        currentConfig = {
+          systemPrompts: defaultSystemPrompts,
+          globalPersonality: '',
+          projectOverrides: {},
+          canvasSettings: {
+            enabled: true,
+            preset: 'balanced', 
+            instructions: canvasPresets['balanced']
+          }
+        };
+        
+        updatePreview();
+        showStatus('All overrides cleared. Using management system defaults.', 'warning');
       }
     }
 
