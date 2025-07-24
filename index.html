@@ -4,6 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Spock Console - Neural Command Interface</title>
+  
+  <!-- Canvas Plugin Integration - Nuclear Option Available -->
+  <script>
+    const CANVAS_ENABLED = true; // ← SET TO FALSE TO NUKE CANVAS
+  </script>
+  
   <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap');
     
@@ -1246,6 +1252,13 @@
           content: data.response
         });
         
+        // CANVAS PLUGIN INTEGRATION - Send chat message to plugin
+        if (window.canvasPlugin && canvasPlugin.isEnabled) {
+          window.dispatchEvent(new CustomEvent('spock-chat-message', {
+            detail: { role: 'assistant', content: data.response }
+          }));
+        }
+        
         checkAutoSummary();
         
       } catch (error) {
@@ -1428,6 +1441,27 @@
       
       projectSelector.dispatchEvent(new Event('change'));
     });
+  </script>
+
+  <!-- Canvas Plugin Loader -->
+  <script>
+    // Canvas Plugin Integration
+    if (typeof CANVAS_ENABLED !== 'undefined' && CANVAS_ENABLED) {
+      console.log('🎨 Loading Canvas Plugin...');
+      
+      // Load the plugin script
+      const script = document.createElement('script');
+      script.src = './plugins/canvas/canvas-plugin.js';
+      script.onload = () => {
+        loadCanvasPlugin();
+      };
+      script.onerror = () => {
+        console.warn('🎨 Canvas Plugin failed to load - continuing without canvas');
+      };
+      document.head.appendChild(script);
+    } else {
+      console.log('🎨 Canvas Plugin disabled');
+    }
   </script>
 </body>
 </html>
