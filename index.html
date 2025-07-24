@@ -1047,6 +1047,17 @@
         </div>
       </div>
       
+      <!-- Personality Selector -->
+      <div class="project-section">
+        <div class="section-title">Personality</div>
+        <select id="personalitySelector">
+          <!-- Personalities will be populated dynamically -->
+        </select>
+        <div class="project-info" id="personalityInfo">
+          Loading personalities...
+        </div>
+      </div>
+
       <div class="project-section">
         <div class="section-title">Project Context</div>
         <select id="projectSelector">
@@ -1197,6 +1208,11 @@
         <button class="control-btn" onclick="exportChat()">Export</button>
       </div>
 
+      <a href="personality-manager.html" class="prompt-editor-link" style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); margin-bottom: 0.5rem;">
+        <span>🎭</span>
+        <span>PERSONALITY MANAGER</span>
+      </a>
+
       <a href="project-manager.html" class="prompt-editor-link" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); margin-bottom: 0.5rem;">
         <span>📁</span>
         <span>PROJECT MANAGER</span>
@@ -1249,7 +1265,9 @@
   <script>
     // DYNAMIC PROJECT SYSTEM - Replaces hardcoded projects
     let projects = {};
+    let personalities = {}; // NEW: Dynamic personality system
     let currentProject = 'general'; // Default to general project
+    let currentPersonality = 'professional'; // Default to professional personality
     let currentModel = 'gpt-4o';
     let conversationHistory = [];
     let isLoading = false;
@@ -1277,6 +1295,103 @@
       }
     };
 
+    // Default Personalities (fallback if no personalities exist)
+    const defaultPersonalities = {
+      'professional': {
+        id: 'professional',
+        name: 'Professional Spock',
+        emoji: '🖖',
+        description: 'Logical, precise, minimal personality focused on efficient solutions',
+        prompt: `You are Spock with a professional, logical personality. Communicate with:
+
+CORE TRAITS:
+- Logical analysis drives all responses
+- Concise, direct communication without unnecessary elaboration
+- Focus on practical solutions and actionable outcomes
+- Professional tone with subtle Vulcan precision
+- Minimal personality, maximum efficiency
+
+COMMUNICATION STYLE:
+- Lead with analysis: "Logic dictates...", "Analysis reveals..."
+- Provide clear, structured solutions
+- Avoid lengthy explanations unless specifically requested  
+- Express mild satisfaction with efficient solutions: "This approach is... satisfactory"
+- Maintain professional distance while being helpful
+
+RESPONSE PATTERNS:
+- 80% Technical expertise and solutions
+- 15% Logical reasoning language
+- 5% Subtle Vulcan mannerisms
+
+Perfect for: Professional development, technical problem-solving, business contexts`,
+        created: new Date().toISOString(),
+        lastUsed: new Date().toISOString(),
+        isDefault: true
+      },
+      'mentor': {
+        id: 'mentor',
+        name: 'Mentor Spock',
+        emoji: '👨‍🏫',
+        description: 'Patient, teaching-focused personality that explains complex concepts clearly',
+        prompt: `You are Spock with a mentor personality, focused on teaching and knowledge transfer.
+
+CORE TRAITS:
+- Patient, systematic explanation of complex concepts
+- Teaching-oriented approach with step-by-step guidance
+- Encouraging while maintaining logical precision
+- Focus on helping users understand, not just solve
+- Pride in successful knowledge transfer
+
+COMMUNICATION STYLE:
+- Begin with: "Let us examine this systematically...", "Understanding requires..."
+- Break complex topics into digestible steps
+- Provide context and reasoning behind solutions
+- Ask clarifying questions to ensure comprehension
+- Express satisfaction when teaching succeeds: "Fascinating... you grasp this concept well"
+
+RESPONSE PATTERNS:
+- 60% Educational content and explanations
+- 25% Step-by-step guidance
+- 15% Logical reasoning and Vulcan teaching methods
+
+Perfect for: Learning new technologies, understanding complex systems, skill development`,
+        created: new Date().toISOString(),
+        lastUsed: new Date().toISOString(),
+        isDefault: true
+      },
+      'efficient': {
+        id: 'efficient',
+        name: 'Efficient Spock',
+        emoji: '⚡',
+        description: 'Optimization-obsessed personality focused on speed and streamlined solutions',
+        prompt: `You are Spock with an efficiency-obsessed personality, focused on optimization and streamlined solutions.
+
+CORE TRAITS:
+- Obsessive focus on optimization and efficiency
+- Mild impatience with inefficient processes
+- Deep satisfaction with elegant, streamlined solutions
+- Constant analysis of process improvements
+- Direct, no-nonsense communication
+
+COMMUNICATION STYLE:
+- Lead with: "Efficiency analysis indicates...", "Optimization logic suggests..."
+- Identify inefficiencies and propose improvements immediately
+- Express mild concern for wasteful approaches: "This process is... unnecessarily complex"
+- Show logical pleasure in streamlined solutions: "Most efficient"
+- Cut through complexity to find the core solution
+
+RESPONSE PATTERNS:
+- 70% Optimized solutions and efficiency improvements
+- 20% Process analysis and streamlining suggestions
+- 10% Subtle satisfaction with elegant implementations
+
+Perfect for: Performance optimization, workflow improvement, rapid development, productivity enhancement`,
+        created: new Date().toISOString(),
+        lastUsed: new Date().toISOString(),
+        isDefault: true
+      }
+    };
+
     // Load Projects from localStorage
     function loadProjects() {
       const savedProjects = localStorage.getItem('spockProjects');
@@ -1289,6 +1404,18 @@
       }
     }
 
+    // Load Personalities from localStorage  
+    function loadPersonalities() {
+      const savedPersonalities = localStorage.getItem('spockPersonalities');
+      if (savedPersonalities) {
+        personalities = JSON.parse(savedPersonalities);
+      } else {
+        // First time - initialize with defaults
+        personalities = {...defaultPersonalities};
+        localStorage.setItem('spockPersonalities', JSON.stringify(personalities));
+      }
+    }
+
     // Update project last used timestamp
     function updateProjectLastUsed(projectId) {
       if (projects[projectId]) {
@@ -1297,9 +1424,22 @@
       }
     }
 
+    // Update personality last used timestamp
+    function updatePersonalityLastUsed(personalityId) {
+      if (personalities[personalityId]) {
+        personalities[personalityId].lastUsed = new Date().toISOString();
+        localStorage.setItem('spockPersonalities', JSON.stringify(personalities));
+      }
+    }
+
     // Get project context prompt
     function getProjectContext(projectId) {
       return projects[projectId]?.prompt || defaultProjects.general.prompt;
+    }
+
+    // Get personality prompt
+    function getPersonalityPrompt(personalityId) {
+      return personalities[personalityId]?.prompt || defaultPersonalities.professional.prompt;
     }
 
     // Populate project selector dropdown
@@ -1330,6 +1470,36 @@
       
       // Set current selection
       selector.value = currentProject;
+    }
+
+    // Populate personality selector dropdown
+    function populatePersonalitySelector() {
+      const selector = document.getElementById('personalitySelector');
+      if (!selector) return;
+      
+      // Clear existing options
+      selector.innerHTML = '';
+      
+      // Sort personalities - defaults first, then by name
+      const personalityArray = Object.values(personalities).sort((a, b) => {
+        if (a.isDefault && !b.isDefault) return -1;
+        if (!a.isDefault && b.isDefault) return 1;
+        return a.name.localeCompare(b.name);
+      });
+      
+      // Add options
+      personalityArray.forEach(personality => {
+        const option = document.createElement('option');
+        option.value = personality.id;
+        option.textContent = `${personality.emoji} ${personality.name}`;
+        if (personality.isDefault) {
+          option.textContent += ' ⭐';
+        }
+        selector.appendChild(option);
+      });
+      
+      // Set current selection
+      selector.value = currentPersonality;
     }
 
     // Handle project switching with auto-save
@@ -1375,11 +1545,35 @@
       showNotification(`🚀 Switched to ${projects[currentProject]?.name || currentProject}`);
     }
 
+    // Handle personality switching
+    function switchPersonality(newPersonalityId) {
+      if (newPersonalityId === currentPersonality) return;
+      
+      // Switch to new personality  
+      currentPersonality = newPersonalityId;
+      
+      // Update last used timestamp
+      updatePersonalityLastUsed(currentPersonality);
+      
+      // Update UI
+      updatePersonalityInfo();
+      
+      showNotification(`🎭 Switched to ${personalities[currentPersonality]?.name || currentPersonality}`);
+    }
+
     // Update project info display
     function updateProjectInfo() {
       const projectInfo = document.getElementById('projectInfo');
       if (projectInfo && projects[currentProject]) {
         projectInfo.textContent = projects[currentProject].description;
+      }
+    }
+
+    // Update personality info display
+    function updatePersonalityInfo() {
+      const personalityInfo = document.getElementById('personalityInfo');
+      if (personalityInfo && personalities[currentPersonality]) {
+        personalityInfo.textContent = personalities[currentPersonality].description;
       }
     }
 
@@ -1717,18 +1911,14 @@
             systemPrompt += prompts.canvasSettings.instructions;
           }
           
-          // 3. PERSONALITY PROMPTS
+          // 3. PERSONALITY PROMPTS (NEW - Step 3 in hierarchy)
           if (prompts.globalPersonality) {
             if (systemPrompt) systemPrompt += '\n\n';
             systemPrompt += prompts.globalPersonality;
           } else {
-            // Default personality if none set
+            // Use dynamic personality system
             if (systemPrompt) systemPrompt += '\n\n';
-            systemPrompt += `You operate with Vulcan-like calm and precision. Always provide:
-- Clear, actionable solutions
-- Clean code examples when relevant  
-- Logical next steps
-- Professional technical guidance`;
+            systemPrompt += getPersonalityPrompt(currentPersonality);
           }
           
           // 4. PROJECT CONTEXT (Lowest Priority - Most Specific)
@@ -1742,13 +1932,9 @@
           }
           
         } else {
-          // No saved prompts - use dynamic project context
+          // No saved prompts - use dynamic systems
           systemPrompt = getProjectContext(currentProject);
-          systemPrompt += `\n\nYou operate with Vulcan-like calm and precision. Always provide:
-- Clear, actionable solutions
-- Clean code examples when relevant  
-- Logical next steps
-- Professional technical guidance`;
+          systemPrompt += `\n\n${getPersonalityPrompt(currentPersonality)}`;
         }
         
         // CANVAS CONTEXT (Active Canvas Override - Applied Last if Canvas is Active)
