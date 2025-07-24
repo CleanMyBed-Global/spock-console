@@ -327,6 +327,131 @@
       background: currentColor;
     }
 
+    /* Canvas Settings Styles - ADDED */
+    .canvas-setting {
+      margin-bottom: 1.5rem;
+    }
+
+    .canvas-toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      cursor: pointer;
+      padding: 1rem;
+      background: var(--glass-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .canvas-toggle-label:hover {
+      background: rgba(212, 175, 55, 0.05);
+      border-color: var(--primary-gold);
+    }
+
+    .canvas-checkbox {
+      display: none;
+    }
+
+    .canvas-toggle-slider {
+      position: relative;
+      width: 50px;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .canvas-toggle-slider::before {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 18px;
+      height: 18px;
+      background: var(--text-tertiary);
+      border-radius: 50%;
+      transition: all 0.3s ease;
+    }
+
+    .canvas-checkbox:checked + .canvas-toggle-slider {
+      background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+      border-color: #06b6d4;
+    }
+
+    .canvas-checkbox:checked + .canvas-toggle-slider::before {
+      transform: translateX(26px);
+      background: white;
+    }
+
+    .canvas-toggle-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .canvas-instructions {
+      transition: all 0.3s ease;
+    }
+
+    .canvas-instructions.disabled {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    .canvas-instructions-area {
+      min-height: 180px;
+      margin-bottom: 1rem;
+    }
+
+    .canvas-presets {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 1rem;
+    }
+
+    .canvas-presets-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .canvas-preset-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+      gap: 0.5rem;
+    }
+
+    .canvas-preset-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      color: var(--text-tertiary);
+      padding: 0.5rem 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .canvas-preset-btn:hover {
+      background: rgba(6, 182, 212, 0.1);
+      border-color: #06b6d4;
+      color: #06b6d4;
+    }
+
+    .canvas-preset-btn.active {
+      background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+      color: white;
+      border-color: #06b6d4;
+    }
+
     /* Scrollbar styling */
     ::-webkit-scrollbar {
       width: 6px;
@@ -369,6 +494,10 @@
 
       .actions {
         grid-template-columns: 1fr;
+      }
+
+      .canvas-preset-buttons {
+        grid-template-columns: 1fr 1fr;
       }
     }
   </style>
@@ -425,6 +554,43 @@
               class="textarea personality" 
               placeholder="Define Spock's core personality, communication style, and behavioral patterns..."
               oninput="updatePreview()"></textarea>
+          </div>
+
+          <!-- Canvas Settings Section - ADDED -->
+          <div class="section">
+            <div class="section-title">
+              <span>🎨</span>
+              <span>Canvas Behavior Settings</span>
+            </div>
+            
+            <!-- Canvas Detection Toggle -->
+            <div class="canvas-setting">
+              <label class="canvas-toggle-label">
+                <input type="checkbox" id="canvasDetectionEnabled" class="canvas-checkbox" checked onchange="updateCanvasSettings()">
+                <span class="canvas-toggle-slider"></span>
+                <span class="canvas-toggle-text">Enable Canvas Detection</span>
+              </label>
+            </div>
+            
+            <!-- Canvas Instructions -->
+            <div id="canvasInstructions" class="canvas-instructions">
+              <textarea 
+                id="canvasInstructionsText" 
+                class="textarea canvas-instructions-area" 
+                placeholder="Define when and how Spock should suggest canvas creation..."
+                oninput="updatePreview()"></textarea>
+              
+              <!-- Preset Instructions -->
+              <div class="canvas-presets">
+                <div class="canvas-presets-title">Quick Presets:</div>
+                <div class="canvas-preset-buttons">
+                  <button class="canvas-preset-btn" onclick="loadCanvasPreset('strict')">Strict</button>
+                  <button class="canvas-preset-btn active" onclick="loadCanvasPreset('balanced')">Balanced</button>
+                  <button class="canvas-preset-btn" onclick="loadCanvasPreset('liberal')">Liberal</button>
+                  <button class="canvas-preset-btn" onclick="loadCanvasPreset('custom')">Custom</button>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- Project-Specific Prompts -->
@@ -599,30 +765,201 @@ COMMUNICATION STYLE:
       spock: "You are Spock, helping to build and improve the Spock Console itself. Focus on chat interfaces, conversation management, Canvas systems, and developer productivity features."
     };
 
-    // Current prompts storage
+    // Canvas detection presets - ADDED
+    const canvasPresets = {
+      'strict': `CANVAS DETECTION - STRICT MODE:
+Only suggest canvas creation for explicit development requests using these exact patterns:
+- "Build [system/app/component]"
+- "Create [system/app/component]" 
+- "Generate [code/system/function]"
+- "Develop [application/feature]"
+
+CANVAS RESPONSE FORMAT:
+When detected, start your response with: [CANVAS:descriptive_name]
+
+STRICT RULES:
+- NO canvas for questions ("How do I...?", "What is...?", "Can you explain...?")
+- NO canvas for debugging/fixing existing code
+- NO canvas for theoretical discussions
+- NO canvas for advice or recommendations
+- ONLY canvas for substantial new development work
+
+Example:
+User: "Build me a user authentication system"
+Response: "[CANVAS:User Authentication System] I'll create a comprehensive authentication system..."`,
+
+      'balanced': `CANVAS DETECTION - BALANCED MODE:
+Suggest canvas creation for development work while being contextually aware:
+
+CANVAS TRIGGERS:
+- Building new systems, applications, or major components
+- Creating substantial code bases or frameworks
+- Developing complete features or modules
+- Generating complex implementations
+
+CANVAS RESPONSE FORMAT:
+When appropriate, start response with: [CANVAS:descriptive_name]
+
+BALANCED APPROACH:
+- YES canvas for: "Build", "Create", "Generate", "Develop" + substantial work
+- MAYBE canvas for: Code that will be 50+ lines or multi-file
+- NO canvas for: Questions, explanations, small fixes, single functions
+
+Context Awareness:
+- Consider conversation history
+- Evaluate scope and complexity
+- Prefer canvas for deliverable work products`,
+
+      'liberal': `CANVAS DETECTION - LIBERAL MODE:
+Proactively suggest canvas creation for any substantial development work:
+
+CANVAS TRIGGERS:
+- Any code generation beyond simple examples
+- System design and architecture discussions with implementation
+- Multi-step development processes
+- Tutorial code that could be reused
+- Complex configurations or setups
+
+CANVAS RESPONSE FORMAT:
+Start with: [CANVAS:descriptive_name] when creating substantial content
+
+LIBERAL APPROACH:
+- Default to canvas for most development-related responses
+- Include canvas for tutorial code and examples
+- Create canvas for configuration files and setups
+- Use canvas for any code the user might want to save/modify
+
+EXCEPTIONS (NO canvas):
+- Pure explanations without code
+- Debugging help for existing code
+- Theoretical computer science discussions`,
+
+      'custom': `CANVAS DETECTION - CUSTOM MODE:
+Define your own canvas detection rules:
+
+CANVAS TRIGGERS:
+[Add your custom triggers here]
+
+CANVAS RESPONSE FORMAT:
+[Define your response format]
+
+CUSTOM RULES:
+[Add your specific rules and exceptions]
+
+EXAMPLES:
+[Provide examples of when to create canvas vs not]`
+    };
+
+    // Current prompts storage - MODIFIED
     let currentPrompts = {
       globalPersonality: '',
-      projects: {}
+      projects: {},
+      canvasSettings: {
+        enabled: true,
+        preset: 'balanced',
+        instructions: canvasPresets['balanced']
+      }
+    };
+
+    // Current canvas settings - ADDED
+    let currentCanvasSettings = {
+      enabled: true,
+      preset: 'balanced',
+      instructions: ''
     };
 
     let activeProjectTab = 'telegram';
 
-    // Initialize the editor
+    // Load canvas preset - ADDED
+    function loadCanvasPreset(presetName) {
+      const instructions = canvasPresets[presetName] || '';
+      document.getElementById('canvasInstructionsText').value = instructions;
+      
+      // Update active preset button
+      document.querySelectorAll('.canvas-preset-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      
+      currentCanvasSettings.preset = presetName;
+      currentCanvasSettings.instructions = instructions;
+      
+      updatePreview();
+      showStatus('Canvas preset loaded: ' + presetName, 'success');
+    }
+
+    // Update canvas settings - ADDED
+    function updateCanvasSettings() {
+      const enabled = document.getElementById('canvasDetectionEnabled').checked;
+      const instructions = document.getElementById('canvasInstructions');
+      
+      currentCanvasSettings.enabled = enabled;
+      
+      if (enabled) {
+        instructions.classList.remove('disabled');
+      } else {
+        instructions.classList.add('disabled');
+      }
+      
+      updatePreview();
+    }
+
+    // Get current canvas instructions - ADDED
+    function getCurrentCanvasInstructions() {
+      if (!currentCanvasSettings.enabled) {
+        return '';
+      }
+      
+      const customInstructions = document.getElementById('canvasInstructionsText').value;
+      return customInstructions || canvasPresets['balanced'];
+    }
+
+    // Initialize the editor - MODIFIED
     function initializeEditor() {
       // Load current prompts from localStorage or defaults
       const savedPrompts = localStorage.getItem('spockPrompts');
       if (savedPrompts) {
         currentPrompts = JSON.parse(savedPrompts);
+        
+        // Initialize canvas settings if they don't exist
+        if (!currentPrompts.canvasSettings) {
+          currentPrompts.canvasSettings = {
+            enabled: true,
+            preset: 'balanced',
+            instructions: canvasPresets['balanced']
+          };
+        }
       } else {
         // Initialize with defaults
         currentPrompts.projects = {...defaultProjectContexts};
         currentPrompts.globalPersonality = getDefaultGlobalPersonality();
+        currentPrompts.canvasSettings = {
+          enabled: true,
+          preset: 'balanced',
+          instructions: canvasPresets['balanced']
+        };
       }
       
       // Update UI
       document.getElementById('globalPersonalityPrompt').value = currentPrompts.globalPersonality;
+      
+      // Update canvas settings UI - ADDED
+      document.getElementById('canvasDetectionEnabled').checked = currentPrompts.canvasSettings.enabled;
+      document.getElementById('canvasInstructionsText').value = currentPrompts.canvasSettings.instructions;
+      
+      // Set active preset button - ADDED
+      document.querySelectorAll('.canvas-preset-btn').forEach(btn => {
+        if (btn.textContent.toLowerCase() === currentPrompts.canvasSettings.preset) {
+          btn.classList.add('active');
+        }
+      });
+      
+      // Update current settings - ADDED
+      currentCanvasSettings = {...currentPrompts.canvasSettings};
+      
+      updateCanvasSettings();
       switchProjectTab(activeProjectTab);
-      showStatus('Prompt editor initialized', 'success');
+      showStatus('Prompt editor initialized with canvas settings', 'success');
     }
 
     // Get default global personality prompt
@@ -678,18 +1015,32 @@ COMMUNICATION BALANCE:
       }
     }
 
-    // Update prompt preview
+    // Update prompt preview - MODIFIED
     function updatePreview() {
       const globalPrompt = document.getElementById('globalPersonalityPrompt').value;
       const projectPrompt = document.getElementById('projectPromptEditor').value;
+      const canvasInstructions = getCurrentCanvasInstructions();
       
-      const combinedPrompt = `${projectPrompt}\n\n${globalPrompt}`;
+      let combinedPrompt = projectPrompt;
+      
+      if (globalPrompt) {
+        combinedPrompt += '\n\n' + globalPrompt;
+      }
+      
+      if (canvasInstructions) {
+        combinedPrompt += '\n\n' + canvasInstructions;
+      }
       
       document.getElementById('promptPreview').textContent = combinedPrompt;
       
       // Save current changes to memory
       currentPrompts.globalPersonality = globalPrompt;
       currentPrompts.projects[activeProjectTab] = projectPrompt;
+      currentPrompts.canvasSettings = {
+        enabled: currentCanvasSettings.enabled,
+        preset: currentCanvasSettings.preset,
+        instructions: document.getElementById('canvasInstructionsText').value
+      };
     }
 
     // Test current prompt
