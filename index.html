@@ -2423,6 +2423,8 @@ ${canvasContext.content}`;
       const projectSelector = document.getElementById('projectSelector');
       const modelSelector = document.getElementById('modelSelector');
       
+      const personalitySelector = document.getElementById('personalitySelector');
+
       messageInput.addEventListener('input', function() {
         this.style.height = 'auto';
         this.style.height = Math.min(this.scrollHeight, 150) + 'px';
@@ -2438,14 +2440,25 @@ ${canvasContext.content}`;
       projectSelector.addEventListener('change', function() {
         switchProject(this.value);
       });
+
+      personalitySelector.addEventListener('change', function() {
+        switchPersonality(this.value);
+      });
       
-      // Initialize projects and populate selector
+      // Initialize projects and personalities
       loadProjects();
-      populateProjectSelector();
+      loadPersonalities();
       
-      // Set initial project info and title
-      updateProjectInfo();
-      updateChatTitle();
+      // Populate selectors after data is loaded
+      populateProjectSelector();
+      populatePersonalitySelector();
+      
+      // Update UI elements after selectors are populated
+      setTimeout(() => {
+        updateProjectInfo();
+        updatePersonalityInfo();
+        updateChatTitle();
+      }, 100);
 
       modelSelector.addEventListener('change', function() {
         updateModelSelection(this.value);
