@@ -1570,7 +1570,7 @@
       setLoading(true);
       
       try {
-        // Check for custom prompts from localStorage
+        // FIXED: Check for custom prompts from localStorage and build proper hierarchy
         let systemPrompt = projectContexts[currentProject];
         
         // Add canvas context if active
@@ -1591,6 +1591,8 @@ ${canvasContext.content}`;
         const savedPrompts = localStorage.getItem('spockPrompts');
         if (savedPrompts) {
           const prompts = JSON.parse(savedPrompts);
+          
+          // Apply project-specific prompts
           if (prompts.projects[currentProject]) {
             systemPrompt = prompts.projects[currentProject];
             
@@ -1610,12 +1612,12 @@ ${canvasContext.content}`;
             }
           }
           
-          // ALWAYS apply system prompts (the "Gazza Context Layer") regardless of developer mode
-          // System prompts are the core behavior rules that should never be disabled
+          // ALWAYS apply system prompts (the "Gazza Context Layer") - HIGHEST PRIORITY
           if (prompts.systemPrompts) {
             systemPrompt = `${prompts.systemPrompts}\n\n${systemPrompt}`;
           }
           
+          // Apply personality prompts - LOWEST PRIORITY  
           if (prompts.globalPersonality) {
             systemPrompt += `\n\n${prompts.globalPersonality}`;
           } else {
@@ -1625,6 +1627,12 @@ ${canvasContext.content}`;
 - Logical next steps
 - Professional technical guidance`;
           }
+          
+          // FIXED: Apply Canvas Behavior Settings if enabled
+          if (prompts.canvasSettings && prompts.canvasSettings.enabled && prompts.canvasSettings.instructions) {
+            systemPrompt += `\n\n${prompts.canvasSettings.instructions}`;
+          }
+          
         } else {
           systemPrompt += `\n\nYou operate with Vulcan-like calm and precision. Always provide:
 - Clear, actionable solutions
