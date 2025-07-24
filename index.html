@@ -1424,11 +1424,41 @@
         // Check for custom prompts from localStorage
         let systemPrompt = projectContexts[currentProject];
         
+        // Add canvas context if active
+        if (window.canvasPlugin && canvasPlugin.hasActiveCanvas()) {
+          const canvasContext = canvasPlugin.getCanvasContext();
+          systemPrompt += `\n\nACTIVE CANVAS CONTEXT:
+You are currently working on a canvas: "${canvasContext.name}"
+When the user asks for modifications, additions, or improvements to this canvas:
+- Start your response with [UPDATE-CANVAS] 
+- Provide the updated content
+- DO NOT create a new canvas
+- Focus on surgical edits that preserve existing work
+
+Current canvas content:
+${canvasContext.content}`;
+        }
+        
         const savedPrompts = localStorage.getItem('spockPrompts');
         if (savedPrompts) {
           const prompts = JSON.parse(savedPrompts);
           if (prompts.projects[currentProject]) {
             systemPrompt = prompts.projects[currentProject];
+            
+            // Add canvas context to custom prompts too
+            if (window.canvasPlugin && canvasPlugin.hasActiveCanvas()) {
+              const canvasContext = canvasPlugin.getCanvasContext();
+              systemPrompt += `\n\nACTIVE CANVAS CONTEXT:
+You are currently working on a canvas: "${canvasContext.name}"
+When the user asks for modifications, additions, or improvements:
+- Start your response with [UPDATE-CANVAS] 
+- Provide the updated content
+- DO NOT create a new canvas
+- Focus on surgical edits that preserve existing work
+
+Current canvas content:
+${canvasContext.content}`;
+            }
           }
           if (prompts.globalPersonality) {
             systemPrompt += `\n\n${prompts.globalPersonality}`;
