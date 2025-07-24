@@ -1,0 +1,22 @@
+{
+  "name": "spock-console",
+  "version": "1.0.0",
+  "description": "AI development console with conversational interface and canvas system",
+  "main": "index.html",
+  "scripts": {
+    "dev": "netlify dev",
+    "build": "echo 'No build step required'"
+  },
+  "dependencies": {
+    "openai": "^4.20.0"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "ai",
+    "chat",
+    "development",
+    "console"
+  ],
+  "author": "Spock Console Team",
+  "license": "MIT"
+}
