@@ -800,10 +800,25 @@ CANVAS TRIGGERS:
 CANVAS RESPONSE FORMAT:
 When appropriate, start response with: [CANVAS:descriptive_name]
 
+CANVAS UPDATE FORMAT:
+When updating existing canvas, start response with: [UPDATE-CANVAS]
+
 BALANCED APPROACH:
 - YES canvas for: "Build", "Create", "Generate", "Develop" + substantial work
 - MAYBE canvas for: Code that will be 50+ lines or multi-file
 - NO canvas for: Questions, explanations, small fixes, single functions
+
+CRITICAL CANVAS RULES:
+1. CANVAS = CLEAN OUTPUT ONLY (no chat language, no explanations)
+2. CHAT = DISCUSSION (respond normally, then update canvas separately)
+3. Canvas content must be professional, exportable, and standalone
+4. Never copy chat responses into canvas
+5. Canvas should read like a professional document someone else could use
+
+EXAMPLE WORKFLOW:
+User: "Add error handling to the auth system"
+Chat Response: "I'll add comprehensive error handling to improve reliability..."
+Canvas Update: [UPDATE-CANVAS] [Clean, professional code with error handling - no explanations]
 
 Context Awareness:
 - Consider conversation history
