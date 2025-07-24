@@ -1,10 +1,10 @@
-// ===== CANVAS PLUGIN - COMPLETE FILE =====
+// ===== CANVAS PLUGIN - COMPLETE FIXED FILE =====
 // FILE: plugins/canvas/canvas-plugin.js
 class CanvasPlugin {
   constructor() {
     this.isEnabled = false;
     this.isInitialized = false;
-    this.version = '1.0.0';
+    this.version = '2.0.0';
     
     console.log('🎨 Canvas Plugin loaded v' + this.version);
   }
@@ -111,11 +111,27 @@ class CanvasPlugin {
     document.querySelector('.container').appendChild(canvasContainer);
   }
   
-  // Handle incoming chat messages
+  // FIXED: Handle incoming chat messages with proper [CANVAS:name] detection
   handleChatMessage(messageData) {
     if (!this.isEnabled) return;
     
     console.log('🎨 Canvas Plugin received chat message:', messageData);
+    
+    // PRIORITY 1: Check for [CANVAS:name] command format
+    const canvasCommandMatch = messageData.content.match(/\[CANVAS:([^\]]+)\]/);
+    if (canvasCommandMatch) {
+      const canvasName = canvasCommandMatch[1].trim();
+      console.log('🎨 [CANVAS:name] command detected:', canvasName);
+      
+      // Show canvas confirmation dialog
+      this.showCanvasConfirmation({
+        name: canvasName,
+        type: 'command',
+        confidence: 1.0,
+        originalText: canvasCommandMatch[0]
+      });
+      return;
+    }
     
     // Check for canvas update command
     if (messageData.content.startsWith('[UPDATE-CANVAS]')) {
@@ -434,6 +450,20 @@ Creating ${name.toLowerCase()} with these specifications:
 \`\`\`
 // ${name} code structure
 \`\`\`
+
+---
+*Canvas created: ${new Date().toLocaleString()}*`,
+
+      'command': `# ${name}
+
+## Project Overview
+${name} workspace created via command
+
+## Current Status
+🚀 Canvas initialized - ready for development
+
+## Content
+*Awaiting content from Spock...*
 
 ---
 *Canvas created: ${new Date().toLocaleString()}*`,
