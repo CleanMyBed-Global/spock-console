@@ -287,6 +287,9 @@ class CanvasPlugin {
     // Remove any existing confirmation
     this.hideCanvasConfirmation();
     
+    // Store canvas data for event handlers
+    this.pendingCanvasData = canvasData;
+    
     // Create confirmation UI
     const confirmation = document.createElement('div');
     confirmation.id = 'canvasConfirmation';
@@ -296,13 +299,13 @@ class CanvasPlugin {
         <div class="canvas-confirmation-icon">🎨</div>
         <div class="canvas-confirmation-text">
           <div class="canvas-confirmation-title">Create Canvas?</div>
-          <div class="canvas-confirmation-subtitle">"${canvasData.name}"</div>
+          <div class="canvas-confirmation-subtitle">"${this.sanitizeForDisplay(canvasData.name)}"</div>
         </div>
         <div class="canvas-confirmation-actions">
-          <button class="canvas-confirmation-btn create" onclick="canvasPlugin.confirmCanvasCreation('${canvasData.name}', '${canvasData.type}')">
+          <button id="confirmCanvasBtn" class="canvas-confirmation-btn create">
             ✅ Create Canvas
           </button>
-          <button class="canvas-confirmation-btn cancel" onclick="canvasPlugin.hideCanvasConfirmation()">
+          <button id="cancelCanvasBtn" class="canvas-confirmation-btn cancel">
             💬 Chat Only
           </button>
         </div>
@@ -313,6 +316,16 @@ class CanvasPlugin {
     const chatMessages = document.getElementById('chatMessages');
     if (chatMessages) {
       chatMessages.appendChild(confirmation);
+      
+      // Add event listeners (safe from name issues)
+      document.getElementById('confirmCanvasBtn').addEventListener('click', () => {
+        this.confirmCanvasCreation(this.pendingCanvasData.name, this.pendingCanvasData.type);
+      });
+      
+      document.getElementById('cancelCanvasBtn').addEventListener('click', () => {
+        this.hideCanvasConfirmation();
+      });
+      
       this.scrollToBottom();
       
       // Auto-hide after 10 seconds
@@ -322,12 +335,19 @@ class CanvasPlugin {
     }
   }
   
+  // Sanitize text for safe HTML display
+  sanitizeForDisplay(text) {
+    return text.replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+  
   // Hide canvas confirmation
   hideCanvasConfirmation() {
     const confirmation = document.getElementById('canvasConfirmation');
     if (confirmation) {
       confirmation.remove();
     }
+    // Clear pending data
+    this.pendingCanvasData = null;
   }
   
   // Confirm canvas creation
