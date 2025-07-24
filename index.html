@@ -129,6 +129,41 @@
       margin-top: 0.5rem;
     }
 
+    .model-info {
+      background: rgba(0, 255, 136, 0.05);
+      border: 1px solid rgba(0, 255, 136, 0.1);
+      border-radius: 6px;
+      padding: 0.75rem;
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+    }
+
+    .model-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .model-indicator {
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    .model-description {
+      color: var(--text-tertiary);
+      font-size: 0.75rem;
+      line-height: 1.4;
+    }
+
+    .model-selector-loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
     /* SUMMARY PANEL STYLES */
     .summary-panel {
       background: var(--glass-bg);
@@ -722,7 +757,143 @@
       background: rgba(212, 175, 55, 0.5);
     }
     
-    /* Responsive design */
+    /* Auto-save notification styles */
+    .autosave-notification {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: linear-gradient(135deg, var(--card-bg) 0%, rgba(15, 15, 15, 0.98) 100%);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 2rem;
+      max-width: 500px;
+      min-width: 400px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+      z-index: 10000;
+      animation: slideInScale 0.3s ease-out;
+    }
+
+    @keyframes slideInScale {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+    }
+
+    .autosave-notification-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 9999;
+      backdrop-filter: blur(3px);
+    }
+
+    .autosave-notification-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .autosave-notification-icon {
+      font-size: 2rem;
+      color: var(--primary-gold);
+    }
+
+    .autosave-notification-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--primary-gold);
+    }
+
+    .autosave-notification-content {
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+
+    .autosave-work-list {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 1rem;
+      margin: 1rem 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+    }
+
+    .autosave-work-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+      color: var(--text-secondary);
+    }
+
+    .autosave-work-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .autosave-status {
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      border-radius: 6px;
+      padding: 0.75rem;
+      margin: 1rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--success);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+    }
+
+    .autosave-notification-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+    }
+
+    .autosave-btn {
+      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+      min-width: 120px;
+    }
+
+    .autosave-btn.primary {
+      background: linear-gradient(135deg, var(--primary-gold), var(--secondary-gold));
+      color: var(--dark-bg);
+    }
+
+    .autosave-btn.primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+    }
+
+    .autosave-btn.secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+    }
+
+    .autosave-btn.secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
     @media (max-width: 768px) {
       .container {
         flex-direction: column;
@@ -782,6 +953,27 @@
         </select>
         <div class="project-info" id="projectInfo">
           Select a project to see details...
+        </div>
+      </div>
+
+      <!-- AI Model Selector -->
+      <div class="project-section">
+        <div class="section-title">AI Model</div>
+        <select id="modelSelector">
+          <option value="gpt-4o">GPT-4o (Recommended)</option>
+          <option value="gpt-4-turbo">GPT-4 Turbo (Fast)</option>
+          <option value="gpt-4">GPT-4 (Standard)</option>
+          <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Economy)</option>
+          <option value="claude-3-5-sonnet">Claude 3.5 Sonnet (Alternative)</option>
+        </select>
+        <div class="model-info" id="modelInfo">
+          <div class="model-status">
+            <span class="model-indicator"></span>
+            <span id="modelStatusText">GPT-4o Active</span>
+          </div>
+          <div class="model-description" id="modelDescription">
+            Latest multimodal model with superior reasoning and efficiency
+          </div>
         </div>
       </div>
 
@@ -960,8 +1152,43 @@
     };
 
     let currentProject = 'spock';
+    let currentModel = 'gpt-4o';
     let conversationHistory = [];
     let isLoading = false;
+
+    // Model configurations
+    const modelConfigs = {
+      'gpt-4o': {
+        name: 'GPT-4o',
+        status: 'GPT-4o Active',
+        description: 'Latest multimodal model with superior reasoning and efficiency',
+        provider: 'openai'
+      },
+      'gpt-4-turbo': {
+        name: 'GPT-4 Turbo',
+        status: 'GPT-4 Turbo Active',
+        description: 'Fast, capable model with good balance of speed and intelligence',
+        provider: 'openai'
+      },
+      'gpt-4': {
+        name: 'GPT-4',
+        status: 'GPT-4 Active',
+        description: 'Standard GPT-4 model with excellent reasoning capabilities',
+        provider: 'openai'
+      },
+      'gpt-3.5-turbo': {
+        name: 'GPT-3.5 Turbo',
+        status: 'GPT-3.5 Turbo Active',
+        description: 'Fast and cost-effective model for most tasks',
+        provider: 'openai'
+      },
+      'claude-3-5-sonnet': {
+        name: 'Claude 3.5 Sonnet',
+        status: 'Claude 3.5 Sonnet Active',
+        description: 'Anthropic\'s advanced model with excellent coding capabilities',
+        provider: 'anthropic'
+      }
+    };
 
     // Summary system variables
     let currentSummary = null;
@@ -1231,7 +1458,8 @@
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            messages: messages
+            messages: messages,
+            model: currentModel
           })
         });
 
@@ -1417,27 +1645,71 @@
         // Auto-save current state
         autoSaveCurrentState();
         
-        // Show confirmation with auto-save info
-        const confirmMessage = `🛡️ NAVIGATION PROTECTION
-
-You have unsaved work:
-${hasConversation ? '• Active conversation (' + conversationHistory.length + ' messages)' : ''}
-${hasCanvas ? '• Open canvas workspace' : ''}
-${hasSummary ? '• Project summary' : ''}
-
-✅ Auto-saved to browser storage
-Continue to ${linkElement.textContent.trim()}?`;
-
-        if (confirm(confirmMessage)) {
-          return true; // Allow navigation
-        } else {
-          return false; // Cancel navigation
-        }
+        // Show beautiful in-app notification instead of ugly browser confirm
+        showNavigationProtectionDialog(linkElement, hasConversation, hasCanvas, hasSummary);
+        return false; // Prevent immediate navigation
       }
       
       return true; // No work to lose, allow navigation
     }
 
+    // Show beautiful navigation protection dialog
+    function showNavigationProtectionDialog(linkElement, hasConversation, hasCanvas, hasSummary) {
+      const overlay = document.createElement('div');
+      overlay.className = 'autosave-notification-overlay';
+      
+      const dialog = document.createElement('div');
+      dialog.className = 'autosave-notification';
+      
+      let workItems = '';
+      if (hasConversation) {
+        workItems += `<div class="autosave-work-item">• Active conversation (${conversationHistory.length} messages)</div>`;
+      }
+      if (hasCanvas) {
+        workItems += `<div class="autosave-work-item">• Open canvas workspace</div>`;
+      }
+      if (hasSummary) {
+        workItems += `<div class="autosave-work-item">• Project summary</div>`;
+      }
+      
+      dialog.innerHTML = `
+        <div class="autosave-notification-header">
+          <div class="autosave-notification-icon">🛡️</div>
+          <div class="autosave-notification-title">Navigation Protection</div>
+        </div>
+        <div class="autosave-notification-content">
+          <div>You have unsaved work:</div>
+          <div class="autosave-work-list">${workItems}</div>
+          <div class="autosave-status">
+            <span>✅</span>
+            <span>Auto-saved to browser storage</span>
+          </div>
+          <div>Continue to ${linkElement.textContent.trim()}?</div>
+        </div>
+        <div class="autosave-notification-actions">
+          <button class="autosave-btn secondary" onclick="closeNavigationDialog()">Stay Here</button>
+          <button class="autosave-btn primary" onclick="proceedWithNavigation('${linkElement.href}')">Continue</button>
+        </div>
+      `;
+      
+      overlay.appendChild(dialog);
+      document.body.appendChild(overlay);
+    }
+
+    // Close navigation dialog
+    function closeNavigationDialog() {
+      const overlay = document.querySelector('.autosave-notification-overlay');
+      if (overlay) {
+        overlay.remove();
+      }
+    }
+
+    // Proceed with navigation
+    function proceedWithNavigation(url) {
+      closeNavigationDialog();
+      window.location.href = url;
+    }
+    
     // Auto-save current state
     function autoSaveCurrentState() {
       const saveData = {
@@ -1460,7 +1732,7 @@ Continue to ${linkElement.textContent.trim()}?`;
       console.log('🛡️ Auto-saved current state for project:', currentProject);
     }
 
-    // Restore auto-saved state
+    // Restore auto-saved state with beautiful dialog
     function restoreAutoSavedState() {
       const saveKey = `spock_autosave_${currentProject}`;
       const savedData = localStorage.getItem(saveKey);
@@ -1470,55 +1742,92 @@ Continue to ${linkElement.textContent.trim()}?`;
           const data = JSON.parse(savedData);
           const saveAge = Date.now() - new Date(data.timestamp).getTime();
           const hoursAgo = Math.floor(saveAge / (1000 * 60 * 60));
-          const minutesAgo = Math.floor(saveAge / (1000 * 60));
+          const minutesAgo = Math.floor((saveAge % (1000 * 60 * 60)) / (1000 * 60));
           
           let timeText = '';
           if (hoursAgo > 0) {
             timeText = `${hoursAgo} hour${hoursAgo > 1 ? 's' : ''} ago`;
-          } else {
+          } else if (minutesAgo > 0) {
             timeText = `${minutesAgo} minute${minutesAgo > 1 ? 's' : ''} ago`;
+          } else {
+            timeText = 'just now';
           }
           
-          const restoreMessage = `🔄 AUTO-SAVE RECOVERY
-
-Found saved work for ${data.project} project from ${timeText}:
-• ${data.conversation.length} messages
-${data.summary ? '• Project summary' : ''}
-
-Restore this work?`;
-
-          if (confirm(restoreMessage)) {
-            // Restore conversation
-            conversationHistory = data.conversation || [];
-            autoSummaryMessageCount = data.autoSummaryCount || 0;
-            
-            // Restore summary
-            if (data.summary) {
-              currentSummary = data.summary;
-              displaySummary(currentSummary);
-              updateSummaryControls();
-            }
-            
-            if (data.summaryHistory) {
-              summaryHistory = data.summaryHistory;
-            }
-            
-            // Restore chat messages
-            rebuildChatFromHistory();
-            
-            // Clean up auto-save
-            localStorage.removeItem(saveKey);
-            
-            showNotification('Work restored successfully!');
-          } else {
-            // User declined, clean up auto-save
-            localStorage.removeItem(saveKey);
-          }
+          showRestoreDialog(data, timeText, saveKey);
         } catch (error) {
           console.error('Error restoring auto-saved state:', error);
           localStorage.removeItem(saveKey);
         }
       }
+    }
+
+    // Show beautiful restore dialog
+    function showRestoreDialog(data, timeText, saveKey) {
+      const overlay = document.createElement('div');
+      overlay.className = 'autosave-notification-overlay';
+      
+      const dialog = document.createElement('div');
+      dialog.className = 'autosave-notification';
+      
+      dialog.innerHTML = `
+        <div class="autosave-notification-header">
+          <div class="autosave-notification-icon">🔄</div>
+          <div class="autosave-notification-title">Auto-Save Recovery</div>
+        </div>
+        <div class="autosave-notification-content">
+          <div>Found saved work for <strong>${data.project}</strong> project from <strong>${timeText}</strong>:</div>
+          <div class="autosave-work-list">
+            <div class="autosave-work-item">• ${data.conversation.length} messages</div>
+            ${data.summary ? '<div class="autosave-work-item">• Project summary</div>' : ''}
+          </div>
+          <div>Restore this work?</div>
+        </div>
+        <div class="autosave-notification-actions">
+          <button class="autosave-btn secondary" onclick="declineRestore('${saveKey}')">Start Fresh</button>
+          <button class="autosave-btn primary" onclick="confirmRestore('${saveKey}')">Restore Work</button>
+        </div>
+      `;
+      
+      overlay.appendChild(dialog);
+      document.body.appendChild(overlay);
+    }
+
+    // Confirm restore
+    function confirmRestore(saveKey) {
+      const savedData = localStorage.getItem(saveKey);
+      if (savedData) {
+        const data = JSON.parse(savedData);
+        
+        // Restore conversation
+        conversationHistory = data.conversation || [];
+        autoSummaryMessageCount = data.autoSummaryCount || 0;
+        
+        // Restore summary
+        if (data.summary) {
+          currentSummary = data.summary;
+          displaySummary(currentSummary);
+          updateSummaryControls();
+        }
+        
+        if (data.summaryHistory) {
+          summaryHistory = data.summaryHistory;
+        }
+        
+        // Restore chat messages
+        rebuildChatFromHistory();
+        
+        // Clean up auto-save
+        localStorage.removeItem(saveKey);
+        
+        closeNavigationDialog();
+        showNotification('Work restored successfully!');
+      }
+    }
+
+    // Decline restore
+    function declineRestore(saveKey) {
+      localStorage.removeItem(saveKey);
+      closeNavigationDialog();
     }
 
     // Rebuild chat interface from conversation history
@@ -1601,6 +1910,7 @@ Restore this work?`;
     document.addEventListener('DOMContentLoaded', function() {
       const messageInput = document.getElementById('messageInput');
       const projectSelector = document.getElementById('projectSelector');
+      const modelSelector = document.getElementById('modelSelector');
       
       messageInput.addEventListener('input', function() {
         this.style.height = 'auto';
@@ -1630,14 +1940,54 @@ Restore this work?`;
         document.getElementById('projectInfo').textContent = descriptions[this.value];
         document.getElementById('chatTitle').textContent = `🖖 ${this.options[this.selectedIndex].text.toUpperCase()}`;
       });
+
+      modelSelector.addEventListener('change', function() {
+        updateModelSelection(this.value);
+      });
       
       projectSelector.dispatchEvent(new Event('change'));
+      
+      // Initialize model selector
+      initializeModelSelector();
       
       // Check for auto-saved work to restore
       setTimeout(() => {
         restoreAutoSavedState();
       }, 500);
     });
+
+    // Update model selection
+    function updateModelSelection(modelKey) {
+      currentModel = modelKey;
+      const config = modelConfigs[modelKey];
+      
+      if (config) {
+        // Update UI
+        document.getElementById('modelStatusText').textContent = config.status;
+        document.getElementById('modelDescription').textContent = config.description;
+        
+        // Save preference
+        localStorage.setItem('spockSelectedModel', modelKey);
+        
+        // Show notification
+        showNotification(`Switched to ${config.name}`);
+        
+        console.log(`🤖 Model changed to: ${config.name}`);
+      }
+    }
+
+    // Initialize model selector
+    function initializeModelSelector() {
+      // Load saved model preference
+      const savedModel = localStorage.getItem('spockSelectedModel');
+      if (savedModel && modelConfigs[savedModel]) {
+        currentModel = savedModel;
+        document.getElementById('modelSelector').value = savedModel;
+      }
+      
+      // Update UI to match current model
+      updateModelSelection(currentModel);
+    }
   </script>
 
   <!-- Canvas Plugin Loader -->
