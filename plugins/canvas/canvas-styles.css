@@ -288,13 +288,12 @@
   border-radius: 8px;
   overflow: hidden;
   margin-bottom: 1rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .canvas-artifact-header {
-  background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(8, 145, 178, 0.1) 100%);
+  background: rgba(0, 0, 0, 0.6);
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid rgba(6, 182, 212, 0.2);
+  border-bottom: 1px solid var(--border-subtle);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -302,12 +301,9 @@
 
 .canvas-artifact-title {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.85rem;
-  color: #06b6d4;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--primary-gold);
+  font-weight: 500;
 }
 
 .canvas-artifact-actions {
@@ -334,14 +330,81 @@
 }
 
 .canvas-artifact-content {
-  padding: 1.5rem;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.85rem;
-  line-height: 1.6;
+  padding: 1rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  line-height: 1.5;
   color: var(--text-primary);
   background: rgba(0, 0, 0, 0.2);
   white-space: pre-wrap;
   overflow-x: auto;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .canvas-container {
+    width: 45%;
+    min-width: 350px;
+  }
+  
+  .main.split-mode {
+    width: 55%;
+  }
+}
+
+@media (max-width: 768px) {
+  .canvas-container {
+    width: 100%;
+    min-width: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    border-left: none;
+  }
+  
+  .canvas-container.hidden {
+    display: none;
+  }
+  
+  .main.split-mode {
+    width: 100%;
+  }
+  
+  .canvas-toggle-btn {
+    padding: 0.5rem;
+    font-size: 0.7rem;
+  }
+  
+  .canvas-placeholder {
+    padding: 2rem 1rem;
+  }
+  
+  .canvas-placeholder-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+  
+  .canvas-tabs {
+    padding: 0.25rem;
+  }
+  
+  .canvas-tab {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.7rem;
+  }
+  
+  .canvas-toolbar {
+    padding: 0.5rem;
+    flex-wrap: wrap;
+  }
+  
+  .canvas-name-input {
+    min-width: 150px;
+    font-size: 0.8rem;
+  }
 }
 
 /* Canvas Confirmation UI */
@@ -445,72 +508,48 @@
   gap: 4px;
 }
 
-/* Responsive Design */
-@media (max-width: 1200px) {
-  .canvas-container {
-    width: 45%;
-    min-width: 350px;
-  }
-  
-  .main.split-mode {
-    width: 55%;
-  }
+/* Enhanced Canvas Artifact */
+.canvas-artifact {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
+.canvas-artifact-header {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(8, 145, 178, 0.1) 100%);
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(6, 182, 212, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.canvas-artifact-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  color: #06b6d4;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.canvas-artifact-content {
+  padding: 1.5rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+  background: rgba(0, 0, 0, 0.2);
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+
+/* Responsive confirmation */
 @media (max-width: 768px) {
-  .canvas-container {
-    width: 100%;
-    min-width: 0;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 1000;
-    border-left: none;
-  }
-  
-  .canvas-container.hidden {
-    display: none;
-  }
-  
-  .main.split-mode {
-    width: 100%;
-  }
-  
-  .canvas-toggle-btn {
-    padding: 0.5rem;
-    font-size: 0.7rem;
-  }
-  
-  .canvas-placeholder {
-    padding: 2rem 1rem;
-  }
-  
-  .canvas-placeholder-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-  }
-  
-  .canvas-tabs {
-    padding: 0.25rem;
-  }
-  
-  .canvas-tab {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.7rem;
-  }
-  
-  .canvas-toolbar {
-    padding: 0.5rem;
-    flex-wrap: wrap;
-  }
-  
-  .canvas-name-input {
-    min-width: 150px;
-    font-size: 0.8rem;
-  }
-  
   .canvas-confirmation-content {
     flex-direction: column;
     text-align: center;
@@ -526,15 +565,6 @@
     min-width: 110px;
     font-size: 0.7rem;
   }
-}
-
-/* Animation for canvas show/hide */
-.canvas-container {
-  transform: translateX(0);
-}
-
-.canvas-container.hidden {
-  transform: translateX(100%);
 }
 
 /* Scrollbar styling for canvas */
