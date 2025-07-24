@@ -75,28 +75,27 @@
       overflow: hidden;
     }
 
-    .sidebar-toggle {
+    .sidebar-close-btn {
       position: absolute;
-      top: 1rem;
-      right: -15px;
-      width: 30px;
-      height: 30px;
-      background: var(--card-bg);
+      top: 0.5rem;
+      right: 0.5rem;
+      width: 24px;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.1);
       border: 1px solid var(--border-subtle);
-      border-radius: 50%;
+      border-radius: 4px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      font-size: 0.8rem;
-      color: var(--primary-gold);
-      z-index: 100;
-      transition: all 0.3s ease;
+      font-size: 0.7rem;
+      color: var(--text-tertiary);
+      transition: all 0.2s ease;
     }
 
-    .sidebar-toggle:hover {
+    .sidebar-close-btn:hover {
       background: rgba(212, 175, 55, 0.1);
-      transform: scale(1.1);
+      color: var(--primary-gold);
     }
 
     .main {
@@ -108,15 +107,49 @@
       position: relative;
     }
 
+    .chat-canvas-container {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+    }
+
+    .chat-section {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .canvas-section {
+      width: 0;
+      min-width: 0;
+      background: var(--card-bg);
+      border-left: 1px solid var(--border-subtle);
+      transition: all 0.3s ease;
+      overflow: hidden;
+    }
+
+    .canvas-section.active {
+      width: 50%;
+      min-width: 300px;
+    }
+
     .resize-handle {
       position: absolute;
-      left: 0;
+      right: 0;
       top: 0;
       bottom: 0;
       width: 4px;
       background: transparent;
       cursor: col-resize;
       z-index: 10;
+      display: none;
+    }
+
+    .canvas-section.active + .resize-handle {
+      display: block;
+      left: auto;
+      right: 50%;
     }
 
     .resize-handle:hover {
@@ -125,6 +158,37 @@
 
     .resize-handle.dragging {
       background: var(--primary-gold);
+    }
+
+    .sidebar-toggle {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      width: 30px;
+      height: 30px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.8rem;
+      color: var(--primary-gold);
+      z-index: 1000;
+      transition: all 0.3s ease;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .sidebar-toggle.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .sidebar-toggle:hover {
+      background: rgba(212, 175, 55, 0.1);
+      transform: scale(1.1);
     }
     
     .logo {
@@ -1093,7 +1157,7 @@
 <body>
   <div class="container">
     <div class="sidebar">
-      <div class="sidebar-toggle" onclick="toggleSidebar()">←</div>
+      <div class="sidebar-close-btn" onclick="toggleSidebar()">←</div>
       
       <div class="logo">
         <div class="logo-icon">🖖</div>
@@ -1236,7 +1300,30 @@
         </div>
       </div>
 
-      <!-- 5. AI Model -->
+      <!-- Auto Summary Notification -->
+      <div id="autoSummaryNotification" class="auto-summary-notification" style="display: none;">
+        <span>🤖</span>
+        <span>Auto-summary triggered! Your conversation has been analyzed and the summary updated.</span>
+        <span class="notification-close" onclick="hideAutoSummaryNotification()">×</span>
+      </div>
+
+      <!-- Management Links -->
+      <a href="project-manager.html" class="prompt-editor-link" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); margin-bottom: 0.4rem;">
+        <span>📁</span>
+        <span>PROJECT MANAGER</span>
+      </a>
+
+      <a href="personality-manager.html" class="prompt-editor-link" style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); margin-bottom: 0.4rem;">
+        <span>🎭</span>
+        <span>PERSONALITY MANAGER</span>
+      </a>
+
+      <a href="prompt-editor.html" id="promptEditorLink" class="prompt-editor-link" onclick="return handleNavigation(this)">
+        <span>⚙️</span>
+        <span>PROMPT EDITOR</span>
+      </a>
+
+      <!-- AI Model -->
       <div class="project-section">
         <div class="section-title">AI Model</div>
         <select id="modelSelector">
@@ -1257,23 +1344,7 @@
         </div>
       </div>
 
-      <!-- 6. Management Links -->
-      <a href="project-manager.html" class="prompt-editor-link" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); margin-bottom: 0.4rem;">
-        <span>📁</span>
-        <span>PROJECT MANAGER</span>
-      </a>
-
-      <a href="personality-manager.html" class="prompt-editor-link" style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); margin-bottom: 0.4rem;">
-        <span>🎭</span>
-        <span>PERSONALITY MANAGER</span>
-      </a>
-
-      <a href="prompt-editor.html" id="promptEditorLink" class="prompt-editor-link" onclick="return handleNavigation(this)">
-        <span>⚙️</span>
-        <span>PROMPT EDITOR</span>
-      </a>
-
-      <!-- 7. Developer Mode -->
+      <!-- Developer Mode -->
       <div class="developer-section">
         <label class="developer-toggle-label" for="developerMode">
           <input type="checkbox" id="developerMode" class="developer-checkbox" onchange="toggleDeveloperMode()">
@@ -1284,27 +1355,20 @@
           System prompts hidden. Enable to access core behavior controls.
         </div>
       </div>
-
-      <!-- Auto Summary Notification -->
-      <div id="autoSummaryNotification" class="auto-summary-notification" style="display: none;">
-        <span>🤖</span>
-        <span>Auto-summary triggered! Your conversation has been analyzed and the summary updated.</span>
-        <span class="notification-close" onclick="hideAutoSummaryNotification()">×</span>
-      </div>
       
-      <!-- 8. Status (Pinned to Bottom) -->
+      <!-- Status (Pinned to Bottom) -->
       <div class="status">
         <div class="status-indicator"></div>
         <span>Neural networks online</span>
       </div>
     </div>
     
+    <!-- Sidebar Toggle Button (Shows when sidebar is collapsed) -->
+    <div class="sidebar-toggle" onclick="toggleSidebar()">→</div>
+    
     <div class="main">
-      <div class="resize-handle"></div>
-      
-      <div class="chat-header">
-        <div class="chat-title" id="chatTitle">🖖 SPOCK NEURAL INTERFACE</div>
-      </div>
+      <div class="chat-canvas-container">
+        <div class="chat-section">
       
       <div class="chat-messages" id="chatMessages">
         <div class="welcome-message">
@@ -1664,10 +1728,17 @@ Perfect for: Performance optimization, workflow improvement, rapid development, 
     // Toggle sidebar visibility
     function toggleSidebar() {
       const sidebar = document.querySelector('.sidebar');
-      const toggle = document.querySelector('.sidebar-toggle');
+      const toggle = document.getElementById('sidebarToggle');
       
       sidebar.classList.toggle('collapsed');
-      toggle.textContent = sidebar.classList.contains('collapsed') ? '→' : '←';
+      
+      if (sidebar.classList.contains('collapsed')) {
+        toggle.classList.add('show');
+        toggle.textContent = '→';
+      } else {
+        toggle.classList.remove('show');
+        toggle.textContent = '←';
+      }
     }
 
     // Initialize resizable panels
