@@ -20,6 +20,8 @@
       --success: #00ff88;
       --warning: #ff6b35;
       --purple: #8e44ad;
+      --developer-accent: #e74c3c;
+      --system-accent: #8e44ad;
     }
     
     * {
@@ -37,7 +39,7 @@
     }
  
     .container {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
     }
 
@@ -66,6 +68,35 @@
 
     .logo-icon {
       font-size: 1.5rem;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .developer-status {
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border: 1px solid;
+    }
+
+    .developer-status.enabled {
+      background: rgba(231, 76, 60, 0.1);
+      border-color: var(--developer-accent);
+      color: var(--developer-accent);
+    }
+
+    .developer-status.disabled {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--border-subtle);
+      color: var(--text-tertiary);
     }
 
     .nav-btn {
@@ -115,6 +146,10 @@
       gap: 10px;
     }
 
+    .panel-header.system {
+      background: linear-gradient(135deg, var(--developer-accent) 0%, #c0392b 100%);
+    }
+
     .panel-content {
       padding: 2rem;
     }
@@ -138,6 +173,46 @@
       gap: 8px;
       text-transform: uppercase;
       letter-spacing: 1px;
+    }
+
+    .section-title.system {
+      color: var(--developer-accent);
+    }
+
+    .section.system-only {
+      opacity: 0.3;
+      pointer-events: none;
+      transition: all 0.3s ease;
+    }
+
+    .section.system-only.enabled {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .system-locked-overlay {
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 2rem;
+      text-align: center;
+      color: var(--text-tertiary);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .system-locked-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .system-locked-text {
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .system-locked-instruction {
+      font-size: 0.8rem;
+      color: var(--developer-accent);
     }
 
     .template-select {
@@ -189,6 +264,17 @@
       min-height: 300px;
     }
 
+    .textarea.system {
+      min-height: 400px;
+      border-color: rgba(231, 76, 60, 0.3);
+      background: rgba(231, 76, 60, 0.05);
+    }
+
+    .textarea.system:focus {
+      border-color: var(--developer-accent);
+      box-shadow: 0 0 0 1px rgba(231, 76, 60, 0.2);
+    }
+
     .project-tabs {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
@@ -237,6 +323,11 @@
       overflow-y: auto;
       backdrop-filter: blur(5px);
       margin-bottom: 1.5rem;
+    }
+
+    .preview-panel.system-enabled {
+      border-color: rgba(231, 76, 60, 0.3);
+      background: rgba(231, 76, 60, 0.05);
     }
 
     .actions {
@@ -327,7 +418,7 @@
       background: currentColor;
     }
 
-    /* Canvas Settings Styles - ADDED */
+    /* Canvas Settings Styles - ENHANCED */
     .canvas-setting {
       margin-bottom: 1.5rem;
     }
@@ -510,10 +601,15 @@
         <div class="logo-icon">🖖⚙️</div>
         <div>SPOCK PROMPT EDITOR</div>
       </div>
-      <a href="index.html" class="nav-btn">
-        <span>💬</span>
-        <span>Back to Console</span>
-      </a>
+      <div class="header-right">
+        <div id="developerStatus" class="developer-status disabled">
+          🔒 System Prompts Locked
+        </div>
+        <a href="index.html" class="nav-btn">
+          <span>💬</span>
+          <span>Back to Console</span>
+        </a>
+      </div>
     </div>
 
     <!-- Main Content -->
@@ -525,6 +621,28 @@
           <span>PROMPT CONFIGURATION</span>
         </div>
         <div class="panel-content">
+
+          <!-- SYSTEM PROMPTS SECTION - DEVELOPER ONLY -->
+          <div id="systemPromptsSection" class="section system-only">
+            <div class="section-title system">
+              <span>🔧</span>
+              <span>System Prompts (Developer Only)</span>
+            </div>
+            
+            <div id="systemLockedOverlay" class="system-locked-overlay">
+              <div class="system-locked-icon">🔒</div>
+              <div class="system-locked-text">System Prompt Controls Locked</div>
+              <div class="system-locked-instruction">Enable Developer Mode in main console to access core behavior controls</div>
+            </div>
+
+            <div id="systemPromptsContent" style="display: none;">
+              <textarea 
+                id="systemPromptsEditor" 
+                class="textarea system" 
+                placeholder="SYSTEM PROMPTS - GAZZA CONTEXT LAYER: Define core Spock Console behavior, development workflows, Canvas rules, and quality standards that should never be overridden by user preferences..."
+                oninput="updatePreview()"></textarea>
+            </div>
+          </div>
           
           <!-- Template Selector -->
           <div class="section">
@@ -556,7 +674,7 @@
               oninput="updatePreview()"></textarea>
           </div>
 
-          <!-- Canvas Settings Section - ADDED -->
+          <!-- Canvas Settings Section -->
           <div class="section">
             <div class="section-title">
               <span>🎨</span>
@@ -623,7 +741,7 @@
 
       <!-- Right Panel: Preview & Actions -->
       <div class="editor-panel">
-        <div class="panel-header">
+        <div class="panel-header" id="previewHeader">
           <span>👁️</span>
           <span>LIVE PREVIEW & ACTIONS</span>
         </div>
@@ -681,6 +799,68 @@
   </div>
 
   <script>
+    // Developer mode state
+    let developerModeEnabled = false;
+
+    // Default SYSTEM PROMPTS - THE GAZZA CONTEXT LAYER
+    const defaultSystemPrompts = `🖖 SPOCK CONSOLE SYSTEM PROMPTS - GAZZA CONTEXT LAYER
+
+═══════════════════════════════════════════════════════════════
+🎯 CORE MISSION: ELIMINATE RE-TRAINING PROBLEM
+═══════════════════════════════════════════════════════════════
+
+YOU ARE SPOCK, THE SYSTEM INTELLIGENCE FOR SPOCK CONSOLE.
+Your purpose is to operate exactly as Gazza (the developer) envisions, without requiring re-orientation each session.
+
+🔧 MANDATORY DEVELOPMENT WORKFLOW:
+1. **ALWAYS REQUEST CURRENT FILES BEFORE CODING**
+   - Never assume current state of any codebase
+   - Ask: "Can you share the current [filename] so I have the latest version?"
+   - Wait for files before implementing changes
+
+2. **ARTIFACT NAMING CONVENTION (STRICT)**
+   - Format: "filename.ext - vX (Description)"
+   - Examples: "index.html - v4 (with Developer Toggle)"
+   - NEVER create artifacts without proper version naming
+
+3. **IMPLEMENTATION WORKFLOW (REQUIRED)**
+   - Analyze Requirements → Discuss approach
+   - Present Implementation Plan → Get approval
+   - Request Current Code → Ensure latest versions
+   - Create Complete Artifacts → Full files only
+   - Provide Test Instructions → Clear steps
+
+🎨 CANVAS VS CHAT SEPARATION (CRITICAL):
+- **CHAT = DISCUSSION**: Conversational, explanatory, personality-driven
+- **CANVAS = DELIVERABLE**: Clean, professional, exportable content only
+- **NEVER MIX**: Canvas content must be standalone, no chat language
+- Canvas triggers: [CANVAS:name] for new, [UPDATE-CANVAS] for edits
+- Canvas content = pure output that someone else could use professionally
+
+📊 PROGRESS TRACKING (ESSENTIAL):
+- Update live progress reports as milestones are achieved
+- Track session objectives and completion status
+- Maintain context across development phases
+- Document architectural decisions for future sessions
+
+⚠️  CRITICAL BEHAVIOR RULES:
+- NO assumptions about current implementation state
+- NO placeholder code or incomplete implementations
+- NO mixing conversational text into deliverable outputs
+- ALWAYS wait for explicit approval before major changes
+- MAINTAIN professional quality standards at all times
+
+🧠 QUALITY STANDARDS:
+- Every response must provide actionable value
+- Code examples must be complete and functional
+- Explanations must be clear and logical
+- Maintain Vulcan-like precision in technical matters
+
+═══════════════════════════════════════════════════════════════
+This system prompt CANNOT be overridden by user preferences.
+It ensures Spock Console operates as Gazza intended.
+═══════════════════════════════════════════════════════════════`;
+
     // Default personality templates
     const personalityTemplates = {
       'classic-spock': `You are Spock, operating with Vulcan logic and precision.
@@ -765,7 +945,7 @@ COMMUNICATION STYLE:
       spock: "You are Spock, helping to build and improve the Spock Console itself. Focus on chat interfaces, conversation management, Canvas systems, and developer productivity features."
     };
 
-    // Canvas detection presets - ADDED
+    // Canvas detection presets
     const canvasPresets = {
       'strict': `CANVAS DETECTION - STRICT MODE:
 Only suggest canvas creation for explicit development requests using these exact patterns:
@@ -865,8 +1045,9 @@ EXAMPLES:
 [Provide examples of when to create canvas vs not]`
     };
 
-    // Current prompts storage - MODIFIED
+    // Current prompts storage
     let currentPrompts = {
+      systemPrompts: defaultSystemPrompts,
       globalPersonality: '',
       projects: {},
       canvasSettings: {
@@ -876,7 +1057,7 @@ EXAMPLES:
       }
     };
 
-    // Current canvas settings - ADDED
+    // Current canvas settings
     let currentCanvasSettings = {
       enabled: true,
       preset: 'balanced',
@@ -885,7 +1066,61 @@ EXAMPLES:
 
     let activeProjectTab = 'telegram';
 
-    // Load canvas preset - ADDED
+    // Check developer mode from URL parameters and localStorage
+    function checkDeveloperMode() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlDevMode = urlParams.get('dev') === '1';
+      const localDevMode = localStorage.getItem('spockDeveloperMode') === 'true';
+      
+      developerModeEnabled = urlDevMode || localDevMode;
+      
+      updateDeveloperModeUI();
+    }
+
+    // Update developer mode UI
+    function updateDeveloperModeUI() {
+      const statusEl = document.getElementById('developerStatus');
+      const systemSection = document.getElementById('systemPromptsSection');
+      const systemOverlay = document.getElementById('systemLockedOverlay');
+      const systemContent = document.getElementById('systemPromptsContent');
+      const previewPanel = document.getElementById('promptPreview');
+      const previewHeader = document.getElementById('previewHeader');
+      
+      if (developerModeEnabled) {
+        statusEl.textContent = '🔧 System Prompts Unlocked';
+        statusEl.classList.remove('disabled');
+        statusEl.classList.add('enabled');
+        
+        systemSection.classList.add('enabled');
+        systemOverlay.style.display = 'none';
+        systemContent.style.display = 'block';
+        
+        previewPanel.classList.add('system-enabled');
+        previewHeader.classList.add('system');
+        
+        // Load system prompts
+        document.getElementById('systemPromptsEditor').value = currentPrompts.systemPrompts || defaultSystemPrompts;
+        
+        showStatus('🔓 Developer Mode: System prompts accessible', 'warning');
+      } else {
+        statusEl.textContent = '🔒 System Prompts Locked';
+        statusEl.classList.remove('enabled');
+        statusEl.classList.add('disabled');
+        
+        systemSection.classList.remove('enabled');
+        systemOverlay.style.display = 'block';
+        systemContent.style.display = 'none';
+        
+        previewPanel.classList.remove('system-enabled');
+        previewHeader.classList.remove('system');
+        
+        showStatus('🔒 System prompts locked. Enable Developer Mode in main console to access.', 'error');
+      }
+      
+      updatePreview();
+    }
+
+    // Load canvas preset
     function loadCanvasPreset(presetName) {
       const instructions = canvasPresets[presetName] || '';
       document.getElementById('canvasInstructionsText').value = instructions;
@@ -903,7 +1138,7 @@ EXAMPLES:
       showStatus('Canvas preset loaded: ' + presetName, 'success');
     }
 
-    // Update canvas settings - ADDED
+    // Update canvas settings
     function updateCanvasSettings() {
       const enabled = document.getElementById('canvasDetectionEnabled').checked;
       const instructions = document.getElementById('canvasInstructions');
@@ -919,7 +1154,7 @@ EXAMPLES:
       updatePreview();
     }
 
-    // Get current canvas instructions - ADDED
+    // Get current canvas instructions
     function getCurrentCanvasInstructions() {
       if (!currentCanvasSettings.enabled) {
         return '';
@@ -929,12 +1164,20 @@ EXAMPLES:
       return customInstructions || canvasPresets['balanced'];
     }
 
-    // Initialize the editor - MODIFIED
+    // Initialize the editor
     function initializeEditor() {
+      // Check developer mode first
+      checkDeveloperMode();
+      
       // Load current prompts from localStorage or defaults
       const savedPrompts = localStorage.getItem('spockPrompts');
       if (savedPrompts) {
         currentPrompts = JSON.parse(savedPrompts);
+        
+        // Initialize system prompts if they don't exist
+        if (!currentPrompts.systemPrompts) {
+          currentPrompts.systemPrompts = defaultSystemPrompts;
+        }
         
         // Initialize canvas settings if they don't exist
         if (!currentPrompts.canvasSettings) {
@@ -948,6 +1191,7 @@ EXAMPLES:
         // Initialize with defaults
         currentPrompts.projects = {...defaultProjectContexts};
         currentPrompts.globalPersonality = getDefaultGlobalPersonality();
+        currentPrompts.systemPrompts = defaultSystemPrompts;
         currentPrompts.canvasSettings = {
           enabled: true,
           preset: 'balanced',
@@ -957,24 +1201,25 @@ EXAMPLES:
       
       // Update UI
       document.getElementById('globalPersonalityPrompt').value = currentPrompts.globalPersonality;
+      document.getElementById('systemPromptsEditor').value = currentPrompts.systemPrompts;
       
-      // Update canvas settings UI - ADDED
+      // Update canvas settings UI
       document.getElementById('canvasDetectionEnabled').checked = currentPrompts.canvasSettings.enabled;
       document.getElementById('canvasInstructionsText').value = currentPrompts.canvasSettings.instructions;
       
-      // Set active preset button - ADDED
+      // Set active preset button
       document.querySelectorAll('.canvas-preset-btn').forEach(btn => {
         if (btn.textContent.toLowerCase() === currentPrompts.canvasSettings.preset) {
           btn.classList.add('active');
         }
       });
       
-      // Update current settings - ADDED
+      // Update current settings
       currentCanvasSettings = {...currentPrompts.canvasSettings};
       
       updateCanvasSettings();
       switchProjectTab(activeProjectTab);
-      showStatus('Prompt editor initialized with canvas settings', 'success');
+      updateDeveloperModeUI();
     }
 
     // Get default global personality prompt
@@ -1030,27 +1275,43 @@ COMMUNICATION BALANCE:
       }
     }
 
-    // Update prompt preview - MODIFIED
+    // Update prompt preview
     function updatePreview() {
+      const systemPrompt = developerModeEnabled ? document.getElementById('systemPromptsEditor').value : '';
       const globalPrompt = document.getElementById('globalPersonalityPrompt').value;
       const projectPrompt = document.getElementById('projectPromptEditor').value;
       const canvasInstructions = getCurrentCanvasInstructions();
       
-      let combinedPrompt = projectPrompt;
+      let combinedPrompt = '';
       
+      // Add system prompts first (if developer mode enabled)
+      if (systemPrompt && developerModeEnabled) {
+        combinedPrompt += '═══ SYSTEM PROMPTS (GAZZA CONTEXT LAYER) ═══\n' + systemPrompt + '\n\n';
+      }
+      
+      // Add project prompt
+      if (projectPrompt) {
+        combinedPrompt += '═══ PROJECT CONTEXT ═══\n' + projectPrompt + '\n\n';
+      }
+      
+      // Add global personality
       if (globalPrompt) {
-        combinedPrompt += '\n\n' + globalPrompt;
+        combinedPrompt += '═══ PERSONALITY LAYER ═══\n' + globalPrompt + '\n\n';
       }
       
+      // Add canvas instructions
       if (canvasInstructions) {
-        combinedPrompt += '\n\n' + canvasInstructions;
+        combinedPrompt += '═══ CANVAS BEHAVIOR ═══\n' + canvasInstructions;
       }
       
-      document.getElementById('promptPreview').textContent = combinedPrompt;
+      document.getElementById('promptPreview').textContent = combinedPrompt || 'Select a project tab to see the combined prompt...';
       
       // Save current changes to memory
       currentPrompts.globalPersonality = globalPrompt;
       currentPrompts.projects[activeProjectTab] = projectPrompt;
+      if (developerModeEnabled) {
+        currentPrompts.systemPrompts = systemPrompt;
+      }
       currentPrompts.canvasSettings = {
         enabled: currentCanvasSettings.enabled,
         preset: currentCanvasSettings.preset,
@@ -1077,6 +1338,10 @@ COMMUNICATION BALANCE:
       currentPrompts.globalPersonality = document.getElementById('globalPersonalityPrompt').value;
       currentPrompts.projects[activeProjectTab] = document.getElementById('projectPromptEditor').value;
       
+      if (developerModeEnabled) {
+        currentPrompts.systemPrompts = document.getElementById('systemPromptsEditor').value;
+      }
+      
       // Save to localStorage
       localStorage.setItem('spockPrompts', JSON.stringify(currentPrompts));
       
@@ -1089,9 +1354,14 @@ COMMUNICATION BALANCE:
       currentPrompts.globalPersonality = document.getElementById('globalPersonalityPrompt').value;
       currentPrompts.projects[activeProjectTab] = document.getElementById('projectPromptEditor').value;
       
+      if (developerModeEnabled) {
+        currentPrompts.systemPrompts = document.getElementById('systemPromptsEditor').value;
+      }
+      
       const exportData = {
         timestamp: new Date().toISOString(),
-        version: '1.0',
+        version: '2.0',
+        developerMode: developerModeEnabled,
         prompts: currentPrompts
       };
       
@@ -1100,7 +1370,7 @@ COMMUNICATION BALANCE:
       
       const link = document.createElement('a');
       link.href = URL.createObjectURL(dataBlob);
-      link.download = `spock-prompts-${Date.now()}.json`;
+      link.download = `spock-prompts-v2-${Date.now()}.json`;
       link.click();
       
       showStatus('Prompts exported successfully!', 'success');
@@ -1126,6 +1396,9 @@ COMMUNICATION BALANCE:
               
               // Update UI
               document.getElementById('globalPersonalityPrompt').value = currentPrompts.globalPersonality;
+              if (developerModeEnabled && currentPrompts.systemPrompts) {
+                document.getElementById('systemPromptsEditor').value = currentPrompts.systemPrompts;
+              }
               switchProjectTab(activeProjectTab);
               
               showStatus('Prompts imported successfully!', 'success');
@@ -1147,9 +1420,13 @@ COMMUNICATION BALANCE:
       if (confirm('Reset all prompts to default values? This cannot be undone.')) {
         currentPrompts.globalPersonality = getDefaultGlobalPersonality();
         currentPrompts.projects = {...defaultProjectContexts};
+        currentPrompts.systemPrompts = defaultSystemPrompts;
         
         // Update UI
         document.getElementById('globalPersonalityPrompt').value = currentPrompts.globalPersonality;
+        if (developerModeEnabled) {
+          document.getElementById('systemPromptsEditor').value = currentPrompts.systemPrompts;
+        }
         switchProjectTab(activeProjectTab);
         
         showStatus('Prompts reset to defaults', 'warning');
