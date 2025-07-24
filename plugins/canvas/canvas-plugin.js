@@ -270,6 +270,18 @@ class CanvasPlugin {
     this.createNewCanvas(name, type);
   }
   
+  // Check if canvas has active work
+  hasActiveCanvas() {
+    const canvasContent = document.querySelector('.canvas-content');
+    return canvasContent && !canvasContent.querySelector('.canvas-placeholder');
+  }
+  
+  // Save current canvas state
+  saveCurrentState() {
+    // Implementation for saving canvas state
+    console.log('🎨 Canvas state saved');
+  }
+  
   // Canvas action methods (placeholder implementations)
   saveCanvas() {
     console.log('🎨 Saving canvas...');
