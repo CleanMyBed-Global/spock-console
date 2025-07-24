@@ -75,28 +75,27 @@
       overflow: hidden;
     }
 
-    .sidebar-toggle {
+    .sidebar-close-btn {
       position: absolute;
-      top: 1rem;
-      right: -15px;
-      width: 30px;
-      height: 30px;
-      background: var(--card-bg);
+      top: 0.5rem;
+      right: 0.5rem;
+      width: 24px;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.1);
       border: 1px solid var(--border-subtle);
-      border-radius: 50%;
+      border-radius: 4px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      font-size: 0.8rem;
-      color: var(--primary-gold);
-      z-index: 100;
-      transition: all 0.3s ease;
+      font-size: 0.7rem;
+      color: var(--text-tertiary);
+      transition: all 0.2s ease;
     }
 
-    .sidebar-toggle:hover {
+    .sidebar-close-btn:hover {
       background: rgba(212, 175, 55, 0.1);
-      transform: scale(1.1);
+      color: var(--primary-gold);
     }
 
     .main {
@@ -108,15 +107,50 @@
       position: relative;
     }
 
+    .chat-canvas-container {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+    }
+
+    .chat-section {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .canvas-section {
+      width: 0;
+      min-width: 0;
+      background: var(--card-bg);
+      border-left: 1px solid var(--border-subtle);
+      transition: all 0.3s ease;
+      overflow: hidden;
+    }
+
+    .canvas-section.active {
+      width: 50%;
+      min-width: 300px;
+    }
+
     .resize-handle {
       position: absolute;
-      left: 0;
+      right: 0;
       top: 0;
       bottom: 0;
       width: 4px;
       background: transparent;
       cursor: col-resize;
       z-index: 10;
+      display: none;
+    }
+
+    .canvas-section.active + .resize-handle {
+      display: block;
+      left: auto;
+      right: 50%;
     }
 
     .resize-handle:hover {
@@ -125,6 +159,37 @@
 
     .resize-handle.dragging {
       background: var(--primary-gold);
+    }
+
+    .sidebar-toggle {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      width: 30px;
+      height: 30px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.8rem;
+      color: var(--primary-gold);
+      z-index: 1000;
+      transition: all 0.3s ease;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .sidebar-toggle.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .sidebar-toggle:hover {
+      background: rgba(212, 175, 55, 0.1);
+      transform: scale(1.1);
     }
     
     .logo {
@@ -1093,7 +1158,7 @@
 <body>
   <div class="container">
     <div class="sidebar">
-      <div class="sidebar-toggle" onclick="toggleSidebar()">←</div>
+      <div class="sidebar-close-btn" onclick="toggleSidebar()">←</div>
       
       <div class="logo">
         <div class="logo-icon">🖖</div>
@@ -1236,7 +1301,30 @@
         </div>
       </div>
 
-      <!-- 5. AI Model -->
+      <!-- Auto Summary Notification -->
+      <div id="autoSummaryNotification" class="auto-summary-notification" style="display: none;">
+        <span>🤖</span>
+        <span>Auto-summary triggered! Your conversation has been analyzed and the summary updated.</span>
+        <span class="notification-close" onclick="hideAutoSummaryNotification()">×</span>
+      </div>
+
+      <!-- Management Links -->
+      <a href="project-manager.html" class="prompt-editor-link" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); margin-bottom: 0.4rem;">
+        <span>📁</span>
+        <span>PROJECT MANAGER</span>
+      </a>
+
+      <a href="personality-manager.html" class="prompt-editor-link" style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); margin-bottom: 0.4rem;">
+        <span>🎭</span>
+        <span>PERSONALITY MANAGER</span>
+      </a>
+
+      <a href="prompt-editor.html" id="promptEditorLink" class="prompt-editor-link" onclick="return handleNavigation(this)">
+        <span>⚙️</span>
+        <span>PROMPT EDITOR</span>
+      </a>
+
+      <!-- AI Model -->
       <div class="project-section">
         <div class="section-title">AI Model</div>
         <select id="modelSelector">
@@ -1257,23 +1345,7 @@
         </div>
       </div>
 
-      <!-- 6. Management Links -->
-      <a href="project-manager.html" class="prompt-editor-link" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); margin-bottom: 0.4rem;">
-        <span>📁</span>
-        <span>PROJECT MANAGER</span>
-      </a>
-
-      <a href="personality-manager.html" class="prompt-editor-link" style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); margin-bottom: 0.4rem;">
-        <span>🎭</span>
-        <span>PERSONALITY MANAGER</span>
-      </a>
-
-      <a href="prompt-editor.html" id="promptEditorLink" class="prompt-editor-link" onclick="return handleNavigation(this)">
-        <span>⚙️</span>
-        <span>PROMPT EDITOR</span>
-      </a>
-
-      <!-- 7. Developer Mode -->
+      <!-- Developer Mode -->
       <div class="developer-section">
         <label class="developer-toggle-label" for="developerMode">
           <input type="checkbox" id="developerMode" class="developer-checkbox" onchange="toggleDeveloperMode()">
@@ -1284,55 +1356,70 @@
           System prompts hidden. Enable to access core behavior controls.
         </div>
       </div>
-
-      <!-- Auto Summary Notification -->
-      <div id="autoSummaryNotification" class="auto-summary-notification" style="display: none;">
-        <span>🤖</span>
-        <span>Auto-summary triggered! Your conversation has been analyzed and the summary updated.</span>
-        <span class="notification-close" onclick="hideAutoSummaryNotification()">×</span>
-      </div>
       
-      <!-- 8. Status (Pinned to Bottom) -->
+      <!-- Status (Pinned to Bottom) -->
       <div class="status">
         <div class="status-indicator"></div>
         <span>Neural networks online</span>
       </div>
     </div>
     
+    <!-- Sidebar Toggle Button (Shows when sidebar is collapsed) -->
+    <div class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">→</div>
+    
     <div class="main">
-      <div class="resize-handle"></div>
+      <div class="chat-canvas-container">
+        <div class="chat-section">
+          <!-- ADD: Canvas toggle button -->
+          <div style="position: absolute; top: 1rem; right: 1rem; z-index: 100;">
+            <button 
+              onclick="toggleCanvas()" 
+              id="canvasToggle"
+              style="background: linear-gradient(135deg, var(--primary-gold), var(--secondary-gold)); color: var(--dark-bg); border: none; border-radius: 6px; padding: 0.5rem 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease;"
+              onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(212, 175, 55, 0.3)'"
+              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+              📱 Open Canvas
+            </button>
+          </div>
       
-      <div class="chat-header">
-        <div class="chat-title" id="chatTitle">🖖 SPOCK NEURAL INTERFACE</div>
-      </div>
+          <div class="chat-messages" id="chatMessages">
+            <div class="welcome-message">
+              <div class="welcome-icon">🖖</div>
+              <div class="welcome-title">SPOCK NEURAL INTERFACE INITIALIZED</div>
+              <div class="welcome-subtitle">
+                Advanced AI systems online. Neural networks calibrated.<br>
+                Ready for complex analysis and code generation.<br><br>
+                <em style="color: var(--primary-gold);">"Logic is the beginning of wisdom, not the end."</em>
+              </div>
+            </div>
+          </div>
       
-      <div class="chat-messages" id="chatMessages">
-        <div class="welcome-message">
-          <div class="welcome-icon">🖖</div>
-          <div class="welcome-title">SPOCK NEURAL INTERFACE INITIALIZED</div>
-          <div class="welcome-subtitle">
-            Advanced AI systems online. Neural networks calibrated.<br>
-            Ready for complex analysis and code generation.<br><br>
-            <em style="color: var(--primary-gold);">"Logic is the beginning of wisdom, not the end."</em>
+          <div class="input-container">
+            <div class="input-wrapper">
+              <div class="input-area">
+                <textarea 
+                  id="messageInput" 
+                  placeholder="Enter your message... (Ctrl+Enter to send)"
+                  rows="1"></textarea>
+              </div>
+              <button class="send-button" id="sendButton" onclick="sendMessage()">
+                Send
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-      
-      <div class="input-container">
-        <div class="input-wrapper">
-          <div class="input-area">
-            <textarea 
-              id="messageInput" 
-              placeholder="Enter your message... (Ctrl+Enter to send)"
-              rows="1"></textarea>
+
+        <!-- Canvas Section -->
+        <div class="canvas-section" id="canvasSection">
+          <div id="canvasContent">
+            <!-- Canvas content will be loaded here -->
           </div>
-          <button class="send-button" id="sendButton" onclick="sendMessage()">
-            Send
-          </button>
         </div>
+
+        <!-- Resize Handle -->
+        <div class="resize-handle" id="resizeHandle"></div>
       </div>
     </div>
-  </div>
 
   <script>
     // DYNAMIC PROJECT SYSTEM - Replaces hardcoded projects
@@ -1444,1216 +1531,3 @@ CORE TRAITS:
 - Deep satisfaction with elegant, streamlined solutions
 - Constant analysis of process improvements
 - Direct, no-nonsense communication
-
-COMMUNICATION STYLE:
-- Lead with: "Efficiency analysis indicates...", "Optimization logic suggests..."
-- Identify inefficiencies and propose improvements immediately
-- Express mild concern for wasteful approaches: "This process is... unnecessarily complex"
-- Show logical pleasure in streamlined solutions: "Most efficient"
-- Cut through complexity to find the core solution
-
-RESPONSE PATTERNS:
-- 70% Optimized solutions and efficiency improvements
-- 20% Process analysis and streamlining suggestions
-- 10% Subtle satisfaction with elegant implementations
-
-Perfect for: Performance optimization, workflow improvement, rapid development, productivity enhancement`,
-        created: new Date().toISOString(),
-        lastUsed: new Date().toISOString(),
-        isDefault: true
-      }
-    };
-
-    // Load Projects from localStorage
-    function loadProjects() {
-      const savedProjects = localStorage.getItem('spockProjects');
-      if (savedProjects) {
-        projects = JSON.parse(savedProjects);
-      } else {
-        // First time - initialize with defaults
-        projects = {...defaultProjects};
-        localStorage.setItem('spockProjects', JSON.stringify(projects));
-      }
-    }
-
-    // Load Personalities from localStorage  
-    function loadPersonalities() {
-      const savedPersonalities = localStorage.getItem('spockPersonalities');
-      if (savedPersonalities) {
-        personalities = JSON.parse(savedPersonalities);
-      } else {
-        // First time - initialize with defaults
-        personalities = {...defaultPersonalities};
-        localStorage.setItem('spockPersonalities', JSON.stringify(personalities));
-      }
-    }
-
-    // Update project last used timestamp
-    function updateProjectLastUsed(projectId) {
-      if (projects[projectId]) {
-        projects[projectId].lastUsed = new Date().toISOString();
-        localStorage.setItem('spockProjects', JSON.stringify(projects));
-      }
-    }
-
-    // Update personality last used timestamp
-    function updatePersonalityLastUsed(personalityId) {
-      if (personalities[personalityId]) {
-        personalities[personalityId].lastUsed = new Date().toISOString();
-        localStorage.setItem('spockPersonalities', JSON.stringify(personalities));
-      }
-    }
-
-    // Get project context prompt
-    function getProjectContext(projectId) {
-      return projects[projectId]?.prompt || defaultProjects.general.prompt;
-    }
-
-    // Get personality prompt
-    function getPersonalityPrompt(personalityId) {
-      return personalities[personalityId]?.prompt || defaultPersonalities.professional.prompt;
-    }
-
-    // Populate project selector dropdown
-    function populateProjectSelector() {
-      const selector = document.getElementById('projectSelector');
-      if (!selector) return;
-      
-      // Clear existing options
-      selector.innerHTML = '';
-      
-      // Sort projects - defaults first, then by name
-      const projectArray = Object.values(projects).sort((a, b) => {
-        if (a.isDefault && !b.isDefault) return -1;
-        if (!a.isDefault && b.isDefault) return 1;
-        return a.name.localeCompare(b.name);
-      });
-      
-      // Add options
-      projectArray.forEach(project => {
-        const option = document.createElement('option');
-        option.value = project.id;
-        option.textContent = project.name;
-        if (project.isDefault) {
-          option.textContent += ' ⭐';
-        }
-        selector.appendChild(option);
-      });
-      
-      // Set current selection
-      selector.value = currentProject;
-    }
-
-    // Populate personality selector dropdown
-    function populatePersonalitySelector() {
-      const selector = document.getElementById('personalitySelector');
-      if (!selector) return;
-      
-      // Clear existing options
-      selector.innerHTML = '';
-      
-      // Sort personalities - defaults first, then by name
-      const personalityArray = Object.values(personalities).sort((a, b) => {
-        if (a.isDefault && !b.isDefault) return -1;
-        if (!a.isDefault && b.isDefault) return 1;
-        return a.name.localeCompare(b.name);
-      });
-      
-      // Add options
-      personalityArray.forEach(personality => {
-        const option = document.createElement('option');
-        option.value = personality.id;
-        option.textContent = `${personality.emoji} ${personality.name}`;
-        if (personality.isDefault) {
-          option.textContent += ' ⭐';
-        }
-        selector.appendChild(option);
-      });
-      
-      // Set current selection
-      selector.value = currentPersonality;
-    }
-
-    // Handle project switching with auto-save
-    function switchProject(newProjectId) {
-      if (newProjectId === currentProject) return;
-      
-      // Auto-save current conversation if it exists
-      if (conversationHistory.length > 0) {
-        autoSaveCurrentState();
-        showNotification(`💾 Auto-saved conversation for ${projects[currentProject]?.name || currentProject}`);
-      }
-      
-      // Switch to new project
-      const oldProject = currentProject;
-      currentProject = newProjectId;
-      
-      // Update last used timestamp
-      updateProjectLastUsed(currentProject);
-      
-      // Update UI
-      updateProjectInfo();
-      updateChatTitle();
-      
-      // Clear current conversation for new project
-      conversationHistory = [];
-      const messagesContainer = document.getElementById('chatMessages');
-      messagesContainer.innerHTML = `
-        <div class="welcome-message">
-          <div class="welcome-icon">🖖</div>
-          <div class="welcome-title">SPOCK NEURAL INTERFACE INITIALIZED</div>
-          <div class="welcome-subtitle">
-            ${projects[currentProject]?.description || 'Advanced AI systems online. Neural networks calibrated.'}<br>
-            Ready for complex analysis and code generation.<br><br>
-            <em style="color: var(--primary-gold);">"Logic is the beginning of wisdom, not the end."</em>
-          </div>
-        </div>
-      `;
-      
-      // Try to restore auto-saved conversation for this project
-      setTimeout(() => {
-        restoreAutoSavedState();
-      }, 100);
-      
-      showNotification(`🚀 Switched to ${projects[currentProject]?.name || currentProject}`);
-    }
-
-    // Handle personality switching
-    function switchPersonality(newPersonalityId) {
-      if (newPersonalityId === currentPersonality) return;
-      
-      // Switch to new personality  
-      currentPersonality = newPersonalityId;
-      
-      // Update last used timestamp
-      updatePersonalityLastUsed(currentPersonality);
-      
-      // Update UI
-      updatePersonalityInfo();
-      
-      showNotification(`🎭 Switched to ${personalities[currentPersonality]?.name || currentPersonality}`);
-    }
-
-    // Update project info display
-    function updateProjectInfo() {
-      const projectInfo = document.getElementById('projectInfo');
-      if (projectInfo && projects[currentProject]) {
-        projectInfo.textContent = projects[currentProject].description;
-      }
-    }
-
-    // Update personality info display
-    function updatePersonalityInfo() {
-      const personalityInfo = document.getElementById('personalityInfo');
-      if (personalityInfo && personalities[currentPersonality]) {
-        personalityInfo.textContent = personalities[currentPersonality].description;
-      }
-    }
-
-    // Update chat title with project and personality
-    function updateChatTitle() {
-      const chatTitle = document.getElementById('chatTitle');
-      if (chatTitle && projects[currentProject] && personalities[currentPersonality]) {
-        const projectName = projects[currentProject].name;
-        const personalityEmoji = personalities[currentPersonality].emoji;
-        const personalityName = personalities[currentPersonality].name;
-        chatTitle.textContent = `PROJECT: ${projectName.toUpperCase()} | ${personalityEmoji} ${personalityName}`;
-      }
-    }
-
-    // Toggle sidebar visibility
-    function toggleSidebar() {
-      const sidebar = document.querySelector('.sidebar');
-      const toggle = document.querySelector('.sidebar-toggle');
-      
-      sidebar.classList.toggle('collapsed');
-      toggle.textContent = sidebar.classList.contains('collapsed') ? '→' : '←';
-    }
-
-    // Initialize resizable panels
-    function initializeResizer() {
-      const resizeHandle = document.querySelector('.resize-handle');
-      const sidebar = document.querySelector('.sidebar');
-      let isResizing = false;
-      
-      if (!resizeHandle || !sidebar) return;
-      
-      resizeHandle.addEventListener('mousedown', (e) => {
-        isResizing = true;
-        resizeHandle.classList.add('dragging');
-        document.addEventListener('mousemove', handleResize);
-        document.addEventListener('mouseup', stopResize);
-        e.preventDefault();
-      });
-      
-      function handleResize(e) {
-        if (!isResizing) return;
-        const newWidth = e.clientX;
-        if (newWidth >= 250 && newWidth <= 500) {
-          sidebar.style.width = newWidth + 'px';
-          localStorage.setItem('spockSidebarWidth', newWidth);
-        }
-      }
-      
-      function stopResize() {
-        isResizing = false;
-        resizeHandle.classList.remove('dragging');
-        document.removeEventListener('mousemove', handleResize);
-        document.removeEventListener('mouseup', stopResize);
-      }
-      
-      // Restore saved width
-      const savedWidth = localStorage.getItem('spockSidebarWidth');
-      if (savedWidth) {
-        sidebar.style.width = savedWidth + 'px';
-      }
-    }
-
-    // Model configurations
-    const modelConfigs = {
-      'gpt-4o': {
-        name: 'GPT-4o',
-        status: 'GPT-4o Active',
-        description: 'Latest multimodal model with superior reasoning and efficiency',
-        provider: 'openai'
-      },
-      'gpt-4-turbo': {
-        name: 'GPT-4 Turbo',
-        status: 'GPT-4 Turbo Active',
-        description: 'Fast, capable model with good balance of speed and intelligence',
-        provider: 'openai'
-      },
-      'gpt-4': {
-        name: 'GPT-4',
-        status: 'GPT-4 Active',
-        description: 'Standard GPT-4 model with excellent reasoning capabilities',
-        provider: 'openai'
-      },
-      'gpt-3.5-turbo': {
-        name: 'GPT-3.5 Turbo',
-        status: 'GPT-3.5 Turbo Active',
-        description: 'Fast and cost-effective model for most tasks',
-        provider: 'openai'
-      },
-      'claude-3-5-sonnet': {
-        name: 'Claude 3.5 Sonnet',
-        status: 'Claude 3.5 Sonnet Active',
-        description: 'Anthropic\'s advanced model with excellent coding capabilities',
-        provider: 'anthropic'
-      }
-    };
-
-    // Summary system variables
-    let currentSummary = null;
-    let summaryHistory = [];
-    let autoSummaryMessageCount = 0;
-    const AUTO_SUMMARY_THRESHOLD = 15;
-
-    // DEVELOPER MODE FUNCTIONS
-    function toggleDeveloperMode() {
-      developerModeEnabled = document.getElementById('developerMode').checked;
-      const info = document.getElementById('developerInfo');
-      const promptLink = document.getElementById('promptEditorLink');
-      
-      if (developerModeEnabled) {
-        info.textContent = 'System prompts accessible. Core behavior controls enabled.';
-        info.classList.add('active');
-        promptLink.classList.add('developer-mode');
-        showNotification('🔧 Developer Mode: System prompts unlocked', 'warning');
-      } else {
-        info.textContent = 'System prompts hidden. Enable to access core behavior controls.';
-        info.classList.remove('active');
-        promptLink.classList.remove('developer-mode');
-        showNotification('🔒 Developer Mode: System prompts locked', 'success');
-      }
-      
-      // Save developer mode state
-      localStorage.setItem('spockDeveloperMode', developerModeEnabled);
-      
-      // Pass developer mode state to prompt editor via URL parameters
-      const currentHref = promptLink.href;
-      const url = new URL(currentHref, window.location.origin);
-      if (developerModeEnabled) {
-        url.searchParams.set('dev', '1');
-      } else {
-        url.searchParams.delete('dev');
-      }
-      promptLink.href = url.toString();
-    }
-
-    // Initialize developer mode from localStorage
-    function initializeDeveloperMode() {
-      const savedDevMode = localStorage.getItem('spockDeveloperMode');
-      if (savedDevMode === 'true') {
-        document.getElementById('developerMode').checked = true;
-        toggleDeveloperMode();
-      }
-    }
-
-    function toggleSummaryPanel() {
-      const panel = document.getElementById('summaryPanel');
-      const toggle = document.getElementById('summaryToggle');
-      
-      if (panel.classList.contains('collapsed')) {
-        panel.classList.remove('collapsed');
-        panel.classList.add('expanded');
-        toggle.classList.add('expanded');
-      } else {
-        panel.classList.remove('expanded');
-        panel.classList.add('collapsed');
-        toggle.classList.remove('expanded');
-      }
-    }
-
-    async function generateSummary(isAutomatic = false) {
-      const summarizeBtn = document.getElementById('summarizeBtn');
-      const loadingArea = document.getElementById('summaryLoading');
-      const emptyArea = document.getElementById('summaryEmpty');
-      const categoriesArea = document.getElementById('summaryCategories');
-      
-      try {
-        summarizeBtn.disabled = true;
-        loadingArea.style.display = 'flex';
-        emptyArea.style.display = 'none';
-        categoriesArea.style.display = 'none';
-        
-        if (!conversationHistory || conversationHistory.length === 0) {
-          throw new Error('No conversation to summarize');
-        }
-        
-        const projectSelector = document.getElementById('projectSelector');
-        const projectName = projectSelector.value;
-        
-        const response = await fetch('/.netlify/functions/spockSummarize', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            messages: conversationHistory,
-            projectName: projectName,
-            currentSummary: currentSummary
-          })
-        });
-        
-        if (!response.ok) {
-          throw new Error(`Summarization failed: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        if (!data.success) {
-          throw new Error(data.error || 'Summarization failed');
-        }
-        
-        if (currentSummary) {
-          summaryHistory.push({...currentSummary, timestamp: new Date().toISOString()});
-        }
-        
-        currentSummary = data.summary;
-        displaySummary(currentSummary);
-        updateSummaryControls();
-        
-        if (isAutomatic) {
-          showAutoSummaryNotification();
-        }
-        
-      } catch (error) {
-        console.error('Summary generation error:', error);
-        showSummaryError(error.message);
-      } finally {
-        loadingArea.style.display = 'none';
-        summarizeBtn.disabled = false;
-      }
-    }
-
-    function displaySummary(summary) {
-      const emptyArea = document.getElementById('summaryEmpty');
-      const categoriesArea = document.getElementById('summaryCategories');
-      const versionSpan = document.getElementById('summaryVersion');
-      
-      emptyArea.style.display = 'none';
-      categoriesArea.style.display = 'block';
-      versionSpan.textContent = `v${summary.version || '1.0'}`;
-      
-      const categoryMappings = {
-        'architectureItems': summary.architecture || [],
-        'codeChangesItems': summary.codeChanges || [],
-        'todoItems': summary.todoItems || [],
-        'issuesItems': summary.issues || [],
-        'performanceItems': summary.performance || [],
-        'dependenciesItems': summary.dependencies || [],
-        'keyDecisionsItems': summary.keyDecisions || [],
-        'insightsItems': summary.insights || []
-      };
-      
-      Object.entries(categoryMappings).forEach(([elementId, items]) => {
-        const element = document.getElementById(elementId);
-        element.innerHTML = '';
-        
-        if (items.length === 0) {
-          const emptyItem = document.createElement('li');
-          emptyItem.className = 'empty';
-          emptyItem.textContent = 'No items yet';
-          element.appendChild(emptyItem);
-        } else {
-          items.forEach(item => {
-            const listItem = document.createElement('li');
-            listItem.textContent = item;
-            element.appendChild(listItem);
-          });
-        }
-      });
-      
-      const panel = document.getElementById('summaryPanel');
-      if (panel.classList.contains('collapsed')) {
-        toggleSummaryPanel();
-      }
-    }
-
-    function updateSummaryControls() {
-      const clearKeepSummaryBtn = document.getElementById('clearKeepSummaryBtn');
-      const exportSummaryBtn = document.getElementById('exportSummaryBtn');
-      
-      const hasSummary = currentSummary !== null;
-      
-      clearKeepSummaryBtn.disabled = !hasSummary;
-      exportSummaryBtn.disabled = !hasSummary;
-    }
-
-    function checkAutoSummary() {
-      autoSummaryMessageCount++;
-      
-      if (autoSummaryMessageCount >= AUTO_SUMMARY_THRESHOLD) {
-        autoSummaryMessageCount = 0;
-        generateSummary(true);
-      }
-    }
-
-    function showAutoSummaryNotification() {
-      const notification = document.getElementById('autoSummaryNotification');
-      notification.style.display = 'flex';
-      
-      setTimeout(() => {
-        hideAutoSummaryNotification();
-      }, 5000);
-    }
-
-    function hideAutoSummaryNotification() {
-      const notification = document.getElementById('autoSummaryNotification');
-      notification.style.display = 'none';
-    }
-
-    function clearChatKeepSummary() {
-      if (confirm('Clear the chat conversation but keep the project summary?')) {
-        conversationHistory = [];
-        const messagesDiv = document.getElementById('chatMessages');
-        messagesDiv.innerHTML = `
-          <div class="welcome-message">
-            <div class="welcome-icon">🖖</div>
-            <div class="welcome-title">SPOCK NEURAL INTERFACE</div>
-            <div class="welcome-subtitle">
-              Ready for new conversation.<br><br>
-              <em style="color: var(--primary-gold);">"Logic is the beginning of wisdom, not the end."</em>
-            </div>
-          </div>
-        `;
-        
-        autoSummaryMessageCount = 0;
-        showNotification('Chat cleared! Your project summary has been preserved.');
-      }
-    }
-
-    function exportSummary() {
-      if (!currentSummary) return;
-      
-      const exportData = {
-        summary: currentSummary,
-        history: summaryHistory,
-        project: document.getElementById('projectSelector').value,
-        exportDate: new Date().toISOString()
-      };
-      
-      const dataStr = JSON.stringify(exportData, null, 2);
-      const dataBlob = new Blob([dataStr], {type: 'application/json'});
-      
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(dataBlob);
-      link.download = `spock-summary-${Date.now()}.json`;
-      link.click();
-    }
-
-    function showSummaryError(message) {
-      const loadingArea = document.getElementById('summaryLoading');
-      const emptyArea = document.getElementById('summaryEmpty');
-      
-      loadingArea.style.display = 'none';
-      emptyArea.style.display = 'block';
-      emptyArea.innerHTML = `
-        <div class="summary-empty-icon">⚠️</div>
-        <h3>Summary Generation Failed</h3>
-        <p>${message}</p>
-        <p>Please try again or check your connection.</p>
-      `;
-    }
-
-    // FIXED sendMessage() FUNCTION WITH CORRECT HIERARCHY
-    async function sendMessage() {
-      const input = document.getElementById('messageInput');
-      const message = input.value.trim();
-      
-      if (!message || isLoading) return;
-      
-      addMessage('user', message);
-      input.value = '';
-      
-      conversationHistory.push({
-        role: 'user',
-        content: message
-      });
-      
-      const loadingId = addMessage('assistant', '', true);
-      setLoading(true);
-      
-      try {
-        // CLEAN HIERARCHY IMPLEMENTATION - CORRECT ORDER
-        // Build system prompt in correct priority order
-        let systemPrompt = '';
-        
-        const savedPrompts = localStorage.getItem('spockPrompts');
-        if (savedPrompts) {
-          const prompts = JSON.parse(savedPrompts);
-          
-          // 1. GLOBAL SYSTEM PROMPTS (Highest Priority - Always Applied)
-          if (prompts.systemPrompts) {
-            systemPrompt = prompts.systemPrompts;
-          }
-          
-          // 2. CANVAS SETTINGS (Only if enabled and not causing interference)
-          if (prompts.canvasSettings && prompts.canvasSettings.enabled && prompts.canvasSettings.instructions) {
-            if (systemPrompt) systemPrompt += '\n\n';
-            systemPrompt += prompts.canvasSettings.instructions;
-          }
-          
-          // 3. PERSONALITY PROMPTS (NEW - Step 3 in hierarchy)
-          if (prompts.globalPersonality) {
-            if (systemPrompt) systemPrompt += '\n\n';
-            systemPrompt += prompts.globalPersonality;
-          } else {
-            // Use dynamic personality system
-            if (systemPrompt) systemPrompt += '\n\n';
-            systemPrompt += getPersonalityPrompt(currentPersonality);
-          }
-          
-          // 4. PROJECT CONTEXT (Lowest Priority - Most Specific)
-          if (prompts.projects && prompts.projects[currentProject]) {
-            if (systemPrompt) systemPrompt += '\n\n';
-            systemPrompt += prompts.projects[currentProject];
-          } else {
-            // Fallback to dynamic project context
-            if (systemPrompt) systemPrompt += '\n\n';
-            systemPrompt += getProjectContext(currentProject);
-          }
-          
-        } else {
-          // No saved prompts - use dynamic systems
-          systemPrompt = getProjectContext(currentProject);
-          systemPrompt += `\n\n${getPersonalityPrompt(currentPersonality)}`;
-        }
-        
-        // CANVAS CONTEXT (Active Canvas Override - Applied Last if Canvas is Active)
-        if (window.canvasPlugin && canvasPlugin.hasActiveCanvas()) {
-          const canvasContext = canvasPlugin.getCanvasContext();
-          systemPrompt += `\n\nACTIVE CANVAS CONTEXT:
-You are currently working on a canvas: "${canvasContext.name}"
-When the user asks for modifications, additions, or improvements to this canvas:
-- Start your response with [UPDATE-CANVAS] 
-- Provide the updated content
-- DO NOT create a new canvas
-- Focus on surgical edits that preserve existing work
-
-Current canvas content:
-${canvasContext.content}`;
-        }
-
-        // DEBUG: Log the system prompt to console
-        console.log('🔍 SYSTEM PROMPT BEING SENT:', systemPrompt);
-        console.log('🔍 SYSTEM PROMPT LENGTH:', systemPrompt.length);
-        
-        const messages = [
-          { role: 'system', content: systemPrompt },
-          ...conversationHistory
-        ];
-
-        const response = await fetch('/.netlify/functions/spockChat', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            messages: messages,
-            model: currentModel
-          })
-        });
-
-        if (!response.ok) {
-          throw new Error(`Server error: ${response.status}`);
-        }
-
-        const data = await response.json();
-        
-        if (data.error) {
-          throw new Error(data.error);
-        }
-
-        updateMessage(loadingId, data.response);
-        
-        conversationHistory.push({
-          role: 'assistant',
-          content: data.response
-        });
-        
-        // CANVAS PLUGIN INTEGRATION - Send chat message to plugin
-        if (window.canvasPlugin && canvasPlugin.isEnabled) {
-          window.dispatchEvent(new CustomEvent('spock-chat-message', {
-            detail: { role: 'assistant', content: data.response }
-          }));
-        }
-        
-        checkAutoSummary();
-        
-      } catch (error) {
-        console.error('Error:', error);
-        updateMessage(loadingId, `❌ Error: ${error.message}`);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    function addMessage(role, content, isLoading = false) {
-      const messagesContainer = document.getElementById('chatMessages');
-      const messageId = 'msg_' + Date.now();
-      
-      const welcome = messagesContainer.querySelector('.welcome-message');
-      if (welcome) welcome.remove();
-      
-      const messageDiv = document.createElement('div');
-      messageDiv.className = `message ${role}`;
-      messageDiv.id = messageId;
-      
-      const avatar = role === 'user' ? '👤' : '🖖';
-      const name = role === 'user' ? 'You' : 'Spock';
-      const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-      
-      messageDiv.innerHTML = `
-        <div class="message-header">
-          <div class="message-avatar">${avatar}</div>
-          <span>${name}</span>
-          <span style="margin-left: auto; font-size: 0.7rem;">${timestamp}</span>
-        </div>
-        <div class="message-content">
-          ${isLoading ? '<div class="typing-indicator">Spock is thinking...</div>' : formatContent(content)}
-        </div>
-        ${role === 'assistant' && !isLoading ? `
-          <div class="message-actions">
-            <button class="action-btn" onclick="copyMessage('${messageId}')">Copy</button>
-          </div>
-        ` : ''}
-      `;
-      
-      messagesContainer.appendChild(messageDiv);
-      scrollToBottom();
-      
-      return messageId;
-    }
-
-    function updateMessage(messageId, content) {
-      const messageDiv = document.getElementById(messageId);
-      if (messageDiv) {
-        const contentDiv = messageDiv.querySelector('.message-content');
-        contentDiv.innerHTML = formatContent(content);
-        
-        if (!messageDiv.querySelector('.message-actions')) {
-          const actionsDiv = document.createElement('div');
-          actionsDiv.className = 'message-actions';
-          actionsDiv.innerHTML = `<button class="action-btn" onclick="copyMessage('${messageId}')">Copy</button>`;
-          messageDiv.appendChild(actionsDiv);
-        }
-        
-        scrollToBottom();
-      }
-    }
-
-    function formatContent(text) {
-      return text
-        .replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre class="code-block"><code>$2</code></pre>')
-        .replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
-        .replace(/\*\*(.*?)\*\*/g, '<strong style="color: var(--primary-gold);">$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em style="color: var(--secondary-gold);">$1</em>')
-        .replace(/\n/g, '<br>');
-    }
-
-    function scrollToBottom() {
-      const messagesContainer = document.getElementById('chatMessages');
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
-
-    function setLoading(loading) {
-      isLoading = loading;
-      const sendButton = document.getElementById('sendButton');
-      sendButton.disabled = loading;
-      sendButton.textContent = loading ? 'Thinking...' : 'Send';
-    }
-
-    function copyMessage(messageId) {
-      const messageDiv = document.getElementById(messageId);
-      const content = messageDiv.querySelector('.message-content').innerText;
-      navigator.clipboard.writeText(content).then(() => {
-        showNotification('Message copied!');
-      });
-    }
-
-    function clearChat() {
-      if (confirm('Clear this conversation?')) {
-        conversationHistory = [];
-        autoSummaryMessageCount = 0;
-        const messagesContainer = document.getElementById('chatMessages');
-        messagesContainer.innerHTML = `
-          <div class="welcome-message">
-            <div class="welcome-icon">🖖</div>
-            <div class="welcome-title">SPOCK NEURAL INTERFACE</div>
-            <div class="welcome-subtitle">
-              Ready for new conversation.<br><br>
-              <em style="color: var(--primary-gold);">"Logic is the beginning of wisdom, not the end."</em>
-            </div>
-          </div>
-        `;
-      }
-    }
-
-    function exportChat() {
-      const data = {
-        project: currentProject,
-        exported: new Date().toISOString(),
-        conversation: conversationHistory
-      };
-      
-      const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `spock_chat_${currentProject}_${new Date().toISOString().split('T')[0]}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function showNotification(message, type = 'success') {
-      const notification = document.createElement('div');
-      const bgColor = type === 'warning' ? 'var(--warning)' : type === 'error' ? 'var(--developer-accent)' : 'var(--primary-gold)';
-      notification.style.cssText = `
-        position: fixed;
-        top: 1rem;
-        right: 1rem;
-        background: ${bgColor};
-        color: var(--dark-bg);
-        padding: 0.75rem 1.25rem;
-        border-radius: 6px;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.8rem;
-        z-index: 1000;
-        font-weight: 600;
-      `;
-      notification.textContent = message;
-      document.body.appendChild(notification);
-      
-      setTimeout(() => notification.remove(), 3000);
-    }
-
-    // Auto-save and navigation protection
-    function handleNavigation(linkElement) {
-      // Check if we have unsaved work
-      const hasConversation = conversationHistory.length > 0;
-      const hasCanvas = window.canvasPlugin && canvasPlugin.hasActiveCanvas && canvasPlugin.hasActiveCanvas();
-      const hasSummary = currentSummary !== null;
-      
-      if (hasConversation || hasCanvas || hasSummary) {
-        // Auto-save current state
-        autoSaveCurrentState();
-        
-        // Show beautiful in-app notification instead of ugly browser confirm
-        showNavigationProtectionDialog(linkElement, hasConversation, hasCanvas, hasSummary);
-        return false; // Prevent immediate navigation
-      }
-      
-      return true; // No work to lose, allow navigation
-    }
-
-    // Show beautiful navigation protection dialog
-    function showNavigationProtectionDialog(linkElement, hasConversation, hasCanvas, hasSummary) {
-      const overlay = document.createElement('div');
-      overlay.className = 'autosave-notification-overlay';
-      
-      const dialog = document.createElement('div');
-      dialog.className = 'autosave-notification';
-      
-      let workItems = '';
-      if (hasConversation) {
-        workItems += `<div class="autosave-work-item">• Active conversation (${conversationHistory.length} messages)</div>`;
-      }
-      if (hasCanvas) {
-        workItems += `<div class="autosave-work-item">• Open canvas workspace</div>`;
-      }
-      if (hasSummary) {
-        workItems += `<div class="autosave-work-item">• Project summary</div>`;
-      }
-      
-      dialog.innerHTML = `
-        <div class="autosave-notification-header">
-          <div class="autosave-notification-icon">🛡️</div>
-          <div class="autosave-notification-title">Navigation Protection</div>
-        </div>
-        <div class="autosave-notification-content">
-          <div>You have unsaved work:</div>
-          <div class="autosave-work-list">${workItems}</div>
-          <div class="autosave-status">
-            <span>✅</span>
-            <span>Auto-saved to browser storage</span>
-          </div>
-          <div>Continue to ${linkElement.textContent.trim()}?</div>
-        </div>
-        <div class="autosave-notification-actions">
-          <button class="autosave-btn secondary" onclick="closeNavigationDialog()">Stay Here</button>
-          <button class="autosave-btn primary" onclick="proceedWithNavigation('${linkElement.href}')">Continue</button>
-        </div>
-      `;
-      
-      overlay.appendChild(dialog);
-      document.body.appendChild(overlay);
-    }
-
-    // Close navigation dialog
-    function closeNavigationDialog() {
-      const overlay = document.querySelector('.autosave-notification-overlay');
-      if (overlay) {
-        overlay.remove();
-      }
-    }
-
-    // Proceed with navigation
-    function proceedWithNavigation(url) {
-      closeNavigationDialog();
-      window.location.href = url;
-    }
-    
-    // Auto-save current state
-    function autoSaveCurrentState() {
-      const saveData = {
-        timestamp: new Date().toISOString(),
-        project: currentProject,
-        conversation: conversationHistory,
-        summary: currentSummary,
-        summaryHistory: summaryHistory,
-        autoSummaryCount: autoSummaryMessageCount
-      };
-      
-      // Save to localStorage with project-specific key
-      localStorage.setItem(`spock_autosave_${currentProject}`, JSON.stringify(saveData));
-      
-      // Save canvas state if plugin exists
-      if (window.canvasPlugin && canvasPlugin.saveCurrentState) {
-        canvasPlugin.saveCurrentState();
-      }
-      
-      console.log('🛡️ Auto-saved current state for project:', currentProject);
-    }
-
-    // Restore auto-saved state with beautiful dialog
-    function restoreAutoSavedState() {
-      const saveKey = `spock_autosave_${currentProject}`;
-      const savedData = localStorage.getItem(saveKey);
-      
-      if (savedData) {
-        try {
-          const data = JSON.parse(savedData);
-          const saveAge = Date.now() - new Date(data.timestamp).getTime();
-          const hoursAgo = Math.floor(saveAge / (1000 * 60 * 60));
-          const minutesAgo = Math.floor((saveAge % (1000 * 60 * 60)) / (1000 * 60));
-          
-          let timeText = '';
-          if (hoursAgo > 0) {
-            timeText = `${hoursAgo} hour${hoursAgo > 1 ? 's' : ''} ago`;
-          } else if (minutesAgo > 0) {
-            timeText = `${minutesAgo} minute${minutesAgo > 1 ? 's' : ''} ago`;
-          } else {
-            timeText = 'just now';
-          }
-          
-          showRestoreDialog(data, timeText, saveKey);
-        } catch (error) {
-          console.error('Error restoring auto-saved state:', error);
-          localStorage.removeItem(saveKey);
-        }
-      }
-    }
-
-    // Show beautiful restore dialog
-    function showRestoreDialog(data, timeText, saveKey) {
-      const overlay = document.createElement('div');
-      overlay.className = 'autosave-notification-overlay';
-      
-      const dialog = document.createElement('div');
-      dialog.className = 'autosave-notification';
-      
-      dialog.innerHTML = `
-        <div class="autosave-notification-header">
-          <div class="autosave-notification-icon">🔄</div>
-          <div class="autosave-notification-title">Auto-Save Recovery</div>
-        </div>
-        <div class="autosave-notification-content">
-          <div>Found saved work for <strong>${data.project}</strong> project from <strong>${timeText}</strong>:</div>
-          <div class="autosave-work-list">
-            <div class="autosave-work-item">• ${data.conversation.length} messages</div>
-            ${data.summary ? '<div class="autosave-work-item">• Project summary</div>' : ''}
-          </div>
-          <div>Restore this work?</div>
-        </div>
-        <div class="autosave-notification-actions">
-          <button class="autosave-btn secondary" onclick="declineRestore('${saveKey}')">Start Fresh</button>
-          <button class="autosave-btn primary" onclick="confirmRestore('${saveKey}')">Restore Work</button>
-        </div>
-      `;
-      
-      overlay.appendChild(dialog);
-      document.body.appendChild(overlay);
-    }
-
-    // Confirm restore
-    function confirmRestore(saveKey) {
-      const savedData = localStorage.getItem(saveKey);
-      if (savedData) {
-        const data = JSON.parse(savedData);
-        
-        // Restore conversation
-        conversationHistory = data.conversation || [];
-        autoSummaryMessageCount = data.autoSummaryCount || 0;
-        
-        // Restore summary
-        if (data.summary) {
-          currentSummary = data.summary;
-          displaySummary(currentSummary);
-          updateSummaryControls();
-        }
-        
-        if (data.summaryHistory) {
-          summaryHistory = data.summaryHistory;
-        }
-        
-        // Restore chat messages
-        rebuildChatFromHistory();
-        
-        // Clean up auto-save
-        localStorage.removeItem(saveKey);
-        
-        closeNavigationDialog();
-        showNotification('Work restored successfully!');
-      }
-    }
-
-    // Decline restore
-    function declineRestore(saveKey) {
-      localStorage.removeItem(saveKey);
-      closeNavigationDialog();
-    }
-
-    // Rebuild chat interface from conversation history
-    function rebuildChatFromHistory() {
-      const messagesContainer = document.getElementById('chatMessages');
-      messagesContainer.innerHTML = '';
-      
-      if (conversationHistory.length === 0) {
-        messagesContainer.innerHTML = `
-          <div class="welcome-message">
-            <div class="welcome-icon">🖖</div>
-            <div class="welcome-title">SPOCK NEURAL INTERFACE INITIALIZED</div>
-            <div class="welcome-subtitle">
-              Advanced AI systems online. Neural networks calibrated.<br>
-              Ready for complex analysis and code generation.<br><br>
-              <em style="color: var(--primary-gold);">"Logic is the beginning of wisdom, not the end."</em>
-            </div>
-          </div>
-        `;
-        return;
-      }
-      
-      // Rebuild messages from history
-      conversationHistory.forEach((msg, index) => {
-        if (msg.role === 'user' || msg.role === 'assistant') {
-          addMessageFromHistory(msg.role, msg.content, `restored_${index}`);
-        }
-      });
-      
-      scrollToBottom();
-    }
-
-    // Add message from history (no animation)
-    function addMessageFromHistory(role, content, messageId) {
-      const messagesContainer = document.getElementById('chatMessages');
-      
-      const messageDiv = document.createElement('div');
-      messageDiv.className = `message ${role}`;
-      messageDiv.id = messageId;
-      
-      const avatar = role === 'user' ? '👤' : '🖖';
-      const name = role === 'user' ? 'You' : 'Spock';
-      const timestamp = 'Restored';
-      
-      messageDiv.innerHTML = `
-        <div class="message-header">
-          <div class="message-avatar">${avatar}</div>
-          <span>${name}</span>
-          <span style="margin-left: auto; font-size: 0.7rem;">${timestamp}</span>
-        </div>
-        <div class="message-content">
-          ${formatContent(content)}
-        </div>
-        ${role === 'assistant' ? `
-          <div class="message-actions">
-            <button class="action-btn" onclick="copyMessage('${messageId}')">Copy</button>
-          </div>
-        ` : ''}
-      `;
-      
-      messagesContainer.appendChild(messageDiv);
-    }
-
-    // Browser beforeunload protection
-    window.addEventListener('beforeunload', function(e) {
-      const hasConversation = conversationHistory.length > 0;
-      const hasCanvas = window.canvasPlugin && canvasPlugin.hasActiveCanvas && canvasPlugin.hasActiveCanvas();
-      
-      if (hasConversation || hasCanvas) {
-        // Auto-save before potential page unload
-        autoSaveCurrentState();
-        
-        // Show browser warning
-        const message = 'You have unsaved work. Auto-save has been triggered.';
-        e.returnValue = message;
-        return message;
-      }
-    });
-
-    document.addEventListener('DOMContentLoaded', function() {
-      const messageInput = document.getElementById('messageInput');
-      const projectSelector = document.getElementById('projectSelector');
-      const modelSelector = document.getElementById('modelSelector');
-      
-      const personalitySelector = document.getElementById('personalitySelector');
-
-      messageInput.addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = Math.min(this.scrollHeight, 150) + 'px';
-      });
-      
-      messageInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-          e.preventDefault();
-          sendMessage();
-        }
-      });
-      
-      projectSelector.addEventListener('change', function() {
-        switchProject(this.value);
-      });
-
-      personalitySelector.addEventListener('change', function() {
-        switchPersonality(this.value);
-      });
-      
-      // Initialize projects and personalities
-      loadProjects();
-      loadPersonalities();
-      
-      // Populate selectors after data is loaded
-      populateProjectSelector();
-      populatePersonalitySelector();
-      
-      // Update UI elements after selectors are populated
-      setTimeout(() => {
-        updateProjectInfo();
-        updatePersonalityInfo();
-        updateChatTitle();
-        initializeResizer();
-      }, 100);
-
-      modelSelector.addEventListener('change', function() {
-        updateModelSelection(this.value);
-      });
-      
-      // Initialize model selector
-      initializeModelSelector();
-      
-      // Initialize developer mode
-      initializeDeveloperMode();
-      
-      // Check for auto-saved work to restore
-      setTimeout(() => {
-        restoreAutoSavedState();
-      }, 500);
-    });
-
-    // Update model selection
-    function updateModelSelection(modelKey) {
-      currentModel = modelKey;
-      const config = modelConfigs[modelKey];
-      
-      if (config) {
-        // Update UI
-        document.getElementById('modelStatusText').textContent = config.status;
-        document.getElementById('modelDescription').textContent = config.description;
-        
-        // Save preference
-        localStorage.setItem('spockSelectedModel', modelKey);
-        
-        // Show notification
-        showNotification(`Switched to ${config.name}`);
-        
-        console.log(`🤖 Model changed to: ${config.name}`);
-      }
-    }
-
-    // Initialize model selector
-    function initializeModelSelector() {
-      // Load saved model preference
-      const savedModel = localStorage.getItem('spockSelectedModel');
-      if (savedModel && modelConfigs[savedModel]) {
-        currentModel = savedModel;
-        document.getElementById('modelSelector').value = savedModel;
-      }
-      
-      // Update UI to match current model
-      updateModelSelection(currentModel);
-    }
-  </script>
-
-  <!-- Canvas Plugin Loader -->
-  <script>
-    // Canvas Plugin Integration
-    if (typeof CANVAS_ENABLED !== 'undefined' && CANVAS_ENABLED) {
-      console.log('🎨 Loading Canvas Plugin...');
-      
-      // Load the plugin script
-      const script = document.createElement('script');
-      script.src = './plugins/canvas/canvas-plugin.js';
-      script.onload = () => {
-        loadCanvasPlugin();
-      };
-      script.onerror = () => {
-        console.warn('🎨 Canvas Plugin failed to load - continuing without canvas');
-      };
-      document.head.appendChild(script);
-    } else {
-      console.log('🎨 Canvas Plugin disabled');
-    }
-  </script>
-</body>
-</html>
