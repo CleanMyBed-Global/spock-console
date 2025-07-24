@@ -1570,7 +1570,7 @@
       setLoading(true);
       
       try {
-        // Check for custom prompts from localStorage
+        // FIXED: Check for custom prompts from localStorage and build proper hierarchy
         let systemPrompt = projectContexts[currentProject];
         
         // Add canvas context if active
@@ -1591,10 +1591,32 @@ ${canvasContext.content}`;
         const savedPrompts = localStorage.getItem('spockPrompts');
         if (savedPrompts) {
           const prompts = JSON.parse(savedPrompts);
-          if (prompts.projects[currentProject]) {
-            systemPrompt = prompts.projects[currentProject];
+          
+          // ALWAYS apply system prompts (the "Gazza Context Layer") FIRST - HIGHEST PRIORITY
+          if (prompts.systemPrompts) {
+            systemPrompt = `${prompts.systemPrompts}\n\n${systemPrompt}`;
+          }
+          
+          // Apply project-specific prompts if they exist
+          if (prompts.projects && prompts.projects[currentProject]) {
+            systemPrompt = `${systemPrompt}\n\n${prompts.projects[currentProject]}`;
             
-            // Add canvas context to custom prompts too
+            // Add canvas context to custom prompts
+            if (window.canvasPlugin && canvasPlugin.hasActiveCanvas()) {
+              const canvasContext = canvasPlugin.getCanvasContext();
+              systemPrompt += `\n\nACTIVE CANVAS CONTEXT:
+You are currently working on a canvas: "${canvasContext.name}"
+When the user asks for modifications, additions, or improvements:
+- Start your response with [UPDATE-CANVAS] 
+- Provide the updated content
+- DO NOT create a new canvas
+- Focus on surgical edits that preserve existing work
+
+Current canvas content:
+${canvasContext.content}`;
+            }
+          } else {
+            // Add canvas context to default project prompts
             if (window.canvasPlugin && canvasPlugin.hasActiveCanvas()) {
               const canvasContext = canvasPlugin.getCanvasContext();
               systemPrompt += `\n\nACTIVE CANVAS CONTEXT:
@@ -1610,12 +1632,7 @@ ${canvasContext.content}`;
             }
           }
           
-          // ALWAYS apply system prompts (the "Gazza Context Layer") regardless of developer mode
-          // System prompts are the core behavior rules that should never be disabled
-          if (prompts.systemPrompts) {
-            systemPrompt = `${prompts.systemPrompts}\n\n${systemPrompt}`;
-          }
-          
+          // Apply personality prompts - AFTER project context  
           if (prompts.globalPersonality) {
             systemPrompt += `\n\n${prompts.globalPersonality}`;
           } else {
@@ -1625,6 +1642,12 @@ ${canvasContext.content}`;
 - Logical next steps
 - Professional technical guidance`;
           }
+          
+          // Apply Canvas Behavior Settings if enabled - LAST
+          if (prompts.canvasSettings && prompts.canvasSettings.enabled && prompts.canvasSettings.instructions) {
+            systemPrompt += `\n\n${prompts.canvasSettings.instructions}`;
+          }
+          
         } else {
           systemPrompt += `\n\nYou operate with Vulcan-like calm and precision. Always provide:
 - Clear, actionable solutions
