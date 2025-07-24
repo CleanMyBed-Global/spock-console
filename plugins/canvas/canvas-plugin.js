@@ -1,10 +1,10 @@
-// ===== CANVAS PLUGIN - COMPLETE FIXED FILE =====
+// ===== CANVAS PLUGIN - COMPLETE FILE WITH DETECTION FIX =====
 // FILE: plugins/canvas/canvas-plugin.js
 class CanvasPlugin {
   constructor() {
     this.isEnabled = false;
     this.isInitialized = false;
-    this.version = '2.0.0';
+    this.version = '1.0.0';
     
     console.log('🎨 Canvas Plugin loaded v' + this.version);
   }
@@ -111,27 +111,11 @@ class CanvasPlugin {
     document.querySelector('.container').appendChild(canvasContainer);
   }
   
-  // FIXED: Handle incoming chat messages with proper [CANVAS:name] detection
+  // Handle incoming chat messages
   handleChatMessage(messageData) {
     if (!this.isEnabled) return;
     
     console.log('🎨 Canvas Plugin received chat message:', messageData);
-    
-    // PRIORITY 1: Check for [CANVAS:name] command format
-    const canvasCommandMatch = messageData.content.match(/\[CANVAS:([^\]]+)\]/);
-    if (canvasCommandMatch) {
-      const canvasName = canvasCommandMatch[1].trim();
-      console.log('🎨 [CANVAS:name] command detected:', canvasName);
-      
-      // Show canvas confirmation dialog
-      this.showCanvasConfirmation({
-        name: canvasName,
-        type: 'command',
-        confidence: 1.0,
-        originalText: canvasCommandMatch[0]
-      });
-      return;
-    }
     
     // Check for canvas update command
     if (messageData.content.startsWith('[UPDATE-CANVAS]')) {
@@ -199,37 +183,37 @@ class CanvasPlugin {
     }, 3000);
   }
   
-  // Smart canvas trigger detection
+  // FIXED: Smart canvas trigger detection with improved patterns
   detectCanvasTrigger(message) {
     // Define trigger patterns with confidence scores
     const patterns = [
-      // High confidence triggers
-      { regex: /build\s+(me\s+)?(?:a\s+)?(.+?)(?:\s+(?:system|app|component|interface|feature|module|function|class|api))?$/i, confidence: 0.9, type: 'build' },
-      { regex: /create\s+(?:a\s+)?(.+?)(?:\s+(?:system|app|component|interface|feature|module|function|class|api))?$/i, confidence: 0.9, type: 'create' },
-      { regex: /generate\s+(?:a\s+)?(.+?)(?:\s+(?:system|code|script|function|class|component))?$/i, confidence: 0.8, type: 'generate' },
-      { regex: /make\s+(?:me\s+)?(?:a\s+)?(.+?)(?:\s+(?:system|app|component|interface|feature))?$/i, confidence: 0.8, type: 'make' },
-      { regex: /develop\s+(?:a\s+)?(.+?)(?:\s+(?:system|application|feature|module))?$/i, confidence: 0.8, type: 'develop' },
-      { regex: /write\s+(?:a\s+)?(.+?)(?:\s+(?:function|class|component|script|module))?$/i, confidence: 0.7, type: 'write' },
+      // High confidence triggers - IMPROVED PATTERNS
+      { regex: /(?:build|create|make|generate|develop)\s+(?:a\s+|an?\s+)?(.+?)(?:\s+(?:for|about|to)\s+(.+?))?$/i, confidence: 0.9, type: 'build' },
+      { regex: /(?:write|code|implement)\s+(?:a\s+|an?\s+)?(.+?)$/i, confidence: 0.8, type: 'code' },
+      
+      // Specific deliverable triggers - NEW ADDITIONS
+      { regex: /(?:checklist|list|template|form|dashboard|interface|system|component|module|function|class|api)\s+(.+)/i, confidence: 0.9, type: 'create' },
+      { regex: /(.+?)\s+(?:checklist|list|template|form|dashboard|interface|system|component|module)/i, confidence: 0.9, type: 'create' },
       
       // Medium confidence triggers
-      { regex: /implement\s+(?:a\s+)?(.+?)$/i, confidence: 0.6, type: 'implement' },
-      { regex: /design\s+(?:a\s+)?(.+?)$/i, confidence: 0.5, type: 'design' },
-      { regex: /code\s+(?:a\s+)?(.+?)$/i, confidence: 0.7, type: 'code' },
+      { regex: /design\s+(?:a\s+)?(.+?)$/i, confidence: 0.7, type: 'design' },
       
       // Code-specific triggers
       { regex: /(?:html|css|javascript|python|react|vue|angular|node|express)\s+(.+)/i, confidence: 0.8, type: 'code' },
-      { regex: /(?:function|class|component|api|endpoint|database|auth|login|signup)\s+(.+)/i, confidence: 0.7, type: 'code' }
+      { regex: /(?:function|class|component|api|endpoint|database|auth|login|signup)\s+(.+)/i, confidence: 0.8, type: 'code' }
     ];
     
-    // Keywords that boost confidence
+    // Keywords that boost confidence - EXPANDED LIST
     const boostKeywords = [
       'system', 'application', 'app', 'interface', 'dashboard', 'portal',
       'component', 'module', 'feature', 'function', 'class', 'api',
       'database', 'auth', 'authentication', 'login', 'signup', 'user',
-      'admin', 'management', 'booking', 'payment', 'chat', 'bot'
+      'admin', 'management', 'booking', 'payment', 'chat', 'bot',
+      'checklist', 'list', 'template', 'form', 'tracker', 'planner',
+      'workflow', 'process', 'guide', 'documentation'
     ];
     
-    // Keywords that reduce confidence (discussion words)
+    // Keywords that reduce confidence (discussion words) - REDUCED IMPACT
     const reduceKeywords = [
       'about', 'how', 'why', 'what', 'when', 'where', 'explain', 'tell',
       'describe', 'discuss', 'think', 'opinion', 'advice', 'help',
@@ -243,22 +227,27 @@ class CanvasPlugin {
         const extractedName = match[1].trim();
         
         // Skip if extracted name is too short or generic
-        if (extractedName.length < 3 || ['it', 'this', 'that', 'one', 'something'].includes(extractedName)) {
+        if (extractedName.length < 2 || ['it', 'this', 'that', 'one'].includes(extractedName)) {
           continue;
         }
         
-        // Boost confidence for specific keywords
-        if (boostKeywords.some(keyword => message.includes(keyword))) {
-          confidence += 0.1;
+        // Boost confidence for specific keywords - INCREASED BOOST
+        if (boostKeywords.some(keyword => message.toLowerCase().includes(keyword))) {
+          confidence += 0.15; // Increased from 0.1
         }
         
-        // Reduce confidence for discussion keywords
-        if (reduceKeywords.some(keyword => message.includes(keyword))) {
-          confidence -= 0.2;
+        // Reduce confidence for discussion keywords - REDUCED PENALTY
+        if (reduceKeywords.some(keyword => message.toLowerCase().includes(keyword))) {
+          confidence -= 0.1; // Reduced from 0.2
         }
         
-        // Only trigger if confidence is above threshold
-        if (confidence >= 0.6) {
+        // Special boost for explicit deliverable requests
+        if (/(?:checklist|list|template|form|dashboard|tracker|planner|guide)/.test(message.toLowerCase())) {
+          confidence += 0.2;
+        }
+        
+        // Lower threshold for activation - MADE MORE SENSITIVE
+        if (confidence >= 0.5) { // Reduced from 0.6
           return {
             name: this.cleanCanvasName(extractedName),
             type: pattern.type,
@@ -450,20 +439,6 @@ Creating ${name.toLowerCase()} with these specifications:
 \`\`\`
 // ${name} code structure
 \`\`\`
-
----
-*Canvas created: ${new Date().toLocaleString()}*`,
-
-      'command': `# ${name}
-
-## Project Overview
-${name} workspace created via command
-
-## Current Status
-🚀 Canvas initialized - ready for development
-
-## Content
-*Awaiting content from Spock...*
 
 ---
 *Canvas created: ${new Date().toLocaleString()}*`,
