@@ -1639,6 +1639,10 @@ Current canvas content:
 ${canvasContext.content}`;
         }
 
+        // DEBUG: Log the system prompt to console
+        console.log('🔍 SYSTEM PROMPT BEING SENT:', systemPrompt);
+        console.log('🔍 SYSTEM PROMPT LENGTH:', systemPrompt.length);
+        
         const messages = [
           { role: 'system', content: systemPrompt },
           ...conversationHistory
