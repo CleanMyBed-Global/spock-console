@@ -904,7 +904,7 @@
         <button class="control-btn" onclick="exportChat()">Export</button>
       </div>
 
-      <a href="prompt-editor.html" class="prompt-editor-link">
+      <a href="prompt-editor.html" class="prompt-editor-link" onclick="return handleNavigation(this)">
         <span>⚙️</span>
         <span>PROMPT EDITOR</span>
       </a>
@@ -1406,6 +1406,198 @@
       setTimeout(() => notification.remove(), 3000);
     }
 
+    // Auto-save and navigation protection
+    function handleNavigation(linkElement) {
+      // Check if we have unsaved work
+      const hasConversation = conversationHistory.length > 0;
+      const hasCanvas = window.canvasPlugin && canvasPlugin.hasActiveCanvas && canvasPlugin.hasActiveCanvas();
+      const hasSummary = currentSummary !== null;
+      
+      if (hasConversation || hasCanvas || hasSummary) {
+        // Auto-save current state
+        autoSaveCurrentState();
+        
+        // Show confirmation with auto-save info
+        const confirmMessage = `🛡️ NAVIGATION PROTECTION
+
+You have unsaved work:
+${hasConversation ? '• Active conversation (' + conversationHistory.length + ' messages)' : ''}
+${hasCanvas ? '• Open canvas workspace' : ''}
+${hasSummary ? '• Project summary' : ''}
+
+✅ Auto-saved to browser storage
+Continue to ${linkElement.textContent.trim()}?`;
+
+        if (confirm(confirmMessage)) {
+          return true; // Allow navigation
+        } else {
+          return false; // Cancel navigation
+        }
+      }
+      
+      return true; // No work to lose, allow navigation
+    }
+
+    // Auto-save current state
+    function autoSaveCurrentState() {
+      const saveData = {
+        timestamp: new Date().toISOString(),
+        project: currentProject,
+        conversation: conversationHistory,
+        summary: currentSummary,
+        summaryHistory: summaryHistory,
+        autoSummaryCount: autoSummaryMessageCount
+      };
+      
+      // Save to localStorage with project-specific key
+      localStorage.setItem(`spock_autosave_${currentProject}`, JSON.stringify(saveData));
+      
+      // Save canvas state if plugin exists
+      if (window.canvasPlugin && canvasPlugin.saveCurrentState) {
+        canvasPlugin.saveCurrentState();
+      }
+      
+      console.log('🛡️ Auto-saved current state for project:', currentProject);
+    }
+
+    // Restore auto-saved state
+    function restoreAutoSavedState() {
+      const saveKey = `spock_autosave_${currentProject}`;
+      const savedData = localStorage.getItem(saveKey);
+      
+      if (savedData) {
+        try {
+          const data = JSON.parse(savedData);
+          const saveAge = Date.now() - new Date(data.timestamp).getTime();
+          const hoursAgo = Math.floor(saveAge / (1000 * 60 * 60));
+          const minutesAgo = Math.floor(saveAge / (1000 * 60));
+          
+          let timeText = '';
+          if (hoursAgo > 0) {
+            timeText = `${hoursAgo} hour${hoursAgo > 1 ? 's' : ''} ago`;
+          } else {
+            timeText = `${minutesAgo} minute${minutesAgo > 1 ? 's' : ''} ago`;
+          }
+          
+          const restoreMessage = `🔄 AUTO-SAVE RECOVERY
+
+Found saved work for ${data.project} project from ${timeText}:
+• ${data.conversation.length} messages
+${data.summary ? '• Project summary' : ''}
+
+Restore this work?`;
+
+          if (confirm(restoreMessage)) {
+            // Restore conversation
+            conversationHistory = data.conversation || [];
+            autoSummaryMessageCount = data.autoSummaryCount || 0;
+            
+            // Restore summary
+            if (data.summary) {
+              currentSummary = data.summary;
+              displaySummary(currentSummary);
+              updateSummaryControls();
+            }
+            
+            if (data.summaryHistory) {
+              summaryHistory = data.summaryHistory;
+            }
+            
+            // Restore chat messages
+            rebuildChatFromHistory();
+            
+            // Clean up auto-save
+            localStorage.removeItem(saveKey);
+            
+            showNotification('Work restored successfully!');
+          } else {
+            // User declined, clean up auto-save
+            localStorage.removeItem(saveKey);
+          }
+        } catch (error) {
+          console.error('Error restoring auto-saved state:', error);
+          localStorage.removeItem(saveKey);
+        }
+      }
+    }
+
+    // Rebuild chat interface from conversation history
+    function rebuildChatFromHistory() {
+      const messagesContainer = document.getElementById('chatMessages');
+      messagesContainer.innerHTML = '';
+      
+      if (conversationHistory.length === 0) {
+        messagesContainer.innerHTML = `
+          <div class="welcome-message">
+            <div class="welcome-icon">🖖</div>
+            <div class="welcome-title">SPOCK NEURAL INTERFACE INITIALIZED</div>
+            <div class="welcome-subtitle">
+              Advanced AI systems online. Neural networks calibrated.<br>
+              Ready for complex analysis and code generation.<br><br>
+              <em style="color: var(--primary-gold);">"Logic is the beginning of wisdom, not the end."</em>
+            </div>
+          </div>
+        `;
+        return;
+      }
+      
+      // Rebuild messages from history
+      conversationHistory.forEach((msg, index) => {
+        if (msg.role === 'user' || msg.role === 'assistant') {
+          addMessageFromHistory(msg.role, msg.content, `restored_${index}`);
+        }
+      });
+      
+      scrollToBottom();
+    }
+
+    // Add message from history (no animation)
+    function addMessageFromHistory(role, content, messageId) {
+      const messagesContainer = document.getElementById('chatMessages');
+      
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${role}`;
+      messageDiv.id = messageId;
+      
+      const avatar = role === 'user' ? '👤' : '🖖';
+      const name = role === 'user' ? 'You' : 'Spock';
+      const timestamp = 'Restored';
+      
+      messageDiv.innerHTML = `
+        <div class="message-header">
+          <div class="message-avatar">${avatar}</div>
+          <span>${name}</span>
+          <span style="margin-left: auto; font-size: 0.7rem;">${timestamp}</span>
+        </div>
+        <div class="message-content">
+          ${formatContent(content)}
+        </div>
+        ${role === 'assistant' ? `
+          <div class="message-actions">
+            <button class="action-btn" onclick="copyMessage('${messageId}')">Copy</button>
+          </div>
+        ` : ''}
+      `;
+      
+      messagesContainer.appendChild(messageDiv);
+    }
+
+    // Browser beforeunload protection
+    window.addEventListener('beforeunload', function(e) {
+      const hasConversation = conversationHistory.length > 0;
+      const hasCanvas = window.canvasPlugin && canvasPlugin.hasActiveCanvas && canvasPlugin.hasActiveCanvas();
+      
+      if (hasConversation || hasCanvas) {
+        // Auto-save before potential page unload
+        autoSaveCurrentState();
+        
+        // Show browser warning
+        const message = 'You have unsaved work. Auto-save has been triggered.';
+        e.returnValue = message;
+        return message;
+      }
+    });
+
     document.addEventListener('DOMContentLoaded', function() {
       const messageInput = document.getElementById('messageInput');
       const projectSelector = document.getElementById('projectSelector');
@@ -1440,6 +1632,11 @@
       });
       
       projectSelector.dispatchEvent(new Event('change'));
+      
+      // Check for auto-saved work to restore
+      setTimeout(() => {
+        restoreAutoSavedState();
+      }, 500);
     });
   </script>
 
