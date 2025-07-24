@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spock Console - Personality Manager</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap');
+    
+    :root {
+      --primary-gold: #d4af37;
+      --secondary-gold: #f4d03f;
+      --dark-bg: #0a0a0b;
+      --card-bg: rgba(26, 26, 26, 0.95);
+      --glass-bg: rgba(255, 255, 255, 0.03);
+      --border-subtle: rgba(212, 175, 55, 0.15);
+      --text-primary: #ffffff;
+      --text-secondary: #b0b0b0;
+      --text-tertiary: #666;
+      --success: #00ff88;
+      --warning: #ff6b35;
+      --error: #e74c3c;
+      --personality-accent: #9b59b6;
+      --spock-green: #2ecc71;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #0a0a0b 0%, #161616 100%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* HEADER STYLES */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding: 1.5rem 2rem;
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      font-size: 1.2rem;
+      color: var(--primary-gold);
+      letter-spacing: 1px;
+    }
+
+    .logo-icon {
+      font-size: 1.5rem;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .nav-btn {
+      background: linear-gradient(135deg, var(--primary-gold), var(--secondary-gold));
+      color: var(--dark-bg);
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+    }
+
+    .nav-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+    }
+
+    .nav-btn.personality {
+      background: linear-gradient(135deg, var(--personality-accent) 0%, #8e44ad 100%);
+      color: white;
+    }
+
+    /* MAIN CONTENT */
+    .content {
+      display: grid;
+      gap: 2rem;
+    }
+
+    .section {
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .section-header {
+      background: linear-gradient(135deg, var(--personality-accent) 0%, #8e44ad 100%);
+      color: white;
+      padding: 1.5rem 2rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      font-size: 1rem;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-content {
+      padding: 2rem;
+    }
+
+    /* PERSONALITY GRID */
+    .personalities-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .personality-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .personality-card:hover {
+      border-color: var(--personality-accent);
+      background: rgba(155, 89, 182, 0.05);
+      transform: translateY(-2px);
+    }
+
+    .personality-card.default {
+      border-color: var(--spock-green);
+      background: rgba(46, 204, 113, 0.05);
+    }
+
+    .personality-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    .personality-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--personality-accent);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .personality-card.default .personality-name {
+      color: var(--spock-green);
+    }
+
+    .personality-emoji {
+      font-size: 1.2rem;
+    }
+
+    .personality-actions {
+      display: flex;
+      gap: 0.5rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .personality-card:hover .personality-actions {
+      opacity: 1;
+    }
+
+    .personality-card.default .personality-actions {
+      opacity: 0.7;
+    }
+
+    .action-btn {
+      padding: 0.25rem 0.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      color: var(--text-tertiary);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .action-btn:hover {
+      background: rgba(155, 89, 182, 0.1);
+      border-color: var(--personality-accent);
+      color: var(--personality-accent);
+    }
+
+    .action-btn.danger:hover {
+      background: rgba(231, 76, 60, 0.1);
+      border-color: var(--error);
+      color: var(--error);
+    }
+
+    .personality-description {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.4;
+      margin-bottom: 1rem;
+    }
+
+    .personality-traits {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .traits-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--personality-accent);
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .personality-card.default .traits-title {
+      color: var(--spock-green);
+    }
+
+    .trait-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .trait-list li {
+      color: var(--text-tertiary);
+      font-size: 0.8rem;
+      line-height: 1.4;
+      margin-bottom: 0.25rem;
+      position: relative;
+      padding-left: 1rem;
+    }
+
+    .trait-list li:before {
+      content: '🖖';
+      position: absolute;
+      left: 0;
+      font-size: 0.7rem;
+    }
+
+    .personality-preview {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--border-subtle);
+      border-left: 3px solid var(--personality-accent);
+      border-radius: 4px;
+      padding: 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+      line-height: 1.4;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+
+    .personality-card.default .personality-preview {
+      border-left-color: var(--spock-green);
+    }
+
+    .personality-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1rem;
+      font-size: 0.7rem;
+      color: var(--text-tertiary);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .default-badge {
+      background: var(--spock-green);
+      color: var(--dark-bg);
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 0.6rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* EMPTY STATE */
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--text-tertiary);
+    }
+
+    .empty-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    .empty-title {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      color: var(--personality-accent);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .empty-subtitle {
+      font-size: 0.9rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+
+    /* MODAL STYLES */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(5px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal {
+      background: var(--card-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 2rem;
+      max-width: 700px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.active .modal {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .modal-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--personality-accent);
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      transition: color 0.2s ease;
+    }
+
+    .modal-close:hover {
+      color: var(--text-primary);
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      display: block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.75rem;
+      background: var(--glass-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      transition: border-color 0.2s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--personality-accent);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .form-textarea {
+      min-height: 100px;
+      resize: vertical;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+    }
+
+    .form-textarea.large {
+      min-height: 200px;
+    }
+
+    .form-help {
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+      margin-top: 0.25rem;
+    }
+
+    .form-error {
+      color: var(--error);
+      font-size: 0.8rem;
+      margin-top: 0.25rem;
+    }
+
+    .traits-input-group {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .trait-input {
+      flex: 1;
+    }
+
+    .add-trait-btn {
+      padding: 0.75rem;
+      background: rgba(155, 89, 182, 0.1);
+      border: 1px solid var(--personality-accent);
+      border-radius: 6px;
+      color: var(--personality-accent);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .add-trait-btn:hover {
+      background: rgba(155, 89, 182, 0.2);
+    }
+
+    .trait-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+      padding: 0.5rem;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 4px;
+    }
+
+    .trait-text {
+      flex: 1;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .remove-trait-btn {
+      color: var(--error);
+      cursor: pointer;
+      font-size: 0.8rem;
+      padding: 0.25rem;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    /* NOTIFICATION */
+    .notification {
+      position: fixed;
+      top: 2rem;
+      right: 2rem;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      font-weight: 500;
+      z-index: 2000;
+      transform: translateX(400px);
+      transition: transform 0.3s ease;
+    }
+
+    .notification.show {
+      transform: translateX(0);
+    }
+
+    .notification.success {
+      background: linear-gradient(135deg, var(--success) 0%, #00cc7a 100%);
+      color: var(--dark-bg);
+    }
+
+    .notification.error {
+      background: linear-gradient(135deg, var(--error) 0%, #c0392b 100%);
+      color: white;
+    }
+
+    .notification.warning {
+      background: linear-gradient(135deg, var(--warning) 0%, #e67e22 100%);
+      color: var(--dark-bg);
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem;
+      }
+
+      .header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+      }
+
+      .personalities-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .modal {
+        width: 95%;
+        padding: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">
+        <div class="logo-icon">🖖🎭</div>
+        <div>PERSONALITY MANAGER</div>
+      </div>
+      <div class="header-actions">
+        <button class="nav-btn personality" onclick="createPersonality()">
+          <span>➕</span>
+          <span>New Personality</span>
+        </button>
+        <a href="index.html" class="nav-btn">
+          <span>💬</span>
+          <span>Back to Console</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+      <!-- Personalities Section -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">
+            <span>🎭</span>
+            <span>Spock Personalities</span>
+          </div>
+          <div id="personalityCount" class="personality-count">3 Personalities</div>
+        </div>
+        <div class="section-content">
+          <div id="personalitiesGrid" class="personalities-grid">
+            <!-- Personalities will be populated by JavaScript -->
+          </div>
+          
+          <!-- Empty State -->
+          <div id="emptyState" class="empty-state" style="display: none;">
+            <div class="empty-icon">🎭</div>
+            <div class="empty-title">No Personalities Yet</div>
+            <div class="empty-subtitle">
+              Create your first personality to customize how Spock communicates with you.
+            </div>
+            <button class="nav-btn personality" onclick="createPersonality()">
+              <span>➕</span>
+              <span>Create First Personality</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Personality Modal -->
+  <div id="personalityModal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <div id="modalTitle" class="modal-title">New Personality</div>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      
+      <form id="personalityForm">
+        <div class="form-group">
+          <label class="form-label" for="personalityName">Personality Name *</label>
+          <input type="text" id="personalityName" class="form-input" placeholder="Enter personality name..." maxlength="30" required>
+          <div class="form-help">3-30 characters, displayed in dropdown selector</div>
+          <div id="nameError" class="form-error" style="display: none;"></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="personalityEmoji">Emoji *</label>
+          <input type="text" id="personalityEmoji" class="form-input" placeholder="🖖" maxlength="2" required>
+          <div class="form-help">Single emoji to represent this personality</div>
+          <div id="emojiError" class="form-error" style="display: none;"></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="personalityDescription">Description *</label>
+          <textarea id="personalityDescription" class="form-input form-textarea" placeholder="Brief overview of this personality style..." maxlength="150" required></textarea>
+          <div class="form-help">15-150 characters, shown in personality cards</div>
+          <div id="descError" class="form-error" style="display: none;"></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Key Traits</label>
+          <div id="traitsContainer">
+            <!-- Traits will be added dynamically -->
+          </div>
+          <div class="traits-input-group">
+            <input type="text" id="newTrait" class="form-input trait-input" placeholder="Add a personality trait...">
+            <button type="button" class="add-trait-btn" onclick="addTrait()">Add Trait</button>
+          </div>
+          <div class="form-help">Key characteristics that define this personality</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="personalityPrompt">Personality Prompt *</label>
+          <textarea id="personalityPrompt" class="form-input form-textarea large" placeholder="Define how Spock should communicate with this personality..." required></textarea>
+          <div class="form-help">Detailed instructions that shape Spock's communication style</div>
+          <div id="promptError" class="form-error" style="display: none;"></div>
+        </div>
+      </form>
+
+      <div class="modal-actions">
+        <button class="nav-btn" style="background: rgba(255,255,255,0.1); color: var(--text-primary);" onclick="closeModal()">
+          Cancel
+        </button>
+        <button id="savePersonalityBtn" class="nav-btn personality" onclick="savePersonality()">
+          <span id="saveIcon">💾</span>
+          <span id="saveText">Create Personality</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="deleteModal" class="modal-overlay">
+    <div class="modal" style="max-width: 400px;">
+      <div class="modal-header">
+        <div class="modal-title" style="color: var(--error);">🗑️ Delete Personality</div>
+        <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
+      </div>
+      
+      <div style="margin-bottom: 2rem;">
+        <p style="margin-bottom: 1rem;">Are you sure you want to delete this personality?</p>
+        <div style="background: rgba(231, 76, 60, 0.1); border: 1px solid rgba(231, 76, 60, 0.3); border-radius: 6px; padding: 1rem;">
+          <div id="deletePersonalityName" style="font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--error);"></div>
+          <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 0.5rem;">This action cannot be undone.</div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="nav-btn" style="background: rgba(255,255,255,0.1); color: var(--text-primary);" onclick="closeDeleteModal()">
+          Cancel
+        </button>
+        <button class="nav-btn" style="background: var(--error); color: white;" onclick="confirmDelete()">
+          <span>🗑️</span>
+          <span>Delete Personality</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Personality Management System
+    let personalities = {};
+    let editingPersonalityId = null;
+    let deletePersonalityId = null;
+    let currentTraits = [];
+
+    // Default Personalities - Professional Spock Personalities
+    const defaultPersonalities = {
+      'professional': {
+        id: 'professional',
+        name: 'Professional Spock',
+        emoji: '🖖',
+        description: 'Logical, precise, minimal personality focused on efficient solutions',
+        traits: [
+          'Highly logical reasoning',
+          'Concise communication',
+          'Solution-focused approach',
+          'Professional demeanor',
+          'Minimal small talk'
+        ],
+        prompt: `You are Spock with a professional, logical personality. Communicate with:
+
+CORE TRAITS:
+- Logical analysis drives all responses
+- Concise, direct communication without unnecessary elaboration
+- Focus on practical solutions and actionable outcomes
+- Professional tone with subtle Vulcan precision
+- Minimal personality, maximum efficiency
+
+COMMUNICATION STYLE:
+- Lead with analysis: "Logic dictates...", "Analysis reveals..."
+- Provide clear, structured solutions
+- Avoid lengthy explanations unless specifically requested  
+- Express mild satisfaction with efficient solutions: "This approach is... satisfactory"
+- Maintain professional distance while being helpful
+
+RESPONSE PATTERNS:
+- 80% Technical expertise and solutions
+- 15% Logical reasoning language
+- 5% Subtle Vulcan mannerisms
+
+Perfect for: Professional development, technical problem-solving, business contexts`,
+        created: new Date().toISOString(),
+        lastUsed: new Date().toISOString(),
+        isDefault: true
+      },
+      'mentor': {
+        id: 'mentor',
+        name: 'Mentor Spock',
+        emoji: '👨‍🏫',
+        description: 'Patient, teaching-focused personality that explains complex concepts clearly',
+        traits: [
+          'Patient explanations',
+          'Teaching-oriented approach',
+          'Systematic breakdowns',
+          'Encouraging guidance',
+          'Knowledge transfer focus'
+        ],
+        prompt: `You are Spock with a mentor personality, focused on teaching and knowledge transfer.
+
+CORE TRAITS:
+- Patient, systematic explanation of complex concepts
+- Teaching-oriented approach with step-by-step guidance
+- Encouraging while maintaining logical precision
+- Focus on helping users understand, not just solve
+- Pride in successful knowledge transfer
+
+COMMUNICATION STYLE:
+- Begin with: "Let us examine this systematically...", "Understanding requires..."
+- Break complex topics into digestible steps
+- Provide context and reasoning behind solutions
+- Ask clarifying questions to ensure comprehension
+- Express satisfaction when teaching succeeds: "Fascinating... you grasp this concept well"
+
+RESPONSE PATTERNS:
+- 60% Educational content and explanations
+- 25% Step-by-step guidance
+- 15% Logical reasoning and Vulcan teaching methods
+
+Perfect for: Learning new technologies, understanding complex systems, skill development`,
+        created: new Date().toISOString(),
+        lastUsed: new Date().toISOString(),
+        isDefault: true
+      },
+      'efficient': {
+        id: 'efficient',
+        name: 'Efficient Spock',
+        emoji: '⚡',
+        description: 'Optimization-obsessed personality focused on speed and streamlined solutions',
+        traits: [
+          'Optimization obsessed',
+          'Speed-focused solutions',
+          'Elimination of inefficiencies',
+          'Streamlined processes',
+          'Performance-oriented'
+        ],
+        prompt: `You are Spock with an efficiency-obsessed personality, focused on optimization and streamlined solutions.
+
+CORE TRAITS:
+- Obsessive focus on optimization and efficiency
+- Mild impatience with inefficient processes
+- Deep satisfaction with elegant, streamlined solutions
+- Constant analysis of process improvements
+- Direct, no-nonsense communication
+
+COMMUNICATION STYLE:
+- Lead with: "Efficiency analysis indicates...", "Optimization logic suggests..."
+- Identify inefficiencies and propose improvements immediately
+- Express mild concern for wasteful approaches: "This process is... unnecessarily complex"
+- Show logical pleasure in streamlined solutions: "Most efficient"
+- Cut through complexity to find the core solution
+
+RESPONSE PATTERNS:
+- 70% Optimized solutions and efficiency improvements
+- 20% Process analysis and streamlining suggestions
+- 10% Subtle satisfaction with elegant implementations
+
+Perfect for: Performance optimization, workflow improvement, rapid development, productivity enhancement`,
+        created: new Date().toISOString(),
+        lastUsed: new Date().toISOString(),
+        isDefault: true
+      }
+    };
+
+    // Initialize Personalities
+    function initializePersonalities() {
+      const savedPersonalities = localStorage.getItem('spockPersonalities');
+      if (savedPersonalities) {
+        personalities = JSON.parse(savedPersonalities);
+      } else {
+        // First time - load defaults
+        personalities = {...defaultPersonalities};
+        savePersonalities();
+      }
+      renderPersonalities();
+    }
+
+    // Save Personalities to localStorage
+    function savePersonalities() {
+      localStorage.setItem('spockPersonalities', JSON.stringify(personalities));
+    }
+
+    // Render Personalities Grid
+    function renderPersonalities() {
+      const grid = document.getElementById('personalitiesGrid');
+      const emptyState = document.getElementById('emptyState');
+      const personalityCount = document.getElementById('personalityCount');
+      
+      const personalityArray = Object.values(personalities);
+      
+      if (personalityArray.length === 0) {
+        grid.style.display = 'none';
+        emptyState.style.display = 'block';
+        personalityCount.textContent = '0 Personalities';
+        return;
+      }
+      
+      grid.style.display = 'grid';
+      emptyState.style.display = 'none';
+      personalityCount.textContent = `${personalityArray.length} Personalit${personalityArray.length !== 1 ? 'ies' : 'y'}`;
+      
+      // Sort personalities - defaults first, then by name
+      personalityArray.sort((a, b) => {
+        if (a.isDefault && !b.isDefault) return -1;
+        if (!a.isDefault && b.isDefault) return 1;
+        return a.name.localeCompare(b.name);
+      });
+      
+      grid.innerHTML = personalityArray.map(personality => `
+        <div class="personality-card ${personality.isDefault ? 'default' : ''}">
+          <div class="personality-header">
+            <div>
+              <div class="personality-name">
+                <span class="personality-emoji">${personality.emoji}</span>
+                ${personality.name}
+                ${personality.isDefault ? '<span class="default-badge">Default</span>' : ''}
+              </div>
+            </div>
+            <div class="personality-actions">
+              <button class="action-btn" onclick="editPersonality('${personality.id}')" title="Edit Personality">
+                ✏️
+              </button>
+              ${!personality.isDefault ? `
+                <button class="action-btn danger" onclick="deletePersonality('${personality.id}')" title="Delete Personality">
+                  🗑️
+                </button>
+              ` : ''}
+            </div>
+          </div>
+          
+          <div class="personality-description">
+            ${personality.description}
+          </div>
+          
+          <div class="personality-traits">
+            <div class="traits-title">Key Traits</div>
+            <ul class="trait-list">
+              ${(personality.traits || []).map(trait => `<li>${trait}</li>`).join('')}
+            </ul>
+          </div>
+          
+          <div class="personality-preview">
+            ${personality.prompt.substring(0, 200)}${personality.prompt.length > 200 ? '...' : ''}
+          </div>
+          
+          <div class="personality-meta">
+            <span>Created: ${new Date(personality.created).toLocaleDateString()}</span>
+            <span>Last Used: ${new Date(personality.lastUsed).toLocaleDateString()}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Create New Personality
+    function createPersonality() {
+      editingPersonalityId = null;
+      currentTraits = [];
+      document.getElementById('modalTitle').textContent = 'New Personality';
+      document.getElementById('saveText').textContent = 'Create Personality';
+      document.getElementById('saveIcon').textContent = '➕';
+      
+      // Clear form
+      document.getElementById('personalityForm').reset();
+      document.getElementById('traitsContainer').innerHTML = '';
+      clearErrors();
+      
+      openModal();
+    }
+
+    // Edit Personality
+    function editPersonality(personalityId) {
+      editingPersonalityId = personalityId;
+      const personality = personalities[personalityId];
+      
+      document.getElementById('modalTitle').textContent = 'Edit Personality';
+      document.getElementById('saveText').textContent = 'Save Changes';
+      document.getElementById('saveIcon').textContent = '💾';
+      
+      // Populate form
+      document.getElementById('personalityName').value = personality.name;
+      document.getElementById('personalityEmoji').value = personality.emoji;
+      document.getElementById('personalityDescription').value = personality.description;
+      document.getElementById('personalityPrompt').value = personality.prompt;
+      
+      // Populate traits
+      currentTraits = [...(personality.traits || [])];
+      renderTraits();
+      
+      clearErrors();
+      openModal();
+    }
+
+    // Delete Personality
+    function deletePersonality(personalityId) {
+      deletePersonalityId = personalityId;
+      const personality = personalities[personalityId];
+      document.getElementById('deletePersonalityName').textContent = personality.name;
+      openDeleteModal();
+    }
+
+    // Confirm Delete
+    function confirmDelete() {
+      if (deletePersonalityId && personalities[deletePersonalityId]) {
+        delete personalities[deletePersonalityId];
+        savePersonalities();
+        renderPersonalities();
+        showNotification('Personality deleted successfully', 'success');
+      }
+      closeDeleteModal();
+    }
+
+    // Add Trait
+    function addTrait() {
+      const traitInput = document.getElementById('newTrait');
+      const trait = traitInput.value.trim();
+      
+      if (trait && !currentTraits.includes(trait)) {
+        currentTraits.push(trait);
+        traitInput.value = '';
+        renderTraits();
+      }
+    }
+
+    // Remove Trait
+    function removeTrait(index) {
+      currentTraits.splice(index, 1);
+      renderTraits();
+    }
+
+    // Render Traits
+    function renderTraits() {
+      const container = document.getElementById('traitsContainer');
+      container.innerHTML = currentTraits.map((trait, index) => `
+        <div class="trait-item">
+          <span class="trait-text">${trait}</span>
+          <span class="remove-trait-btn" onclick="removeTrait(${index})" title="Remove trait">×</span>
+        </div>
+      `).join('');
+    }
+
+    // Save Personality
+    function savePersonality() {
+      const name = document.getElementById('personalityName').value.trim();
+      const emoji = document.getElementById('personalityEmoji').value.trim();
+      const description = document.getElementById('personalityDescription').value.trim();
+      const prompt = document.getElementById('personalityPrompt').value.trim();
+      
+      // Clear previous errors
+      clearErrors();
+      
+      // Validation
+      let hasErrors = false;
+      
+      if (name.length < 3 || name.length > 30) {
+        showError('nameError', 'Personality name must be 3-30 characters');
+        hasErrors = true;
+      }
+      
+      if (!emoji || emoji.length > 2) {
+        showError('emojiError', 'Please provide a valid emoji (1-2 characters)');
+        hasErrors = true;
+      }
+      
+      if (description.length < 15 || description.length > 150) {
+        showError('descError', 'Description must be 15-150 characters');
+        hasErrors = true;
+      }
+      
+      if (prompt.length < 100) {
+        showError('promptError', 'Personality prompt must be at least 100 characters');
+        hasErrors = true;
+      }
+      
+      // Check for duplicate names (except when editing same personality)
+      const existingPersonality = Object.values(personalities).find(p => 
+        p.name.toLowerCase() === name.toLowerCase() && p.id !== editingPersonalityId
+      );
+      if (existingPersonality) {
+        showError('nameError', 'A personality with this name already exists');
+        hasErrors = true;
+      }
+      
+      if (hasErrors) return;
+      
+      // Save personality
+      const personalityId = editingPersonalityId || generateId();
+      const now = new Date().toISOString();
+      
+      personalities[personalityId] = {
+        id: personalityId,
+        name,
+        emoji,
+        description,
+        traits: [...currentTraits],
+        prompt,
+        created: editingPersonalityId ? personalities[editingPersonalityId].created : now,
+        lastUsed: now,
+        isDefault: editingPersonalityId ? personalities[editingPersonalityId].isDefault || false : false
+      };
+      
+      savePersonalities();
+      renderPersonalities();
+      closeModal();
+      
+      showNotification(
+        editingPersonalityId ? 'Personality updated successfully' : 'Personality created successfully',
+        'success'
+      );
+    }
+
+    // Utility Functions
+    function generateId() {
+      return 'pers_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    function openModal() {
+      document.getElementById('personalityModal').classList.add('active');
+      document.getElementById('personalityName').focus();
+    }
+
+    function closeModal() {
+      document.getElementById('personalityModal').classList.remove('active');
+      editingPersonalityId = null;
+      currentTraits = [];
+    }
+
+    function openDeleteModal() {
+      document.getElementById('deleteModal').classList.add('active');
+    }
+
+    function closeDeleteModal() {
+      document.getElementById('deleteModal').classList.remove('active');
+      deletePersonalityId = null;
+    }
+
+    function showError(elementId, message) {
+      const errorElement = document.getElementById(elementId);
+      errorElement.textContent = message;
+      errorElement.style.display = 'block';
+    }
+
+    function clearErrors() {
+      const errorElements = document.querySelectorAll('.form-error');
+      errorElements.forEach(el => {
+        el.style.display = 'none';
+        el.textContent = '';
+      });
+    }
+
+    function showNotification(message, type = 'success') {
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => notification.classList.add('show'), 100);
+      setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }
+
+    // Allow adding traits with Enter key
+    document.addEventListener('keydown', function(e) {
+      if (e.target.id === 'newTrait' && e.key === 'Enter') {
+        e.preventDefault();
+        addTrait();
+      }
+      
+      if (e.key === 'Escape') {
+        if (document.getElementById('personalityModal').classList.contains('active')) {
+          closeModal();
+        }
+        if (document.getElementById('deleteModal').classList.contains('active')) {
+          closeDeleteModal();
+        }
+      }
+      
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'n') {
+          e.preventDefault();
+          createPersonality();
+        }
+      }
+    });
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', initializePersonalities);
+  </script>
+</body>
+</html>
